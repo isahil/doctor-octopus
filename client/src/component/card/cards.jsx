@@ -5,6 +5,7 @@ import { SERVER_HOST, SERVER_PORT } from "../../index";
 
 const Cards = ({ source }) => {
   const [cards, setCards] = React.useState([]);
+  const [totalCards, setTotalCards] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
@@ -16,6 +17,7 @@ const Cards = ({ source }) => {
         `http://${SERVER_HOST}:${SERVER_PORT}/reports?source=${source}`
       );
       const data = await response.json();
+      setTotalCards(data.length);
       console.log(`Total ${source} cards: ${data.length}`);
       setCards(data);
     } catch (error) {
@@ -40,12 +42,15 @@ const Cards = ({ source }) => {
   return (
     <div className="cards-component">
       <div className="cards-header">
+        <div>
         <img
           src="/img/refresh.png"
           alt="refresh"
           className="refresh-button"
           onClick={get_cards}
         />
+        </div>
+        <div className="total">{totalCards} cards</div>
       </div>
       <div className="cards-body">
         {cards.map((card, index) => (

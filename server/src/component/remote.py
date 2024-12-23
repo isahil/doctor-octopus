@@ -33,7 +33,7 @@ def get_all_s3_cards():
             folder_name["json_report"] = json.loads(j_report)
             reports_dir.append(folder_name)
     
-    return reports_dir
+    return reports_dir.reverse()
 
 def download_s3_objects(bucket_name):
     ''' download all objects from the S3 bucket '''
