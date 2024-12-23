@@ -43,7 +43,10 @@ const FixMe = () => {
   const [newOrder, setNewOrder] = useState(draft_order);
   const [tagChecked, setTagChecked] = useState(draft_checked);
   const { selectedOptions } = useLabOptions();
-  const { sio } = useSocketIO()
+  const { sio } = useSocketIO();
+
+  const restriction_tags = ["7762", "9691", "9692"]; // tags related to restrictions block
+  const nopartyid_tags = ["447", "448", "452"]; // tags related to nopartyid block
 
   /**
    * handle radio button change event for fix tag with an array of values
@@ -76,9 +79,30 @@ const FixMe = () => {
 
   const handle_submit = async (event) => {
     event.preventDefault();
-    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Submitting order: ${JSON.stringify(newOrder)}\r\n`);
 
-    sio.emit("fixme-client", newOrder) // send the order to the w.s. server
+    const order = newOrder;
+    const restrictions = [];
+    const nopartyid = [];
+
+    Object.keys(order).forEach((key) => {
+      if (restriction_tags.includes(key)) {
+        restrictions.push({ [key]: order[key] });
+        delete order[key];
+      } else if (nopartyid_tags.includes(key)) {
+        nopartyid.push({ [key]: order[key] });
+        delete order[key];
+      }
+    });
+
+    order["9690"] = restrictions; // add the restrictions to the order
+    order["453"] = nopartyid; // add the nopartyid to the order
+    terminal.write(
+      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Submitting order: ${JSON.stringify(
+        order
+      )}\r\n`
+    );
+
+    sio.emit("fixme-client", order); // send the order to the w.s. server
     // clear the order state after submitting
     setNewOrder(draft_order);
   };
@@ -104,11 +128,16 @@ const FixMe = () => {
           const values = tag["values"];
           const values_type = typeof values; // type of values decide if the row should display radio buttons or an input field
           const is_even = i % 2 === 0; // for row styling. even and odd rows have different background colors
+          let enabled = "enabled"; // used to disable the fix tag row if order restrictions are set to false
+          if (restriction_tags.includes(fix_tag))
+            enabled = tagChecked["6499"]["Y"] === true ? "enabled" : "disabled";
 
           return (
             <div
               key={i}
-              className={`fix-tag-row ${is_even ? "even-row" : "odd-row"}`}
+              className={`fix-tag-row ${
+                is_even ? "even-row" : "odd-row"
+              } ${enabled}`}
             >
               <div className="tag-label">
                 <p>{fix_tag}</p>
@@ -210,7 +239,13 @@ const FixMe = () => {
             <span className="switch-right">O</span>
           </label>
         </div>
-        <span className={`order-type-label ${orderType === "new" ? "new" : "cancel"}`}>{orderType}</span>
+        <span
+          className={`order-type-label ${
+            orderType === "new" ? "new" : "cancel"
+          }`}
+        >
+          {orderType}
+        </span>
       </div>
       {orderType === "new" && (
         <div className="fix-tags">{display_fix_order(new_order_tags)}</div>

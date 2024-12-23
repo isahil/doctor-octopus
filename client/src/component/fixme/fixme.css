@@ -202,6 +202,10 @@
     height: 35px;
 }
 
+.fix-tag-row.disabled {
+    display: none;
+}
+
 .even-row {
     background-color: var(--octopus-gray);
 }
