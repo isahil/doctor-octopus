@@ -11,6 +11,7 @@ const config: PlaywrightTestConfig = {
   use: {
     browserName: 'chromium',
     headless: true,
+    trace: "on-first-retry"
   },
   reporter: [
     ['list'],
