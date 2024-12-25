@@ -38,3 +38,6 @@ if [ "$ALL" = "true" ]; then
     npm install
     echo "Playwright set up finished!"
 fi
+
+cd ..
+echo "Setup finished!"
