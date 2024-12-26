@@ -39,7 +39,7 @@ class FixClient():
         self.broadcast = kwargs.get('broadcast', False)
         self.sio = kwargs.get('sio', None)
     
-    async def start_client(self):
+    async def start_mock_client(self):
         env = self.env
         app = self.app
         fix_side = self.fix_side
