@@ -1,4 +1,30 @@
+import asyncio
 import time
+
+class Application():
+    sio = None
+    broadcast = False
+    timeout = 30
+
+    def __init__(self, **kwargs):
+        self.broadcast = kwargs.get('broadcast', False)
+        self.sio = kwargs.get('sio', None)
+        self.timeout = kwargs.get('timeout', 30)
+
+    async def connect(self):
+        timeout = 30
+        while timeout > 0:
+            message = f"Message : {timeout}"
+            if self.broadcast is True:
+                print(f"Broadcasting: {message}")
+                await self.sio.emit('fixme-client', message)
+            timeout -= 1
+            await asyncio.sleep(1)
+
+    async def submit_order(self, order_data):
+        print(f"fix app received order: {order_data}")
+        await self.sio.emit('fixme-client', order_data)
+        return order_data
 
 class FixClient():
     env = None
@@ -10,30 +36,19 @@ class FixClient():
         self.env = kwargs.get('env', 'prod')
         self.app = kwargs.get('app', 'fix')
         self.fix_side = kwargs.get('fix_side', 'buy')
-        self.timeout = kwargs.get('timeout', 30)
         self.broadcast = kwargs.get('broadcast', False)
         self.sio = kwargs.get('sio', None)
     
-    async def connect(self):
+    async def start_client(self):
         env = self.env
         app = self.app
         fix_side = self.fix_side
-        timeout = self.timeout
         broadcast = self.broadcast
 
         print(f"Connecting to {env} env | {app} app | {fix_side} fix_side | Broadcast: {broadcast}")
-        # return order_data
-        while timeout > 0:
-            message = f"Message : {timeout}"
-            if broadcast is True:
-                print(f"Broadcasting: {message}")
-                await self.sio.emit('fixme-client', message)
-            timeout -= 1
-            time.sleep(1)
-    
-    async def submit_order(self, order_data):
-        print(f"submitting order: {order_data}")
-        await self.sio.emit('fixme-client', order_data)
-        return order_data
+        app = Application(broadcast=broadcast, sio=self.sio)
+        con = app.connect()
+        asyncio.create_task(con)
+        return app
 
 __name__ == "__main__" and FixClient(env="dev", app="fix", fix_side="dealer", timeout=10)
