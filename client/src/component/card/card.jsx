@@ -1,10 +1,12 @@
 import React from "react";
 import "./card.css";
 import { SERVER_HOST, SERVER_PORT } from "../../index";
+import { useTerminal } from "../xterm/terminal-context";
 
 function Card({ source, card, index }) {
-  const { json_report, html_report } = card;
+  const { json_report, html_report, root_dir } = card;
   const { stats, suites } = json_report;
+  const { terminal } = useTerminal();
   // console.log(`Stats: ${JSON.stringify(stats)} \n${html_report.length === 0 ? "No HTML Report" : "Yes HTML Report"}`);
   const { expected, flaky, skipped, unexpected, startTime } = stats; // scoreboard values to display
   const project_name = suites[0].specs[0] // check if the suite is a spec or a suite. TODO: Need to figure out the logic
@@ -16,18 +18,22 @@ function Card({ source, card, index }) {
   const formatted_date_time = date.toLocaleString(); // adjust formatting as needed
 
   const handle_view_report_click = async () => {
-    console.log(`Viewing html report: ${html_report}`);
+    console.log(`View report: ${html_report}`);
     const response = await fetch(
-      `http://${SERVER_HOST}:${SERVER_PORT}/report?source=${source}&html=${html_report}`
+      `http://${SERVER_HOST}:${SERVER_PORT}/report?source=${source}&root_dir=${root_dir}`
     );
-    const html_report_text = await response.text();
-
-    const new_window = window.open("", "_blank"); // open a new window to display the clicked report
-    if (new_window) {
-      new_window.document.open();
-      new_window.document.write(html_report_text);
-      new_window.document.close();
-    } else alert("Please allow popups for this website");
+    const output = await response.text();
+    terminal.write(`\r\n\x1B[1;3;33m server:\x1B[1;3;36m ${JSON.stringify(output)} \r\n`);
+    terminal.write(`\x1B[1;3;31m You\x1B[0m $ `);
+    // try {
+    //   const reportWindow = window.open('http://localhost:9323', '_blank');
+    //   if (!reportWindow) {
+    //     alert('Popup was blocked. Please allow popups for this website.');
+    //   }
+    // } catch (error) {
+    //   console.error('Error opening report window:', error);
+    //   alert('Failed to open report window. Please try again.');
+    // }
   };
 
   return (

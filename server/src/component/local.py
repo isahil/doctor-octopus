@@ -1,29 +1,21 @@
-from dotenv import load_dotenv
-load_dotenv('.env')
+import asyncio
 import json
 import os
+from src.util.executor import run_a_command_on_local, is_port_open, kill_process_on_port
 
 local_dir = os.environ.get('LOCAL_DIRECTORY', "../../") # path to test results directory can be changed in the .env file
-test_reports_dir = os.environ.get("TEST_REPORTS_DIR", "test_reports") # test reports directory can be changed in the .env file
-
-local_test_reports_dir = os.path.join(local_dir, test_reports_dir)
-
-def get_a_local_card_html_report(html):
-    ''' get a local html report card based on the path requested'''
-    html_file_path = os.path.join(local_test_reports_dir, html)
-    with open(html_file_path, "r") as f:
-        html_file_content = f.read()
-        return html_file_content
+reports_dir_name = os.environ.get("TEST_REPORTS_DIR", "test_reports") # test reports directory can be changed in the .env file
+reports_dir = os.path.join(local_dir, reports_dir_name)
 
 def get_all_local_cards():
     ''' get all local report cards in the local test reports directory'''
     test_results = []
-    local_reports_dir = os.listdir(local_test_reports_dir)
+    local_reports_dir = os.listdir(reports_dir)
     print(f"Total local reports found: {len(local_reports_dir)}")
 
     for folder in local_reports_dir:
-        folder_path = os.path.join(local_test_reports_dir, folder)
-        report_card = {"json_report": {}, "html_report": ""} # initialize report card with 2 properties needed for the frontend
+        folder_path = os.path.join(reports_dir, folder)
+        report_card = {"json_report": {}, "html_report": "", "root_dir": folder_path} # initialize report card with 2 properties needed for the frontend
 
         if os.path.isdir(folder_path):
             for file in os.listdir(folder_path):
@@ -40,3 +32,26 @@ def get_all_local_cards():
         test_results.append(report_card)
     sorted_test_results = sorted(test_results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
     return sorted_test_results
+
+def get_a_local_card_html_report(html):
+    ''' get a local html report card based on the path requested'''
+    html_file_path = os.path.join(reports_dir, html)
+    with open(html_file_path, "r") as f:
+        html_file_content = f.read()
+        return html_file_content
+
+async def view_a_report_on_local(root_dir):
+    try:
+        if not os.path.exists(root_dir):
+            print(f"Directory {root_dir} does not exist")
+            return {"message": "Directory does not exist", "destination": root_dir}
+        port = "9323"
+        pid = await is_port_open(port)
+        if len(pid) > 0:
+            await kill_process_on_port(pid)
+        command = f"npx playwright show-report {root_dir}"
+        task = asyncio.create_task(run_a_command_on_local(command))
+        output = await task
+        return output
+    except Exception as e:
+        raise e

@@ -1,8 +1,9 @@
 import os
 import subprocess
+import time
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
-from src.component.local  import get_all_local_cards, get_a_local_card_html_report
+from src.component.local  import get_all_local_cards, get_a_local_card_html_report, view_a_report_on_local
 from src.component.remote import get_all_s3_cards, get_a_s3_card_html_report
 import json
 
@@ -21,17 +22,20 @@ async def get_all_reports(source: str = Query(..., title="Source Name", descript
 @router.get("/report/", response_class=HTMLResponse)
 async def get_a_report(
     source: str = Query(..., title="Source Name", description="Source of the html report file to be retrieved", example="local/remote"),
-    html: str = Query(..., title="HTML Report Name", description="Name of the html report file to be retrieved", example="index.html")
+    root_dir: str = Query(None, title="Root Directory", description="Root directory of the report to be retrieved", example="2021-09-01T14:00:00")
     ) -> HTMLResponse:
     '''get the specific html report content when 'View Report' button is clicked'''
     if source == "remote":
-        html_file_content = get_a_s3_card_html_report(html)
-        return HTMLResponse(content=html_file_content, status_code=200, media_type="text/html")
+        print(f"Viewing a remote report: {root_dir}")
+        # html_file_content = get_a_s3_card_html_report(html)
+        # return HTMLResponse(content=html_file_content, status_code=200, media_type="text/html")
     else:
-        html_file_content = get_a_local_card_html_report(html)
-        return HTMLResponse(content=html_file_content, status_code=200, media_type="text/html")
+        output = await view_a_report_on_local(root_dir)
+        time.sleep(1) # server needs time to start the playwright report server
+        return HTMLResponse(status_code=200, content=output, media_type="text/html")
 
-@router.get("/run-command/")
+
+@router.get("/run-test-suite/")
 def run_command(
     command: str = Query(..., title="Execute Command", description="Command to be executed on the server", example="ls")
     ) -> str:
