@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from src.util.executor import run_a_command_on_local, is_port_open, kill_process_on_port
+from src.util.executor import run_a_command_on_local, open_port_on_local
 
 local_dir = os.environ.get('LOCAL_DIRECTORY', "../../") # path to test results directory can be changed in the .env file
 reports_dir_name = os.environ.get("TEST_REPORTS_DIR", "test_reports") # test reports directory can be changed in the .env file
@@ -11,7 +11,7 @@ def get_all_local_cards():
     ''' get all local report cards in the local test reports directory'''
     test_results = []
     local_reports_dir = os.listdir(reports_dir)
-    print(f"Total local reports found: {len(local_reports_dir)}")
+    print(f"Total reports found on local: {len(local_reports_dir)}")
 
     for folder in local_reports_dir:
         folder_path = os.path.join(reports_dir, folder)
@@ -40,15 +40,14 @@ def get_a_local_card_html_report(html):
         html_file_content = f.read()
         return html_file_content
 
-async def view_a_report_on_local(root_dir):
+async def view_a_report_on_local(root_dir) -> str | Exception:
     try:
-        port = "9323"
-        pid = await is_port_open(port)
-        if len(pid) > 0:
-            await kill_process_on_port(pid)
+        port = "9323" # default port for playwright show-report
+        await open_port_on_local(port)
         command = f"cd {local_dir}&& npx playwright show-report {reports_dir_name}/{root_dir}"
         task = asyncio.create_task(run_a_command_on_local(command))
         output = await task
-        return output
+        message = "Serving HTML report at http://localhost:9323"
+        return message if output else output
     except Exception as e:
         raise e

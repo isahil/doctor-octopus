@@ -2,19 +2,27 @@ import asyncio
 import platform
 import subprocess
 
+async def open_port_on_local(port):
+    pid = await is_port_open(port)
+    if pid:
+        await kill_process_on_port(pid)
+    else: print(f"Port {port} is open to use")
+
+
 async def is_port_open(port):
+    ''' Check if a port is open on the local machine. Return the PID of the process using the port if open'''
     try:
         os = platform.system().lower()
         print(f"Checking if port {port} is open on {os} machine")
 
         if os == "darwin" or os == "linux":
-            command = f"lsof -ti:{port}"
-            pid = await run_a_command_on_local(command)
-        if os == "windows":
-            # command = f'Get-NetTCPConnection -LocalPort {port} | Select-Object -ExpandProperty OwningProcess'
+            command = f"lsof -ti :{port}"
+            result = await run_a_command_on_local(command)
+        elif os == "windows":
             command = f'netstat -aon | findstr :{port} | findstr LISTENING'
             result = await run_a_command_on_local(command)
-            pid = result.split()[-1] if len(result) > 0 else result
+        else: raise OSError("Unsupported OS to check port")
+        pid = result.split()[-1] if result else result
         print(f"PID: {pid}")
         return pid
     except OSError as e:
@@ -26,7 +34,8 @@ async def kill_process_on_port(pid):
         print(f"Killing process for PID {pid} on {os}")
         if os == "darwin" or os == "linux":
             command = f"kill -9 {pid}"
-        else: command = f"taskkill /PID {pid} /F"
+        elif os == "windows": command = f"taskkill /PID {pid} /F"
+        else : raise OSError("Unsupported OS to kill process")
         await run_a_command_on_local(command)
 
     except OSError as e:
@@ -50,10 +59,10 @@ async def run_command_async(command: str):
 
 async def run_a_command_on_local(command):
     try:
-        print(f"Executing command on local: {command}")
+        print(f"Executing [{command}] on local machine")
         task = asyncio.create_task(run_command_async(command))
         output = await task
-        print(f"Command output executed on local: {output}")
+        print(f"Output: {output}")
         return output
     except Exception as e:
         raise e

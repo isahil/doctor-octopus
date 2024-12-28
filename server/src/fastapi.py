@@ -32,7 +32,6 @@ async def get_a_report(
         # return HTMLResponse(content=html_file_content, status_code=200, media_type="text/html")
     else:
         output = await view_a_report_on_local(root_dir)
-        time.sleep(1) # server needs time to start the playwright report server
         return HTMLResponse(status_code=200, content=output, media_type="text/html")
 
 
@@ -40,7 +39,7 @@ async def get_a_report(
 def run_command(
     command: str = Query(..., title="Execute Command", description="Command to be executed on the server", example="ls")
     ) -> str:
-    ''' run a command on the server'''
+    ''' Run a playwright test command on the server'''
     print(f"FASTAPI received command: {json.loads(command)}")
     lab_options = json.loads(command)
     env = lab_options.get("environment")
@@ -51,11 +50,12 @@ def run_command(
     os = platform.system().lower()
     if os == "darwin" or os == "linux":
         command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
-    else: command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
+    elif os == "windows": command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
+    else : raise OSError("Unsupported OS to run command")
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    print(f"Command executed: {result.args} | Return Code: {result.returncode}")
+    print(f"Return Code: {result.returncode} | Command executed: {result.args}")
 
-    if (len(result.stdout) > 0): print(f"Output STDOUT: {result.stdout}")
-    elif (len(result.stderr) > 0): print(f"Output STDERR: {result.stderr}")
-    output = result.stdout if (len(result.stdout) > 0) else result.stderr
+    if result.stdout: print(f"Output STDOUT: {result.stdout}")
+    elif result.stderr: print(f"Output STDERR: {result.stderr}")
+    output = result.stdout if result.stdout else result.stderr
     return output
