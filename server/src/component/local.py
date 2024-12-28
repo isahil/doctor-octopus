@@ -15,7 +15,7 @@ def get_all_local_cards():
 
     for folder in local_reports_dir:
         folder_path = os.path.join(reports_dir, folder)
-        report_card = {"json_report": {}, "html_report": "", "root_dir": folder_path} # initialize report card with 2 properties needed for the frontend
+        report_card = {"json_report": {}, "html_report": "", "root_dir": folder} # initialize report card with 2 properties needed for the frontend
 
         if os.path.isdir(folder_path):
             for file in os.listdir(folder_path):
@@ -42,14 +42,11 @@ def get_a_local_card_html_report(html):
 
 async def view_a_report_on_local(root_dir):
     try:
-        if not os.path.exists(root_dir):
-            print(f"Directory {root_dir} does not exist")
-            return {"message": "Directory does not exist", "destination": root_dir}
         port = "9323"
         pid = await is_port_open(port)
         if len(pid) > 0:
             await kill_process_on_port(pid)
-        command = f"npx playwright show-report {root_dir}"
+        command = f"cd {local_dir}&& npx playwright show-report {reports_dir_name}/{root_dir}"
         task = asyncio.create_task(run_a_command_on_local(command))
         output = await task
         return output

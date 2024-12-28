@@ -1,4 +1,5 @@
 import os
+import platform
 import subprocess
 import time
 from fastapi import APIRouter, Query
@@ -46,7 +47,12 @@ def run_command(
     app = lab_options.get("app")
     proto = lab_options.get("proto")
     suite = lab_options.get("suite")
-    result = subprocess.run(f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}", shell=True, capture_output=True, text=True)
+
+    os = platform.system().lower()
+    if os == "darwin" or os == "linux":
+        command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
+    else: command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
     print(f"Command executed: {result.args} | Return Code: {result.returncode}")
 
     if (len(result.stdout) > 0): print(f"Output STDOUT: {result.stdout}")

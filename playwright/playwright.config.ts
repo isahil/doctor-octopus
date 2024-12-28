@@ -21,33 +21,33 @@ const config: PlaywrightTestConfig = {
   projects: [
     {
       name: 'api:smoke',
-      testMatch: 'test.spec.ts',
+      testMatch: 'test-example.spec.ts',
       use: { browserName: 'chromium'}
     },
     {
       name: 'api:sanity',
-      testMatch: 'test.spec.ts',
-      use: { browserName: 'chromium'}
+      testMatch: 'test-example.spec.ts',
+      use: { browserName: 'chromium' }
     },
     {
       name: 'api:regression',
-      testMatch: 'test.spec.ts',
-      use: { browserName: 'chromium'}
+      testMatch: 'test-example.spec.ts',
+      use: { browserName: 'chromium' }
     },
     {
       name: 'ui:smoke',
-      testMatch: 'test.spec.ts',
-      use: { browserName: 'chromium'}
+      testMatch: 'test-example.spec.ts',
+      use: { browserName: 'chromium' }
     },
     {
       name: 'ui:sanity',
-      testMatch: 'test.spec.ts',
-      use: { browserName: 'chromium'}
+      testMatch: 'test-example.spec.ts',
+      use: { browserName: 'chromium' }
     },
     {
       name: 'ui:regression',
-      testMatch: 'test.spec.ts',
-      use: { browserName: 'chromium'}
+      testMatch: 'test-example.spec.ts',
+      use: { browserName: 'chromium' }
     }
   ]
 };

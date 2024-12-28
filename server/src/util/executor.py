@@ -5,19 +5,29 @@ import subprocess
 async def is_port_open(port):
     try:
         os = platform.system().lower()
-        print(f"Checking if port {port} is open on {os}")
+        print(f"Checking if port {port} is open on {os} machine")
+
         if os == "darwin" or os == "linux":
-            result = await run_a_command_on_local(f"lsof -ti:{port}")
-            return result
+            command = f"lsof -ti:{port}"
+            pid = await run_a_command_on_local(command)
+        if os == "windows":
+            # command = f'Get-NetTCPConnection -LocalPort {port} | Select-Object -ExpandProperty OwningProcess'
+            command = f'netstat -aon | findstr :{port} | findstr LISTENING'
+            result = await run_a_command_on_local(command)
+            pid = result.split()[-1] if len(result) > 0 else result
+        print(f"PID: {pid}")
+        return pid
     except OSError as e:
         return e
 
 async def kill_process_on_port(pid):
     try:
         os = platform.system().lower()
-        print(f"Killing process on port {pid} on {os}")
+        print(f"Killing process for PID {pid} on {os}")
         if os == "darwin" or os == "linux":
-            await run_a_command_on_local(f"kill -9 {pid}")
+            command = f"kill -9 {pid}"
+        else: command = f"taskkill /PID {pid} /F"
+        await run_a_command_on_local(command)
 
     except OSError as e:
         return e

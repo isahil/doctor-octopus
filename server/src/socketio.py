@@ -1,9 +1,6 @@
-import os
 import sys
 import asyncio
 import socketio
-# local_dir = os.environ.get('LOCAL_DIRECTORY')
-# sys.path.append(f"{local_dir}/fix")
 sys.path.append("./src")
 from fix_client import FixClient
 
