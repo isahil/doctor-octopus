@@ -17,7 +17,8 @@ async def get_all_reports(source: str = Query(..., title="Source Name", descript
     ''' get report cards based on the source requested '''
     print(f"Report Source: {source}")
     if source == "remote":
-        return get_all_s3_cards()
+        s3_cards = get_all_s3_cards()
+        return s3_cards
     else: return get_all_local_cards()
 
 @router.get("/report/", response_class=HTMLResponse)

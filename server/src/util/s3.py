@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv('.env')
 import os
 import boto3
 
@@ -8,7 +6,6 @@ aws_bucket_region = os.environ.get('AWS_BUCKET_REGION')
 aws_access_key = os.environ.get('AWS_ACCESS_KEY')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
-# S3 client
 class S3Client:
     def __init__(self):
         session = boto3.Session(
