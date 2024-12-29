@@ -22,7 +22,7 @@ const Lab = () => {
     sio.on(subscription, (data) => {
       console.log("w.s. server: ", data);
       terminal.write(
-        `\r\n\x1B[1;3;33m server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`
+        `\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`
       );
     });
     console.log(`${subscription} w.s. listener enabled`);

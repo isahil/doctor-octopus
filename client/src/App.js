@@ -6,7 +6,7 @@ import Lab from "./component/lab/lab.jsx";
 import Footer from "./component/footer/footer.jsx";
 
 function App() {
-  const [source, set_source] = useState("local");
+  const [source, set_source] = useState("remote");
   const [showFixMe, setShowFixMe ] = useState(false);
 
   const toggle_source = () => {
@@ -21,10 +21,11 @@ function App() {
     <div className="app">
       <div className="app-header">
         <div className="source">
+        <p className="source-header">{source}</p>
           <label>
             <input type="checkbox" onClick={toggle_source} />
           </label>
-          <p className="source-label">source</p>
+          {/* <p className="source-label">source</p> */}
         </div>
         <div className="title">
           <h1>Doctor Octopus</h1>

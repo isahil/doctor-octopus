@@ -41,10 +41,16 @@ body {
   font-size: 20px;
 }
 
-.source p {
+.source-header {
   color: cyan;
   font-size: 10px;
-  margin: 7px 0px 0px 85px;
+  margin: 0px 0px 0px 85px;
+}
+
+.source-label {
+  color: cyan;
+  font-size: 10px;
+  margin: 5px 0px 0px 85px;
 }
 
 .source input[type="checkbox"] {
@@ -61,7 +67,7 @@ body {
   cursor: pointer;
   height: 20px;
   padding-right: 25px;
-  margin: 10px 0px 0px 70px;
+  margin: 7px 0px 0px 70px;
   width: 60px;
   -webkit-appearance: none;
   -webkit-transition: .25s;

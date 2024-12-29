@@ -23,7 +23,7 @@ function Card({ source, card, index }) {
       `http://${SERVER_HOST}:${SERVER_PORT}/report?source=${source}&root_dir=${root_dir}`
     );
     const output = await response.text();
-    terminal.write(`\r\n\x1B[1;3;33m server:\x1B[1;3;36m ${JSON.stringify(output)} \r\n`);
+    terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(output)} \r\n`);
     terminal.write(`\x1B[1;3;31m You\x1B[0m $ `);
     // try {
     //   const reportWindow = window.open('http://localhost:9323', '_blank');
