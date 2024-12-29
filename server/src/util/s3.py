@@ -17,7 +17,7 @@ class S3Client:
 
     def get_a_s3_object(self, object_name, bucket_name = aws_bucket_name):
         '''
-        # Call S3 clientto get a s3 object
+        # Call S3 client to get a s3 object
         '''
         response = self.S3.get_object(Bucket=bucket_name, Key=object_name)
         return response['Body'].read()

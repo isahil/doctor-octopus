@@ -57,7 +57,6 @@ def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name):
             # Construct the local relative path based on object_key
             # Remove the leading 'root_dir/' portion
             relative_path = object_key[len(root_dir):].lstrip('/')
-            print(f"{object_key} relative path: {relative_path}")
             # Join root_dir with the relative path, so local files end up in root_dir/... 
             # preserving subfolders
             test_report_dir = root_dir.split('/')[-1]
