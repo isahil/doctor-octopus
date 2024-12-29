@@ -5,11 +5,13 @@ import time
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from src.component.local  import get_all_local_cards, get_a_local_card_html_report, view_a_report_on_local
-from src.component.remote import get_all_s3_cards, get_a_s3_card_html_report
+from src.component.remote import get_all_s3_cards, download_s3_folder
 import json
 
-router = APIRouter()
+aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
 local_dir = os.environ.get("LOCAL_DIRECTORY", "../../") # path to the local test results directory
+
+router = APIRouter()
 
 @router.get("/reports/")
 async def get_all_reports(source: str = Query(..., title="Source Name", description="Retrieve all the HTML & JSON reports from the source", example="local/remote")
@@ -29,11 +31,11 @@ async def get_a_report(
     '''get the specific html report content when 'View Report' button is clicked'''
     if source == "remote":
         print(f"Viewing a remote report: {root_dir}")
-        # html_file_content = get_a_s3_card_html_report(html)
-        # return HTMLResponse(content=html_file_content, status_code=200, media_type="text/html")
-    else:
-        output = await view_a_report_on_local(root_dir)
-        return HTMLResponse(status_code=200, content=output, media_type="text/html")
+        test_report_dir = download_s3_folder(root_dir)
+    else : test_report_dir = root_dir
+
+    output = await view_a_report_on_local(test_report_dir)
+    return HTMLResponse(status_code=200, content=output, media_type="text/html")
 
 
 @router.get("/run-test-suite/")

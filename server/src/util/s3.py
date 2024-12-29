@@ -31,5 +31,11 @@ class S3Client:
         # for obj in objects:
         #     print(f"Key: {obj['Key']}, Size: {obj['Size']}")
         return objects
+
+    def download_file(self, object_key, local_path, bucket_name = aws_bucket_name):
+        '''
+        # Call S3 client to download a file
+        '''
+        self.S3.download_file(bucket_name, object_key, local_path)
     
 S3 = S3Client()
