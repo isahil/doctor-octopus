@@ -6,7 +6,7 @@ import Lab from "./component/lab/lab.jsx";
 import Footer from "./component/footer/footer.jsx";
 
 function App() {
-  const [source, set_source] = useState("remote");
+  const [source, set_source] = useState("local");
   const [showFixMe, setShowFixMe ] = useState(false);
 
   const toggle_source = () => {
