@@ -61,6 +61,11 @@ const LabProvider = ({ children }) => {
   };
 
   const handle_run_click = async (interactive = false) => {
+    sio.on("log", line => {
+        // line.trimStart();
+        terminal.write(`\r\n ${line}\r\n`);
+    })
+
     // data to send in the request query
     const env = selectedOptions[0];
     const app = selectedOptions[1];
@@ -90,10 +95,10 @@ const LabProvider = ({ children }) => {
     );
 
     // process the response data to remove leading whitespace from each line
-    data.split("\n").forEach((line) => {
-      line.trimStart();
-      terminal.write(`\r\n ${line}\r\n`);
-    });
+    // data.split("\n").forEach((line) => {
+    //   line.trimStart();
+      terminal.write(`\r\n ${JSON.stringify(data)}\r\n`);
+    // });
     terminal.write(
       `\r\n\x1B[1;3;93m ----------------- [ Interactive Mode: ${
         interactive ? "ON" : "OFF"

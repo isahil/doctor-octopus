@@ -34,7 +34,14 @@ def get_all_s3_cards():
             report_cards[test_report_dir]["html_report"] = object_name
 
     for test_report_dir in report_cards.values():
-            j_report = S3.get_a_s3_object(test_report_dir["json_report"]["object_name"])
+            try:
+                object_name = test_report_dir["json_report"]["object_name"]
+                if object_name is False: print(f"no valid object")
+            except KeyError:
+                del report_cards[test_report_dir]
+                continue
+            
+            j_report = S3.get_a_s3_object(object_name)
             test_report_dir["json_report"] = json.loads(j_report)
             reports_dir.append(test_report_dir)
     return reports_dir[::-1]

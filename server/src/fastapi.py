@@ -1,10 +1,9 @@
 import os
 import platform
 import subprocess
-import time
 from fastapi import APIRouter, Query
-from fastapi.responses import HTMLResponse
-from src.component.local  import get_all_local_cards, get_a_local_card_html_report, view_a_report_on_local
+from fastapi.responses import HTMLResponse, JSONResponse
+from src.component.local  import get_all_local_cards, view_a_report_on_local
 from src.component.remote import get_all_s3_cards, download_s3_folder
 import json
 
@@ -55,10 +54,10 @@ def run_command(
         command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
     elif os == "windows": command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
     else : raise OSError("Unsupported OS to run command")
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    result = subprocess.run(f"{command} >> logs/doctor.log", shell=True, capture_output=True, text=True)
     print(f"Return Code: {result.returncode} | Command executed: {result.args}")
 
-    if result.stdout: print(f"Output STDOUT: {result.stdout}")
-    elif result.stderr: print(f"Output STDERR: {result.stderr}")
-    output = result.stdout if result.stdout else result.stderr
-    return output
+    # if result.stdout: print(f"Output STDOUT: {result.stdout}")
+    # elif result.stderr: print(f"Output STDERR: {result.stderr}")
+    # output = result.stdout if result.stdout else result.stderr
+    return JSONResponse(status_code=200, content={"message": "Command executed successfully"}, media_type="text/plain")

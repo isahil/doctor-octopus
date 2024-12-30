@@ -11,7 +11,6 @@ const XTerm = ({ setShowFixMe }) => {
   const [num, setNum] = useState(1);
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate(); // HandleOptionClickContext that store the function to handle the dd option click
   const { setTerminal } = useTerminal(); // TerminalContext that store the terminal object
-  
   const xterm = (terminal) => {
     terminal.options.theme.foreground = `cyan`;
     terminal.options.cursorStyle = "underline";

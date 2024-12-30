@@ -1,8 +1,6 @@
 import { io } from "socket.io-client";
 import React, { useEffect, useContext } from "react";
-
 import { SERVER_HOST, SERVER_PORT } from "../index";
-
 const SocketIOContext = React.createContext();
 
 export const useSocketIO = () => {
@@ -35,11 +33,6 @@ const SocketIOProvider = ({ children }) => {
 
     return (() => socket.disconnect()) 
   }, []);
-
-  // sio.emit(subscription, data, async(response) => {
-  //  // callback function will wait for a server response
-  //   console.log("W.Socket server response: ", response);
-  // });
 
   return (
     <SocketIOContext.Provider value={{ sio }}>

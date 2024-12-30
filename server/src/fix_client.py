@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 class Application():
     sio = None
