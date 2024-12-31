@@ -1,14 +1,17 @@
+import asyncio
+import json
 import os
 import platform
-import subprocess
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from src.component.local  import get_all_local_cards, view_a_report_on_local
 from src.component.remote import get_all_s3_cards, download_s3_folder
-import json
+from src.util.logger import stream_log_file
+from src.util.executor import run_a_command_on_local
 
 aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
 local_dir = os.environ.get("LOCAL_DIRECTORY", "../../") # path to the local test results directory
+log_file_path = f"{local_dir}/logs/doctor.log"
 
 router = APIRouter()
 
@@ -28,17 +31,15 @@ async def get_a_report(
     root_dir: str = Query(None, title="Root Directory", description="Root directory of the report to be retrieved", example="2021-09-01T14:00:00")
     ) -> HTMLResponse:
     '''get the specific html report content when 'View Report' button is clicked'''
-    if source == "remote":
-        print(f"Viewing a remote report: {root_dir}")
-        test_report_dir = download_s3_folder(root_dir)
-    else : test_report_dir = root_dir
+    if source == "remote": test_report_dir = download_s3_folder(root_dir)
+    else: test_report_dir = root_dir
 
     output = await view_a_report_on_local(test_report_dir)
     return HTMLResponse(status_code=200, content=output, media_type="text/html")
 
 
 @router.get("/run-test-suite/")
-def run_command(
+async def run_command(
     command: str = Query(..., title="Execute Command", description="Command to be executed on the server", example="ls")
     ) -> str:
     ''' Run a playwright test command on the server'''
@@ -54,10 +55,8 @@ def run_command(
         command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
     elif os == "windows": command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
     else : raise OSError("Unsupported OS to run command")
-    result = subprocess.run(f"{command} >> logs/doctor.log", shell=True, capture_output=True, text=True)
-    print(f"Return Code: {result.returncode} | Command executed: {result.args}")
+    command_task = asyncio.create_task(run_a_command_on_local(f"{command} >> logs/doctor.log"))
+    asyncio.create_task(stream_log_file(log_file_path)) # start background task to stream the log file
+    await command_task
 
-    # if result.stdout: print(f"Output STDOUT: {result.stdout}")
-    # elif result.stderr: print(f"Output STDERR: {result.stderr}")
-    # output = result.stdout if result.stdout else result.stderr
     return JSONResponse(status_code=200, content={"message": "Command executed successfully"}, media_type="text/plain")

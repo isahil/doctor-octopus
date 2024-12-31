@@ -62,7 +62,6 @@ async def run_a_command_on_local(command):
         print(f"Executing [{command}] on local machine")
         task = asyncio.create_task(run_command_async(command))
         output = await task
-        print(f"Output: {output}")
         return output
     except Exception as e:
         raise e

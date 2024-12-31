@@ -61,9 +61,9 @@ const LabProvider = ({ children }) => {
   };
 
   const handle_run_click = async (interactive = false) => {
+    // listen for log events from the server
     sio.on("log", line => {
-        // line.trimStart();
-        terminal.write(`\r\n ${line}\r\n`);
+        terminal.write(`\r ${line}\r`);
     })
 
     // data to send in the request query
@@ -78,7 +78,7 @@ const LabProvider = ({ children }) => {
       `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Executing command on the server ⫷⫷⫷⫷⫷  ${JSON.stringify(command)}  ⫸⫸⫸⫸⫸\r\n`
     );
 
-    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m   ▁▁▂▃▄▅▆▇██▇▆▅▄▃▂▁▁   \r\n`)
+    terminal.write(`▁▁▂▃▄▅▆▇█ \n`)
 
     clear_selected_options();
 
@@ -94,11 +94,7 @@ const LabProvider = ({ children }) => {
       `\r\n\x1B[1;3;33m -------------------------------------------------------------- \x1B[0m\r\n`
     );
 
-    // process the response data to remove leading whitespace from each line
-    // data.split("\n").forEach((line) => {
-    //   line.trimStart();
-      terminal.write(`\r\n ${JSON.stringify(data)}\r\n`);
-    // });
+    terminal.write(`\r\n ${JSON.stringify(data)}\r\n`);
     terminal.write(
       `\r\n\x1B[1;3;93m ----------------- [ Interactive Mode: ${
         interactive ? "ON" : "OFF"
