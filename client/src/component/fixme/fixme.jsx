@@ -77,7 +77,7 @@ const FixMe = () => {
     }));
   };
 
-  const handle_submit = async (event) => {
+  const handle_submit = async (event, fix_side="client") => {
     event.preventDefault();
 
     const order = newOrder;
@@ -102,7 +102,7 @@ const FixMe = () => {
       )}\r\n`
     );
 
-    sio.emit("fixme-client", order); // send the order to the w.s. server
+    sio.emit(`fixme`, fix_side, order); // send the data to the w.s. server
     // clear the order state after submitting
     setNewOrder(draft_order);
   };

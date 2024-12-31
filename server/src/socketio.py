@@ -37,14 +37,8 @@ async def disconnect(sid):
     sio_client_count -= 1
     print(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 
-@sio.on('fixme-client')
-async def fixme_client(sid, order_data):
-    print(f"\tW.Socket client [{sid}] sent ob order: {order_data}")
-    app = await client_app
+@sio.on('fixme')
+async def fixme_client(sid, fix_side, order_data):
+    print(f"\tW.Socket client [{sid}] sent data to {fix_side} side fix: {order_data}")
+    app = await eval(f"{fix_side}_app")
     await app.submit_order(order_data)
-
-# @sio.on('fixme-dealer')
-# async def fixme_dealer(sid, axe_data):
-#     print(f"\tW.Socket client [{sid}] sent axe to upload: {axe_data}")
-#     app = await dealer_app
-#     await app.submit_order(axe_data)

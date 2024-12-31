@@ -83,7 +83,7 @@ const LabProvider = ({ children }) => {
     clear_selected_options();
 
     const response = await fetch(
-      `http://${SERVER_HOST}:${SERVER_PORT}/run-test-suite?command=${JSON.stringify(command)}`
+      `http://${SERVER_HOST}:${SERVER_PORT}/the-lab?command=${JSON.stringify(command)}`
     );
     const data = await response.json();
 

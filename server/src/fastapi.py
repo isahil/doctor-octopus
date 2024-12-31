@@ -11,14 +11,15 @@ from src.util.executor import run_a_command_on_local
 
 aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
 local_dir = os.environ.get("LOCAL_DIRECTORY", "../../") # path to the local test results directory
-log_file_path = f"{local_dir}/logs/doctor.log"
+log_file_name = "the-lab.log"
+log_file_path = f"{local_dir}/logs/{log_file_name}"
 
 router = APIRouter()
 
 @router.get("/reports/")
 async def get_all_reports(source: str = Query(..., title="Source Name", description="Retrieve all the HTML & JSON reports from the source", example="local/remote")
     ) -> list:
-    ''' get report cards based on the source requested '''
+    ''' Get available report cards based on the source requested '''
     print(f"Report Source: {source}")
     if source == "remote":
         s3_cards = get_all_s3_cards()
@@ -28,21 +29,21 @@ async def get_all_reports(source: str = Query(..., title="Source Name", descript
 @router.get("/report/", response_class=HTMLResponse)
 async def get_a_report(
     source: str = Query(..., title="Source Name", description="Source of the html report file to be retrieved", example="local/remote"),
-    root_dir: str = Query(None, title="Root Directory", description="Root directory of the report to be retrieved", example="2021-09-01T14:00:00")
+    root_dir_path: str = Query(None, title="Root Directory", description="Root directory of the report to be retrieved", example="2021-09-01T14:00:00")
     ) -> HTMLResponse:
-    '''get the specific html report content when 'View Report' button is clicked'''
-    if source == "remote": test_report_dir = download_s3_folder(root_dir)
-    else: test_report_dir = root_dir
+    ''' Start the playwright report view server to see the report content when 'View Report' button is clicked '''
+    if source == "remote": test_report_dir = download_s3_folder(root_dir_path)
+    else: test_report_dir = root_dir_path
 
     output = await view_a_report_on_local(test_report_dir)
     return HTMLResponse(status_code=200, content=output, media_type="text/html")
 
 
-@router.get("/run-test-suite/")
+@router.get("/the-lab/")
 async def run_command(
     command: str = Query(..., title="Execute Command", description="Command to be executed on the server", example="ls")
     ) -> str:
-    ''' Run a playwright test command on the server'''
+    ''' Run a playwright test command to execute on the server using The Lab '''
     print(f"FASTAPI received command: {json.loads(command)}")
     lab_options = json.loads(command)
     env = lab_options.get("environment")
@@ -55,7 +56,7 @@ async def run_command(
         command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
     elif os == "windows": command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
     else : raise OSError("Unsupported OS to run command")
-    command_task = asyncio.create_task(run_a_command_on_local(f"{command} >> logs/doctor.log"))
+    command_task = asyncio.create_task(run_a_command_on_local(f"{command} >> logs/{log_file_name}")) # start background task to run the command
     asyncio.create_task(stream_log_file(log_file_path)) # start background task to stream the log file
     await command_task
 
