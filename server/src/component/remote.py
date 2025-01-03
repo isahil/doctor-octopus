@@ -11,7 +11,7 @@ def get_a_s3_card_html_report(html):
     card = S3.get_a_s3_object(html)
     return card
 
-def get_all_s3_cards():
+def get_all_s3_cards() -> list:
     ''' Get all report cards from the S3 bucket's each object'''
     s3_objects = S3.list_s3_objects()
     reports_dir = [] # list that will be sent to the client
@@ -46,7 +46,7 @@ def get_all_s3_cards():
             reports_dir.append(test_report_dir)
     return reports_dir[::-1]
 
-def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name):
+def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name) -> str:
     """
     Given a root_dir path for a folder in an S3 bucket, download all
     the objects inside root_dir to local, maintaining the same folder 
@@ -58,6 +58,7 @@ def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name):
     # Loop through each object
     for obj in s3_objects:
         object_key = obj["Key"]
+        print(f"root_dir: {root_dir} | s3 object: {object_key}")
         
         # Only process objects that start with root_dir
         if object_key.startswith(root_dir):

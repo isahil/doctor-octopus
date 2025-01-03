@@ -4,7 +4,6 @@ import asyncio
 import socketio
 sys.path.append("./src")
 from fix_client import FixClient
-local_dir = os.environ.get("LOCAL_DIRECTORY", "../../") # path to the local test results directory
 
 origins = [
     "http://localhost:3000",

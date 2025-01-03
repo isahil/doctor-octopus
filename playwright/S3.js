@@ -78,9 +78,7 @@ export const upload_directory = async (
   local_dir_path,
   s3_dir_path
 ) => {
-  console.log(
-    `Uploading directory: '${local_dir_path}' to S3 bucket ${bucket_name} > bucket directory: ${s3_dir_path}`
-  );
+  // console.log(`Uploading directory: '${local_dir_path}' to S3 bucket ${bucket_name} > bucket directory: ${s3_dir_path}`);
   const report_dir = fs.readdirSync(local_dir_path);
 
   for (const r_item of report_dir) {

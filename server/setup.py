@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 import platform
 
 app_requires = [
+    "aiofiles==24.1.0",
     "annotated-types==0.7.0",
     "anyio==4.4.0",
     "bidict==0.23.1",

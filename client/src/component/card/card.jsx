@@ -20,7 +20,7 @@ function Card({ source, card, index }) {
   const handle_view_report_click = async () => {
     console.log(`View report: ${html_report}`);
     const response = await fetch(
-      `http://${SERVER_HOST}:${SERVER_PORT}/report?source=${source}&root_dir=${root_dir}`
+      `http://${SERVER_HOST}:${SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
     );
     const output = await response.text();
     terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(output)} \r\n`);

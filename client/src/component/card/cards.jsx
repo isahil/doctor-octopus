@@ -14,7 +14,7 @@ const Cards = ({ source }) => {
   const get_cards = async () => {
     try {
       const response = await fetch(
-        `http://${SERVER_HOST}:${SERVER_PORT}/reports?source=${source}`
+        `http://${SERVER_HOST}:${SERVER_PORT}/cards?source=${source}`
       );
       const data = await response.json();
       setTotalCards(data.length);
