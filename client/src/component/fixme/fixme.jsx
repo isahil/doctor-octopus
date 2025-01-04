@@ -209,7 +209,6 @@ const FixMe = () => {
     console.log(`Order type set to: ${order_type_new}`);
     setOrderType(order_type_new);
     if (order_type_before === "new") {
-      // setOrder(draftOrder(newOrderTags));
       return (
         <div className="fix-tags">{display_fix_order(new_order_tags)}</div>
       );

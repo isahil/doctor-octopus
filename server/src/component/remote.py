@@ -3,47 +3,44 @@ import os
 from src.util.s3 import S3
 
 aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
-local_dir = os.environ.get('LOCAL_DIRECTORY', "../../") # path to test results directory can be changed in the .env file
-reports_dir_name = os.environ.get("TEST_REPORTS_DIR", "test_reports") # test reports directory can be changed in the .env file
-reports_dir = os.path.join(local_dir, reports_dir_name)
 
-def get_a_s3_card_html_report(html):
+def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
     return card
 
 def get_all_s3_cards() -> list:
     ''' Get all report cards from the S3 bucket's each object'''
     s3_objects = S3.list_s3_objects()
+    print(f"Total objects found on S3: {len(s3_objects)}")
     reports_dir = [] # list that will be sent to the client
     # temporary dictionary to store the reports
-    report_cards = {} # { folder_name: { json_report: { "object_name": object_name... }, html_report: "name.html" } }
+    report_cards = {} # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object"... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
     
     for obj in s3_objects:
         object_name = obj["Key"]
         path_parts = object_name.split("/")
         root_dir = "/".join(path_parts[:4])
 
-        test_report_dir = path_parts[3]
+        dir_name = path_parts[3]
         file_name = path_parts[-1]
-        if test_report_dir not in report_cards:
-            report_cards[test_report_dir] = {"json_report": {}, "html_report": "", "root_dir": root_dir}
+        if dir_name not in report_cards:
+            report_cards[dir_name] = {"json_report": {}, "html_report": "", "root_dir": root_dir}
         
         if file_name.endswith("report.json"):
-            report_cards[test_report_dir]["json_report"] = {"object_name": object_name} # Create a new folder in the reports dict to save the contents of the folder later
+            report_cards[dir_name]["json_report"] = {"object_name": object_name} # Create a new folder in the reports dict to save the contents of the folder later
         if file_name.endswith("index.html"):
-            report_cards[test_report_dir]["html_report"] = object_name
+            report_cards[dir_name]["html_report"] = object_name
 
-    for test_report_dir in report_cards.values():
+    for dir_name, dir_name in report_cards.items():
             try:
-                object_name = test_report_dir["json_report"]["object_name"]
+                object_name = dir_name["json_report"]["object_name"]
                 if object_name is False: print(f"no valid object")
             except KeyError:
-                del report_cards[test_report_dir]
                 continue
             
             j_report = S3.get_a_s3_object(object_name)
-            test_report_dir["json_report"] = json.loads(j_report)
-            reports_dir.append(test_report_dir)
+            dir_name["json_report"] = json.loads(j_report) # Load the json report into the dictionary
+            reports_dir.append(dir_name)
     return reports_dir[::-1]
 
 def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name) -> str:

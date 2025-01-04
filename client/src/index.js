@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import config from "./index.json";
+import config from "./config.json";
 import LabProvider from "./component/lab/lab-context";
 import SocketIOProvider from "./util/socketio-context";
 import TerminalProvider from "./component/xterm/terminal-context.js";

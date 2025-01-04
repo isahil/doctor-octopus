@@ -15,14 +15,14 @@ class S3Client:
         )
         self.S3 = session.client('s3')
 
-    def get_a_s3_object(self, object_name, bucket_name = aws_bucket_name):
+    def get_a_s3_object(self, object_name, bucket_name = aws_bucket_name) -> bytes:
         '''
         # Call S3 client to get a s3 object
         '''
         response = self.S3.get_object(Bucket=bucket_name, Key=object_name)
         return response['Body'].read()
     
-    def list_s3_objects(self, bucket_name = aws_bucket_name):
+    def list_s3_objects(self, bucket_name = aws_bucket_name) -> list:
         '''
         # Call S3 client to list s3 objects
         '''
@@ -32,7 +32,7 @@ class S3Client:
         #     print(f"Key: {obj['Key']}, Size: {obj['Size']}")
         return objects
 
-    def download_file(self, object_key, local_path, bucket_name = aws_bucket_name):
+    def download_file(self, object_key, local_path, bucket_name = aws_bucket_name) -> None:
         '''
         # Call S3 client to download a file
         '''

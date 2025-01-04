@@ -61,10 +61,12 @@ const LabProvider = ({ children }) => {
   };
 
   const handle_run_click = async (interactive = false) => {
-    // listen for log events from the server
-    sio.on("log", line => {
-        terminal.write(`\r ${line}\r`);
-    })
+    // listen for the-lab-log events from the server
+    const subscription = "the-lab-log"
+    sio.off(subscription); // Remove existing listener to avoid duplicate logs
+    sio.on(subscription, line => {
+      terminal.write(`\r ${line}\r`);
+    });
 
     // data to send in the request query
     const env = selectedOptions[0];
@@ -72,34 +74,13 @@ const LabProvider = ({ children }) => {
     const proto = selectedOptions[2];
     const suite = selectedOptions[3];
     const command = { environment: env, app: app, proto: proto, suite: suite };
-    console.log(`Run command: ${JSON.stringify(command)}`);
 
     terminal.write(
-      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Executing command on the server ⫷⫷⫷⫷⫷  ${JSON.stringify(command)}  ⫸⫸⫸⫸⫸\r\n`
+      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Running command ⫷⫷⫷⫷⫷  ${JSON.stringify(command)}  ⫸⫸⫸⫸⫸\r\n`
     );
-
-    terminal.write(`▁▁▂▃▄▅▆▇█ \n`)
-
+    // terminal.write(`▁▁▂▃▄▅▆▇█ \n`)
     clear_selected_options();
-
-    const response = await fetch(
-      `http://${SERVER_HOST}:${SERVER_PORT}/the-lab?command=${JSON.stringify(command)}`
-    );
-    const data = await response.json();
-
-    terminal.write(
-      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Server response below\r\n`
-    );
-    terminal.write(
-      `\r\n\x1B[1;3;33m -------------------------------------------------------------- \x1B[0m\r\n`
-    );
-
-    terminal.write(`\r\n ${JSON.stringify(data)}\r\n`);
-    terminal.write(
-      `\r\n\x1B[1;3;93m ----------------- [ Interactive Mode: ${
-        interactive ? "ON" : "OFF"
-      } ] ------------------- \x1B[0m\r\n`
-    );
+    sio.emit("the-lab", command);
     terminal.write(`\r\n\x1B[1;3;31m You\x1B[0m $ `);
   };
 

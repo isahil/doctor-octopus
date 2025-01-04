@@ -12,7 +12,7 @@ function App() {
   const toggle_source = () => {
     set_source((current_source) => {
       const updated_source = current_source === "remote" ? "local" : "remote";
-      console.log(`Toggle source: ${updated_source}`);
+      console.log(`Toggled source: ${updated_source}`);
       return updated_source;
     });
   };

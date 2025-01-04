@@ -12,14 +12,16 @@ const Cards = ({ source }) => {
    * fetch cards data from the FASTAPI server. TODO: Implement the WebSocket subscription logic
    */
   const get_cards = async () => {
+    setIsLoading(true); // set loading to true before the fetch request starts
     try {
       const response = await fetch(
         `http://${SERVER_HOST}:${SERVER_PORT}/cards?source=${source}`
       );
       const data = await response.json();
       setTotalCards(data.length);
-      console.log(`Total ${source} cards: ${data.length}`);
-      setCards(data);
+      const filtered_data = data.filter((card) => card.json_report.suites.length > 0); // filter out cards that did not run any test suites
+      console.log(`Total ${source} cards: ${data.length} | filtered cards: ${filtered_data.length}`);
+      setCards(filtered_data);
     } catch (error) {
       console.error("Error fetching cards data:", error);
     } finally {

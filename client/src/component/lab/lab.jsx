@@ -20,12 +20,10 @@ const Lab = () => {
     // if the selected option is "fix" and the last card has been selected, then enable the websocket listener for the respective fixme session.
     const subscription = `fixme-${suite}`;
     sio.on(subscription, (data) => {
-      console.log("w.s. server: ", data);
       terminal.write(
         `\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`
       );
     });
-    console.log(`${subscription} w.s. listener enabled`);
   }
 
   return (

@@ -44,4 +44,5 @@ const upload_report = async () => {
   );
 };
 
-spawn_child_process(`npx playwright test --project=${test_script_name}`, upload_report)
+// spawn_child_process(`npx playwright test --project=${test_script_name}`, upload_report)
+spawn_child_process(`npx playwright test --project=${test_script_name}`)
