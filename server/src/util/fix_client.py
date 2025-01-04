@@ -16,13 +16,13 @@ class Application():
             message = f"Message : {timeout}"
             if self.broadcast is True:
                 print(f"Broadcasting: {message}")
-                await self.sio.emit('fixme-client', message)
+                await self.sio.emit('fixme', message)
             timeout -= 1
             await asyncio.sleep(1)
 
     async def submit_order(self, order_data):
         print(f"fix app received order: {order_data}")
-        await self.sio.emit('fixme-client', order_data)
+        await self.sio.emit('fixme', order_data)
         return order_data
 
 class FixClient():

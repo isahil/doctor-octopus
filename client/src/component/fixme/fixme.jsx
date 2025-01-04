@@ -78,6 +78,7 @@ const FixMe = () => {
   };
 
   const handle_submit = async (event, fix_side="client") => {
+    sio.off("fixme"); // Remove existing listener to avoid duplicate logs
     event.preventDefault();
 
     const order = newOrder;
@@ -102,6 +103,9 @@ const FixMe = () => {
       )}\r\n`
     );
 
+    sio.on("fixme", (data) => {
+      terminal.write(`\r\n\x1B[1;3;37m Server: ${data} \r\n`);
+    });
     sio.emit(`fixme`, fix_side, order); // send the data to the w.s. server
     // clear the order state after submitting
     setNewOrder(draft_order);
