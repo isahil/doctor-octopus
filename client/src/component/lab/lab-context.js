@@ -49,9 +49,10 @@ const LabProvider = ({ children }) => {
 
     if(selectedOptions[2] === "fix" && selectedOptions[3]) {
       console.log("FixMe selected");
+      sio.off("fixme"); // Remove existing listener to avoid duplicate
       sio.on("fixme", (data) => {
         console.log("W.Socket server: ", data);
-        terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Server: ${data} \r\n`);
+        terminal.write(`\r\n\x1B[1;3;33m Server: ${data} \r\n`);
       });
     }
   };

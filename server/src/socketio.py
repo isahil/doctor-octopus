@@ -1,8 +1,9 @@
 import platform
 import sys
 import asyncio
+from ..server import fastapi_app, sio
 sys.path.append("./src")
-from config import fastapi_app, sio, the_lab_log_file_path, the_lab_log_file_name, local_dir
+from config import the_lab_log_file_path, the_lab_log_file_name, local_dir
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
 
