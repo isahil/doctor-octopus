@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
-import config
+import src.config
 from src.config import the_lab_log_file_path
 from src.util.fix_client import FixClient
 
@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
             print("fix_client_app task cancelled")
 
 fastapi_app = FastAPI(lifespan=lifespan)
-config.fastapi_app = fastapi_app
+src.config.fastapi_app = fastapi_app
 
 fastapi_app.add_middleware(
     CORSMiddleware,
