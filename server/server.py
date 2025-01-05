@@ -1,6 +1,7 @@
 # This is the entry point of the server application
 from dotenv import load_dotenv
-load_dotenv('.env') # load environment variables from .env file
+load_dotenv('.env') # development environment variables
+# load_dotenv('../../.env') # load environment variables from .env file
 import os
 import asyncio
 import uvicorn

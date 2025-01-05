@@ -17,7 +17,7 @@ async def start_streaming_log_file(sio, sid, subscription, log_file_path):
      
 
 async def stream_log_file(sio, sid, subscription, log_file_path):
-    async with aiofiles.open(log_file_path, "r") as log_file:
+    async with aiofiles.open(log_file_path, "r", encoding='utf-8') as log_file:
         while True:
             line = await log_file.readline()
             if line:
