@@ -18,7 +18,7 @@ class Application():
                 print(f"Broadcasting: {message}")
                 await self.sio.emit('fixme', message)
             timeout -= 1
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
 
     async def submit_order(self, order_data):
         print(f"fix app received order: {order_data}")

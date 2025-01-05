@@ -1,13 +1,19 @@
 import platform
 import sys
 import asyncio
-from ..server import fastapi_app, sio
+import socketio
 sys.path.append("./src")
-from config import the_lab_log_file_path, the_lab_log_file_name, local_dir
+import config
+from config import cors_allowed_origins, the_lab_log_file_path, the_lab_log_file_name, local_dir
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
 
 sio_client_count = 0
+
+sio = socketio.AsyncServer(cors_allowed_origins=cors_allowed_origins,async_mode='asgi')
+socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
+config.sio = sio
+config.socketio_app = socketio_app
 
 @sio.on('connect')
 async def connect(sid, environ):
@@ -24,12 +30,21 @@ async def disconnect(sid):
     print(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 
 @sio.on('fixme')
-async def fixme_client(sid, fix_side, order_data):
-    print(f"\tW.Socket client [{sid}] sent data to {fix_side} side fix: {order_data}")
+async def fixme_client(sid, order_data):
+    print(f"W.Socket client [{sid}] sent data to client side fix: {order_data}")
+    if not config.fastapi_app:
+        print("FastAPI app not set in config.")
+        return
     
-    # await sio.emit(f'fixme-{fix_side}', "FixMe app is not runnable yet", room=sid)
-    app = await eval(f"{fastapi_app}.state.fix_{fix_side}_app")
-    await app.submit_order(order_data)
+    # Grab fix_client_app from app.state
+    fix_client_app = await config.fastapi_app.state.fix_client_task
+    if not fix_client_app:
+        print("fix_client_app not found on app.state.")
+        return
+    
+    print(f"Socket {sid} → Submitting order to fix_client_app...")
+    # Interact with your FixClient instance
+    await fix_client_app.submit_order(order_data)
 
 @sio.on('the-lab')
 async def the_lab(sid, command):

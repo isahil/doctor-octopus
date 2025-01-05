@@ -4,15 +4,16 @@ load_dotenv('.env') # load environment variables from .env file
 import os
 import asyncio
 import uvicorn
-import socketio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
-from src.config import the_lab_log_file_path, cors_allowed_origins
+import config
+from src.config import the_lab_log_file_path
 from src.util.fix_client import FixClient
 
-server_mode = os.environ.get("SERVER_MODE") # development or production
+server_mode = os.environ.get("SERVER_MODE") # fixme or local
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,24 +29,25 @@ async def lifespan(app: FastAPI):
 
     if(server_mode == "fixme"):
         fix_client = FixClient(env="qa", app="fix", fix_side="client", broadcast=True, sio=sio)
-        client_app = asyncio.create_task(fix_client.start_mock_client())
-        app.state.fix_client_app = client_app
+        fix_client_task = asyncio.create_task(fix_client.start_mock_client())
+        app.state.fix_client = fix_client
+        app.state.fix_client_task = fix_client_task
         # fix_dealer = FixClient(env="qa", app="fix", fix_side="dealer", broadcast=True, sio=sio)
-        # dealer_app = asyncio.create_task(fix_dealer.start_mock_client())
-        # app.state.fix_dealer_app = dealer_app
+        # fix_dealer_task = asyncio.create_task(fix_dealer.start_mock_client())
+        # app.state.fix_dealer_task = fix_dealer_task
 
     yield
 
     print("Shutting down the server lifespan...")
     if(server_mode == "fixme"):
-        client_app.cancel()
-        try: await client_app
+        fix_client_task.cancel()
+        try:
+            await fix_client_task
         except asyncio.CancelledError:
             print("fix_client_app task cancelled")
 
 fastapi_app = FastAPI(lifespan=lifespan)
-sio = socketio.AsyncServer(cors_allowed_origins=cors_allowed_origins,async_mode='asgi')
-socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
+config.fastapi_app = fastapi_app
 
 fastapi_app.add_middleware(
     CORSMiddleware,

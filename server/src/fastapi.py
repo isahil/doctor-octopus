@@ -16,7 +16,7 @@ async def get_all_cards(source: str = Query(..., title="Source Name", descriptio
     else: return get_all_local_cards()
 
 
-@router.get("/card/", response_class=PlainTextResponse, status_code=307)
+@router.get("/card/", response_class=PlainTextResponse, status_code=200)
 async def get_a_card(
     source: str = Query(..., title="Source Name", description="Source of the html report file to be retrieved", example="local/remote"),
     root_dir: str = Query(None, title="Root Directory", description="Root directory of the report to be retrieved", example="2021-09-01T14:00:00")

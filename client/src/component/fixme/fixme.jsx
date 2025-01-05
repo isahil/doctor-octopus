@@ -98,15 +98,15 @@ const FixMe = () => {
     order["9690"] = restrictions; // add the restrictions to the order
     order["453"] = nopartyid; // add the nopartyid to the order
     terminal.write(
-      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Submitting order: ${JSON.stringify(
+      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Submitting: ${JSON.stringify(
         order
       )}\r\n`
     );
 
-    sio.on("fixme", (data) => {
-      terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${data} \r\n`);
+    sio.on("fixme", data => {
+      terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`);
     });
-    sio.emit(`fixme`, fix_side, order); // send the data to the w.s. server
+    sio.emit("fixme", order); // send the data to the w.s. server
     // clear the order state after submitting
     setNewOrder(draft_order);
   };
