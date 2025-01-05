@@ -2,10 +2,11 @@
   "name": "doctor-octopus",
   "version": "1.0.0",
   "description": "doctor-octopus app",
-  "main": "index.js",
+  "main": "setup.sh",
   "scripts": {
     "start": "cd client && npm run build && cd .. && concurrently \"cd client && npm start\" \"cd server && sh start.sh\"",
-    "test": ""
+    "test": "",
+    "setup": "sh setup.sh true"
   },
   "repository": {
     "type": "git",
