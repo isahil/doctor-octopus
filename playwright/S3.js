@@ -24,9 +24,7 @@ const S3_Client = new S3Client({
 });
 
 export async function list_objects() {
-  console.log(
-    `bucket name ::: ${bucketName} - region ::: ${region} ::: ${accessKeyId} ::: ${secretAccessKeyId}`
-  );
+  // console.log(`bucket name ::: ${bucketName} - region ::: ${region} ::: ${accessKeyId} ::: ${secretAccessKeyId}`);
   const params = {
     Bucket: "doctor-octopus",
     Prefix: "test_reports/",
@@ -35,7 +33,6 @@ export async function list_objects() {
   const command = new ListObjectsCommand(params);
   const response = await S3_Client.send(command);
   // console.log(`List S3 response ::: ${JSON.stringify(response.Contents)}`);
-
   return response;
 }
 
@@ -57,18 +54,13 @@ export async function upload_file(
   file_content,
   content_type
 ) {
-  const params = content_type
-    ? {
-        Bucket: bucket_name,
-        Key: key,
-        Body: file_content,
-        ContentType: content_type,
-      }
-    : {
-        Bucket: bucket_name,
-        Key: key,
-        Body: file_content,
-      };
+  const params = {
+    Bucket: bucket_name,
+    Key: key,
+    Body: file_content,
+    ContentType: content_type,
+  }
+
   const command = new PutObjectCommand(params);
   return await S3_Client.send(command);
 }

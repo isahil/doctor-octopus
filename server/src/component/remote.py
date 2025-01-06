@@ -1,8 +1,10 @@
 import json
 import os
 from src.util.s3 import S3
+from src.config import local_dir, test_reports_dir
 
 aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
+reports_dir = os.path.join(local_dir, test_reports_dir) # Full path to the local test reports directory
 
 def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
@@ -12,9 +14,9 @@ def get_all_s3_cards() -> list:
     ''' Get all report cards from the S3 bucket's each object'''
     s3_objects = S3.list_s3_objects()
     print(f"Total objects found on S3: {len(s3_objects)}")
-    reports_dir = [] # list that will be sent to the client
-    # temporary dictionary to store the reports
-    report_cards = {} # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object"... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
+    reports_dir = [] # List that will be sent to the client
+    report_cards = {}  # Temporary dictionary to store the reports
+    # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object"... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
     
     for obj in s3_objects:
         object_name = obj["Key"]
@@ -55,7 +57,7 @@ def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name) -> str:
     # Loop through each object
     for obj in s3_objects:
         object_key = obj["Key"]
-        print(f"root_dir: {root_dir} | s3 object: {object_key}")
+        # print(f"root_dir: {root_dir} | s3 object: {object_key}")
         
         # Only process objects that start with root_dir
         if object_key.startswith(root_dir):

@@ -1,9 +1,9 @@
 import json
 import os
-from src.config import local_dir, reports_dir_name
+from src.config import local_dir, test_reports_dir
 from src.util.executor import run_a_command_on_local, open_port_on_local
 
-reports_dir = os.path.join(local_dir, reports_dir_name)
+reports_dir = os.path.join(local_dir, test_reports_dir)
 
 def get_all_local_cards() -> list:
     ''' get all local report cards in the local test reports directory'''
@@ -42,7 +42,7 @@ async def view_a_report_on_local(root_dir) -> str | Exception:
     try:
         port = "9323" # default port for playwright show-report
         await open_port_on_local(port)
-        command = f"cd {local_dir}&& npx playwright show-report {reports_dir_name}/{root_dir}"
+        command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir}"
         await run_a_command_on_local(command)
         message = f"http://localhost:{port}"
         print(f"View report message: {message}")
