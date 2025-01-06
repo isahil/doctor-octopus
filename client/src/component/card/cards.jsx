@@ -19,8 +19,12 @@ const Cards = ({ source }) => {
       );
       const data = await response.json();
       setTotalCards(data.length);
-      const filtered_data = data.filter((card) => card.json_report.suites.length > 0); // filter out cards that did not run any test suites
-      console.log(`Total ${source} cards: ${data.length} | filtered cards: ${filtered_data.length}`);
+      const filtered_data = data.filter(
+        (card) => card.json_report.suites.length > 0
+      ); // filter out cards that did not run any test suites
+      console.log(
+        `Total ${source} cards: ${data.length} | filtered cards: ${filtered_data.length}`
+      );
       setCards(filtered_data);
     } catch (error) {
       console.error("Error fetching cards data:", error);
@@ -45,19 +49,23 @@ const Cards = ({ source }) => {
     <div className="cards-component">
       <div className="cards-header">
         <div>
-        <img
-          src="/img/refresh.png"
-          alt="refresh"
-          className="refresh-button"
-          onClick={get_cards}
-        />
+          <img
+            src="/img/refresh.png"
+            alt="refresh"
+            className="refresh-button"
+            onClick={get_cards}
+          />
         </div>
         <div className="total">{totalCards} cards</div>
       </div>
       <div className="cards-body">
-        {cards.map((card, index) => (
-          <Card key={index} source={source} card={card} index={index} />
-        ))}
+        {cards.length > 0 ? (
+          cards.map((card, index) => (
+            <Card key={index} source={source} card={card} index={index} />
+          ))
+        ) : (
+          <p>No cards found in your local directory</p>
+        )}
       </div>
     </div>
   );
