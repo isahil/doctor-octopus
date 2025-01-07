@@ -1,6 +1,6 @@
 import json
 import os
-from src.config import local_dir, test_reports_dir
+from config import local_dir, test_reports_dir
 from src.util.executor import run_a_command_on_local, open_port_on_local
 
 reports_dir = os.path.join(local_dir, test_reports_dir)
@@ -20,7 +20,7 @@ def get_all_local_cards() -> list:
                 file_path = os.path.join(folder_path, file)
 
                 if file.endswith(".json"):
-                    with open(file_path, "r") as f:
+                    with open(file_path, encoding="utf-8") as f:
                         report_card["json_report"] = json.load(f)
                 if file.endswith(".html"):       
                     html_file_path = os.path.join(folder, file)

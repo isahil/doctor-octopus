@@ -14,7 +14,7 @@ if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
     # For Linux and macOS
     python3 -m venv $HOME/venv
     source $HOME/venv/bin/activate
-elif [ "$OS_NAME" = "CYGWIN" ] || [ "$OS_NAME" = "MINGW" ] || [ "$OS_NAME" = "MSYS" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-22631" ]; then
+elif [ "$OS_NAME" = "CYGWIN" ] || [ "$OS_NAME" = "MINGW" ] || [ "$OS_NAME" = "MSYS" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-22631" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-19045" ]; then
     # For Windows (Cygwin, MinGW, Git Bash)
     python -m venv $HOME/venv
     source $HOME/venv/Scripts/Activate

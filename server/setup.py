@@ -19,7 +19,7 @@ app_requires = [
     "python-dotenv==1.0.1",
     "python-engineio==4.9.1",
     "python-socketio==5.11.2",
-    "redis==5.0.8",
+    "redis==5.2.1",
     "s3transfer==0.10.2",
     "simple-websocket==1.0.0",
     "six==1.16.0",

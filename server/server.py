@@ -1,20 +1,16 @@
 # This is the entry point of the server application
-from dotenv import load_dotenv
-load_dotenv('.env') # development environment variables
-# load_dotenv('../../.env') # load environment variables from .env file
+import config
 import os
 import asyncio
 import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from config import the_lab_log_file_path, server_mode
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
-import src.config
-from src.config import the_lab_log_file_path
 from src.util.fix_client import FixClient
 
-server_mode = os.environ.get("SERVER_MODE") # fixme or local
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,7 +44,7 @@ async def lifespan(app: FastAPI):
             print("fix_client_app task cancelled")
 
 fastapi_app = FastAPI(lifespan=lifespan)
-src.config.fastapi_app = fastapi_app
+config.fastapi_app = fastapi_app
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -66,4 +62,4 @@ if __name__ == "__main__":
 
 # "author": "Imran Sahil"
 # "github": "https://github.com/isahil/doctor-octopus.git"
-# "description": "A test runner & report viewer application using FastAPI and SocketIO"
+# "description": "A test runner & report viewer application using FastAPI and SocketIO for the server and React for the client."

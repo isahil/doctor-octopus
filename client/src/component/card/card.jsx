@@ -1,7 +1,9 @@
 import React from "react";
 import "./card.css";
-import { SERVER_HOST, SERVER_PORT } from "../../index";
+import config from "../../config.json";
 import { useTerminal } from "../xterm/terminal-context";
+
+const { SERVER_HOST, SERVER_PORT } = config;
 
 function Card({ source, card, index }) {
   const { json_report, html_report, root_dir } = card;

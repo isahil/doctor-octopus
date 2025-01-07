@@ -9,9 +9,9 @@ import {
 } from "@aws-sdk/client-s3";
 
 const {
-  AWS_BUCKET_NAME: bucketName,
+  AWS_SDET_BUCKET_NAME: bucketName,
   AWS_BUCKET_REGION: region,
-  AWS_ACCESS_KEY: accessKeyId,
+  AWS_ACCESS_KEY_ID: accessKeyId,
   AWS_SECRET_ACCESS_KEY: secretAccessKeyId,
 } = process.env;
 
@@ -79,7 +79,7 @@ export const upload_directory = async (
 
     if (stats.isFile()) {
       const file_content = fs.readFileSync(r_item_path);
-      const content_type = isZipFileByExtension(r_item)
+      const content_type = is_zip_file_by_extension(r_item)
         ? "application/zip"
         : "application/octet-stream";
       await upload_file(bucket_name, `${s3_dir_path}/${r_item}`, file_content, content_type);
@@ -93,6 +93,6 @@ export const upload_directory = async (
   }
 };
 
-function isZipFileByExtension(filePath) {
+function is_zip_file_by_extension(filePath) {
   return path.extname(filePath).toLowerCase() === ".zip";
 }

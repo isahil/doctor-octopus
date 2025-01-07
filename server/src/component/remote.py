@@ -1,9 +1,9 @@
 import json
 import os
+from config import local_dir, test_reports_dir
 from src.util.s3 import S3
-from src.config import local_dir, test_reports_dir
 
-aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
+aws_bucket_name = os.environ.get('AWS_SDET_BUCKET_NAME')
 reports_dir = os.path.join(local_dir, test_reports_dir) # Full path to the local test reports directory
 
 def get_a_s3_card_html_report(html) -> str:
@@ -21,10 +21,12 @@ def get_all_s3_cards() -> list:
     for obj in s3_objects:
         object_name = obj["Key"]
         path_parts = object_name.split("/")
+        if len(path_parts) < 4: continue
         root_dir = "/".join(path_parts[:4])
-
+        if root_dir == "ob" or root_dir == "perf": continue # Skip the o.b. and perf folders
         dir_name = path_parts[3]
         file_name = path_parts[-1]
+
         if dir_name not in report_cards:
             report_cards[dir_name] = {"json_report": {}, "html_report": "", "root_dir": root_dir}
         

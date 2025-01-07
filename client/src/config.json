@@ -2,5 +2,7 @@
     "SERVER_HOST": "localhost",
     "SERVER_PORT": 8000,
     "FIXME_SERVER_HOST": "",
-    "FIXME_SERVER_PORT": 8000
+    "FIXME_SERVER_PORT": 8000,
+    "REDIS_HOST": "",
+    "REDIS_PORT": 6379
 }

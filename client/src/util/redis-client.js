@@ -1,7 +1,10 @@
 import { createClient } from "redis";
+import config from "../config";
+
+const { REDIS_HOST, REDIS_PORT } = config;
 
 const client = createClient({
-  url: "redis://localhost:6379", // Update this URL to your Redis server URL if different
+  url: `redis://${REDIS_HOST}:${REDIS_PORT}`, // Update this URL to your Redis server URL if different
 });
 
 class Redis {

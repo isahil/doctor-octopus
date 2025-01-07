@@ -1,17 +1,19 @@
 import os
 import boto3
 
-aws_bucket_name = os.environ.get('AWS_BUCKET_NAME')
+aws_bucket_name = os.environ.get('AWS_SDET_BUCKET_NAME')
 aws_bucket_region = os.environ.get('AWS_BUCKET_REGION')
-aws_access_key = os.environ.get('AWS_ACCESS_KEY')
+aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
 
 class S3Client:
     def __init__(self):
         session = boto3.Session(
-            aws_access_key_id=aws_access_key,
+            aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
-            region_name=aws_bucket_region
+            region_name=aws_bucket_region,
+            aws_session_token=aws_session_token
         )
         self.S3 = session.client('s3')
 

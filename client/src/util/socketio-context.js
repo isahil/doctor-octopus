@@ -1,18 +1,17 @@
 import { io } from "socket.io-client";
 import React, { useEffect, useContext } from "react";
-import { SERVER_HOST, SERVER_PORT } from "../index";
 const SocketIOContext = React.createContext();
 
 export const useSocketIO = () => {
   return useContext(SocketIOContext);
 };
 
-const SocketIOProvider = ({ children }) => {
+const SocketIOProvider = ({ children, host, port }) => {
   const [sio, setSio] = React.useState(null);
 
   useEffect(() => {
     // Establish a WebSocket connection to your server
-    const socket = io(`http://${SERVER_HOST}:${SERVER_PORT}`, {
+    const socket = io(`http://${host}:${port}`, {
       path: "/ws/socket.io",
       transports: ["websocket", "polling", "flashsocket"],
     });

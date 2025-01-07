@@ -47,11 +47,14 @@ export const command_handler = ({
       break;
     case input === "pwd":
       terminal.write(
-        "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m You are in Doctor Octopus' Home... Directory. \x1B[0m\r"
+        "\r\n\x1B[1;3;32m Doc:\x1B[1;3;36m You are in Doctor Octopus' Home... Directory. \x1B[0m\r"
       );
       break;
     case input === "ls":
       terminal.write("\r\n\x1B[1;3;32m Doc:\x1B[1;3;36m Los Santos? \x1B[0m\r");
+      break;
+    case input === "cd":
+      terminal.write("\r\n\x1B[1;3;32m Doc:\x1B[1;3;36m DVD \x1B[0m\r");
       break;
     case input === "clear":
       terminal.clear();

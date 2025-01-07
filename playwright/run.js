@@ -23,19 +23,17 @@ process.env.TEST_REPORTS_DIR = local_test_reports_dir;
 const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${test_protocol}/${report_dir}`;
 
 const os_username = os.userInfo().username;
-const git_branch = execSync("git rev-parse --abbrev-ref HEAD")
-  .toString()
-  .trim();
-const report_card_path = `${local_test_reports_dir}/report.json`; // Read the report_card.json file to upload
+const git_branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+const json_report = `${local_test_reports_dir}/report.json`; // Need to read the report_card.json file to upload
 
 const upload_report = async (code) => {
-  const report_card = JSON.parse(fs.readFileSync(report_card_path, "utf-8"));
+  const report_card = JSON.parse(fs.readFileSync(json_report, "utf-8"));
   // Add the git-branch & username to the report_card object
   report_card["stats"]["git_branch"] = git_branch;
   report_card["stats"]["username"] = os_username;
 
   // Write the updated reportCard object back to the report.json file
-  fs.writeFileSync(report_card_path, JSON.stringify(report_card, null, 2));
+  fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2));
   await upload_directory(
     AWS_BUCKET_NAME,
     local_test_reports_dir,

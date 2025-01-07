@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
 import React from "react";
-import { SERVER_HOST, SERVER_PORT } from "../../index";
 import { useTerminal } from "../xterm/terminal-context";
 import { useSocketIO } from "../../util/socketio-context";
 

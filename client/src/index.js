@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import config from "./config.json";
+import config from "./config";
 import LabProvider from "./component/lab/lab-context";
 import SocketIOProvider from "./util/socketio-context";
 import TerminalProvider from "./component/xterm/terminal-context.js";
@@ -17,7 +17,7 @@ root.render(
   // <React.StrictMode> // This is causing the terminal to render twice
   <>
     <div className="body">
-      <SocketIOProvider>
+      <SocketIOProvider host={SERVER_HOST} port={SERVER_PORT}>
         <TerminalProvider>
           <LabProvider>
             <App />
