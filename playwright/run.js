@@ -31,6 +31,7 @@ const upload_report = async (code) => {
   // Add the git-branch & username to the report_card object
   report_card["stats"]["git_branch"] = git_branch;
   report_card["stats"]["username"] = os_username;
+  report_card["stats"]["test_suite"] = test_script_name;
 
   // Write the updated reportCard object back to the report.json file
   fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2));

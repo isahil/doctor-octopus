@@ -10,10 +10,8 @@ function Card({ source, card, index }) {
   const { stats, suites } = json_report;
   const { terminal } = useTerminal();
   // console.log(`Stats: ${JSON.stringify(stats)} \n${html_report.length === 0 ? "No HTML Report" : "Yes HTML Report"}`);
-  const { expected, flaky, skipped, unexpected, startTime } = stats; // scoreboard values to display
-  const project_name = suites[0].specs[0] // check if the suite is a spec or a suite. TODO: Need to figure out the logic
-    ? suites[0].specs[0].tests[0].projectId
-    : suites[0].suites[0].specs[0].tests[0].projectId; // get the project name for the card title
+  const { expected, flaky, skipped, unexpected, startTime, test_suite } = stats; // scoreboard values to display
+  const project_name = test_suite ? test_suite : "N/A"
   const total_tests = expected + flaky + unexpected;
 
   const date = new Date(startTime); // convert startTime to a Date object
