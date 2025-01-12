@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Cards from "./component/card/cards";
-import XTerm from "./component/xterm/xterm";
 import FixMe from "./component/fixme/fixme";
-import Lab from "./component/lab/lab.jsx";
 import Footer from "./component/footer/footer.jsx";
+import Header from "./component/header/header.jsx";
+import Lab from "./component/lab/lab.jsx";
+import XTerm from "./component/xterm/xterm";
 
 function App() {
   const [source, set_source] = useState("local");
@@ -19,19 +20,7 @@ function App() {
 
   return (
     <div className="app">
-      <div className="app-header">
-        <div className="source">
-        <p className="source-header">{source}</p>
-          <label>
-            <input type="checkbox" onClick={toggle_source} />
-          </label>
-          {/* <p className="source-label">source</p> */}
-        </div>
-        <div className="title">
-          <h1>Doctor Octopus</h1>
-        </div>
-      </div>
-
+      <Header source={source} toggle_source={toggle_source} />
       <div className="app-grid">
         <div className="cards-container">
           <Cards source={source} />

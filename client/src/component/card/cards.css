@@ -7,7 +7,10 @@
 }
 
 .cards-body {
-    margin-top: 40px
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 
 /* suppose to make the scrollbar always visible */
@@ -33,21 +36,20 @@
 }
 
 .cards-header {
-    width: 95%;
+    min-width: 99%;
     top: 0;
     padding: 11px;
     background-color: black;
     position: absolute;
     margin-bottom: 10px;
-    border: 1px solid var(--octopus-gray); /* Neon green border */
+    border: 1px solid var(--octopus-gray);
     display: flex;
 }
 
 .cards-header .total {
     color: white;
     font-size: 12px;
-    margin-left: auto;
-    margin: 0px 250px;
+    margin: 0px auto;
     width: auto;
 }
 
