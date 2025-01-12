@@ -57,8 +57,8 @@ async def the_lab(sid, command):
 
     os = platform.system().lower()
     if os == "darwin" or os == "linux":
-        command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
-    elif os == "windows": command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
+        command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm test {proto}:{suite}"
+    elif os == "windows": command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm test {proto}:{suite}"
     else : raise OSError("Unsupported OS to run command")
     command_task = asyncio.create_task(run_a_command_on_local(f"{command} >> logs/{the_lab_log_file_name}")) # start background task to run the command
     

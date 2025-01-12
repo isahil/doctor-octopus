@@ -8,7 +8,7 @@
     border-radius: var(--border-radius);
     width: 675px;
     height: 500px;
-    padding: 0px;
+    padding: 5px 15px 5px 5px;
     box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.5);
     z-index: 1; /* index needs to be lower than the header */
 }
