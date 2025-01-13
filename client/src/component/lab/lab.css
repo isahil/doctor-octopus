@@ -18,7 +18,7 @@
 .lab-title {
     margin: 0px 0px 20px 0px;
     padding: 0;
-    color: #1abc9c;
+    color: var(--octopus-green);
 }
 
 .lab-header {
@@ -50,11 +50,11 @@
 }
 
 .lab-card-button.enabled:hover {
-    background: #1abc9c;
+    background: var(--octopus-green);
 }
 
 .lab-card-button.selected {
-    background: #1abc9c;
+    background: var(--octopus-green);
 }
 
 .lab-card-button h2 {

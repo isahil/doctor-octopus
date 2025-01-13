@@ -11,7 +11,7 @@
 }
 
 .fixme.component {
-    margin-top: 200px;
+    margin-top: 150px;
 }
 
 .fixme.component.enabled {
@@ -27,9 +27,9 @@
 }
 
 .fixme-title {
-    margin: 0px 0px 20px 0px;
+    margin: 20px;
     padding: 0;
-    color: #1abc9c;
+    color: var(--octopus-green);
 }
 
 .order-type-label {
@@ -40,7 +40,7 @@
 }
 
 .order-type-label.new {
-    color: #1abc9c;
+    color: var(--octopus-green);
 }
 
 .order-type-label.cancel{
@@ -129,7 +129,7 @@
 .order-type .switch-right {
     right: 0.5em;
     bottom: 0;
-    background-color: #1abc9c;
+    background-color: var(--octopus-green);
     color: #fff;
 }
 
@@ -216,7 +216,7 @@
 
 .tag-label {
     width: 100px;
-    color: #1abc9c;
+    color: var(--octopus-green);
 }
 
 .name-label {
@@ -271,7 +271,7 @@
 }
 
 .fix-tag-row .radio:hover {
-    background-color: #1abc9c;
+    background-color: var(--octopus-green);
     transition-duration: 0s;
 }
 
@@ -289,7 +289,7 @@
 }
 
 .fix-tag-row .radio:checked:hover {
-    background-color: #1abc9c;
+    background-color: var(--octopus-green);
 }
 
 .tag-radio label input {
@@ -297,7 +297,7 @@
 }
 
 .tag-input {
-    color: #1abc9c;
+    color: var(--octopus-green);
 }
 
 .tag-input input {
