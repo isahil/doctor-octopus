@@ -5,7 +5,7 @@
   "main": "setup.sh",
   "scripts": {
     "start": "cd client && npm run build && cd .. && concurrently \"cd client && npm start\" \"cd server && sh start.sh\"",
-    "test": "",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "setup": "sh setup.sh app",
     "setup-lite": "sh setup.sh lite",
     "setup-all": "sh setup.sh all"
