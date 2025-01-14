@@ -21,7 +21,7 @@
   .title h1 {
     margin: 0;
     font-size: 20px;
-    color: var(--octopus-green);
+    color: cyan;
   }
   
   .source-header {

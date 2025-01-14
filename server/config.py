@@ -9,10 +9,13 @@ load_dotenv(f'{local_dir}.dotenv/.{environment}', verbose=False)
 from fastapi import FastAPI
 from socketio import ASGIApp, AsyncServer
 
+server_mode: str = os.environ.get("SERVER_MODE", "local") # [fixme, local]
+
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports") # test reports directory can be changed in the .env file
+test_reports_age = 7 # days. control how old the test reports can be to be displayed on the frontend
+
 the_lab_log_file_name: str = "the-lab.log"
 the_lab_log_file_path: str = f"{local_dir}/logs/{the_lab_log_file_name}"
-server_mode: str = os.environ.get("SERVER_MODE", "local") # [fixme, local]
 
 fastapi_app: FastAPI = None
 sio: AsyncServer = None

@@ -26,13 +26,43 @@ class S3Client:
     
     def list_s3_objects(self, bucket_name = aws_bucket_name) -> list:
         '''
-        # Call S3 client to list s3 objects
+        # Call S3 client to list the first 1000 s3 objects
         '''
         response = self.S3.list_objects_v2(Bucket=bucket_name)
         objects = response.get('Contents', [])
         # for obj in objects:
         #     print(f"Key: {obj['Key']}, Size: {obj['Size']}")
         return objects
+
+    def list_all_s3_objects(self, bucket_name=aws_bucket_name) -> list:
+        """
+        List *all* objects from the given S3 bucket, by paging through
+        results if more objects remain. Returns a consolidated list.
+        """
+        all_objects = []
+        continuation = None
+    
+        while True:
+            if continuation:
+                response = self.S3.list_objects_v2(
+                    Bucket=bucket_name,
+                    ContinuationToken=continuation
+                )
+            else:
+                response = self.S3.list_objects_v2(
+                    Bucket=bucket_name
+                )
+    
+            contents = response.get("Contents", [])
+            all_objects.extend(contents)
+    
+            # Check if there are more pages of results
+            if response.get("IsTruncated"):
+                continuation = response.get("NextContinuationToken")
+            else:
+                break
+        print(f"Total objects found on S3: {len(all_objects)}")
+        return all_objects
 
     def download_file(self, object_key, local_path, bucket_name = aws_bucket_name) -> None:
         '''

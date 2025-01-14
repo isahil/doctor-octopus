@@ -1,6 +1,7 @@
 import json
 import os
-from config import local_dir, test_reports_dir
+from config import local_dir, test_reports_dir, test_reports_age
+from datetime import datetime, timedelta
 from src.util.s3 import S3
 
 aws_bucket_name = os.environ.get('AWS_SDET_BUCKET_NAME')
@@ -12,8 +13,8 @@ def get_a_s3_card_html_report(html) -> str:
 
 def get_all_s3_cards() -> list:
     ''' Get all report cards from the S3 bucket's each object'''
-    s3_objects = S3.list_s3_objects()
-    print(f"Total objects found on S3: {len(s3_objects)}")
+    s3_objects = S3.list_all_s3_objects()
+    print(f"Total objects found in SDET S3 bucket: {len(s3_objects)}")
     test_results = [] # List that will be sent to the client
     report_cards = {}  # Temporary dictionary to store the reports
     # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object", ... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
@@ -22,8 +23,19 @@ def get_all_s3_cards() -> list:
         object_name = obj["Key"]
         path_parts = object_name.split("/")
         if len(path_parts) < 4: continue
+        root_dir_parts = path_parts[:4]
+        root_dir_date = root_dir_parts[-1] # e.g. "2024-12-31-1-40-53"
+
+        try:
+            date_obj = datetime.strptime(root_dir_date, "%Y-%m-%d-%H-%M-%S")
+            # If the test report is older than 15 days, skip
+            if datetime.now() - date_obj > timedelta(days=test_reports_age):
+                # print(f"root_dir_parts: {root_dir_parts}")
+                continue
+        except ValueError:
+            continue
+
         root_dir = "/".join(path_parts[:4])
-        if root_dir == "ob" or root_dir == "perf": continue # Skip the o.b. and perf folders
         dir_name = path_parts[3]
         file_name = path_parts[-1]
 
@@ -35,7 +47,7 @@ def get_all_s3_cards() -> list:
         if file_name.endswith("index.html"):
             report_cards[dir_name]["html_report"] = object_name
 
-    for dir, dir_value in report_cards.items():
+    for dir_key, dir_value in report_cards.items():
             try:
                 object_name = dir_value["json_report"]["object_name"]
                 if object_name is False: print(f"no valid object")
