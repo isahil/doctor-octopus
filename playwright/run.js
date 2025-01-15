@@ -6,10 +6,15 @@ import { upload_directory } from "./S3.js";
 import { spawn_child_process } from "./spawn_child_process.js";
 
 const get_est_date_time = () => {
-  const date = new Date();
-  return `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+  const options = { timeZone: "America/New_York" };
+  const date = new Date()
+  .toLocaleString("en-US", options)
+  .replace(/\//g, "-")
+  .replace(/,/g, "")
+  .replace(/ /g, "_")
+  .replace(/:/g, "-");
+
+  return date
 };
 
 const { AWS_SDET_BUCKET_NAME } = process.env;

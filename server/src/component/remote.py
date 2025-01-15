@@ -1,6 +1,6 @@
 import json
 import os
-from config import local_dir, test_reports_dir, test_reports_age
+from config import local_dir, test_reports_dir, max_test_reports_age
 from datetime import datetime, timedelta
 from src.util.s3 import S3
 
@@ -12,7 +12,7 @@ def get_a_s3_card_html_report(html) -> str:
     return card
 
 def get_all_s3_cards() -> list:
-    ''' Get all report cards from the S3 bucket's each object'''
+    ''' Get all report cards object from the S3 bucket'''
     s3_objects = S3.list_all_s3_objects()
     print(f"Total objects found in SDET S3 bucket: {len(s3_objects)}")
     test_results = [] # List that will be sent to the client
@@ -24,16 +24,23 @@ def get_all_s3_cards() -> list:
         path_parts = object_name.split("/")
         if len(path_parts) < 4: continue
         root_dir_parts = path_parts[:4]
-        root_dir_date = root_dir_parts[-1] # e.g. "2024-12-31-1-40-53"
+        root_dir_date = root_dir_parts[-1] # e.g. '12-31-2025_08-30-00_AM'
 
+        date_obj = None
         try:
-            date_obj = datetime.strptime(root_dir_date, "%Y-%m-%d-%H-%M-%S")
-            # If the test report is older than 15 days, skip
-            if datetime.now() - date_obj > timedelta(days=test_reports_age):
-                # print(f"root_dir_parts: {root_dir_parts}")
+            date_obj = datetime.strptime(root_dir_date, "%m-%d-%Y_%H-%M-%S_%p")
+            # If the test report is older than max age, skip
+            if datetime.now() - date_obj > timedelta(days=max_test_reports_age):
                 continue
         except ValueError:
-            continue
+            try:
+                # Will discontinue support for this format in the future
+                date_obj = datetime.strptime(root_dir_date, "%Y-%m-%d-%H-%M-%S") # e.g. "2024-12-31-1-40-53" [used in local dev]
+                if datetime.now() - date_obj > timedelta(days=max_test_reports_age):
+                    continue
+            except ValueError:
+                print(f"Error while parsing date: {root_dir_date} | {ValueError}")
+                continue
 
         root_dir = "/".join(path_parts[:4])
         dir_name = path_parts[3]
@@ -66,33 +73,26 @@ def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name) -> str:
     the objects inside root_dir to local, maintaining the same folder 
     structure as in S3 bucket.
     """
-    # List all objects in the S3 bucket
     s3_objects = S3.list_s3_objects(bucket_name)
-    
-    # Loop through each object
+    test_report_dir = None
+
     for obj in s3_objects:
         object_key = obj["Key"]
-        # print(f"root_dir: {root_dir} | s3 object: {object_key}")
         
         # Only process objects that start with root_dir
         if object_key.startswith(root_dir):
-            # Construct the local relative path based on object_key
-            # Remove the leading 'root_dir/' portion
-            relative_path = object_key[len(root_dir):].lstrip('/')
-            # Join root_dir with the relative path, so local files end up in root_dir/... 
-            # preserving subfolders
-            test_report_dir = root_dir.split('/')[-1]
-            local_root_dir = os.path.join(reports_dir, test_report_dir)
-            local_path = os.path.join(local_root_dir, relative_path)
+            # Construct the local relative path from the object_key
+            relative_path_parts = object_key[len(root_dir):].lstrip('/')
+            test_report_dir = root_dir.split('/')[-1] # Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
+            local_root_dir = os.path.join(reports_dir, test_report_dir) # Join root_dir with the local relative path, so local files end up in 'test_reports/root_dir/...' preserving subfolders
+            local_path = os.path.join(local_root_dir, relative_path_parts)
 
-            # Create local directories if needed
             local_dir = os.path.dirname(local_path)
             if not os.path.exists(local_dir):
                 os.makedirs(local_dir)
             
-            # Download the file from S3 to local_path
             S3.download_file(object_key, local_path, bucket_name)
 
-    print(f"All objects from {root_dir} in S3 bucket have been downloaded locally.")
+    print(f"All objects from [{root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir
     

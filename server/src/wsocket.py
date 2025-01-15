@@ -63,5 +63,5 @@ async def the_lab(sid, command):
     command_task = asyncio.create_task(run_a_command_on_local(f"{command} >> logs/{the_lab_log_file_name}")) # start background task to run the command
     
     await start_streaming_log_file(sio, sid, subscription, the_lab_log_file_path) # start background task to stream the log file
-    await command_task # wait for the command to finish
+    await command_task # wait for the command task to finish
 
