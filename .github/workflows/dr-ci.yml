@@ -1,6 +1,5 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Doctor Octopus Tests
 
 on:
@@ -11,7 +10,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,4 +27,4 @@ jobs:
     - name: Install Playwright Dependencies
       run: cd playwright && npm ci
     - name: Run Playwright Tests
-      run: npm run api:smoke
+      run: cd playwright && npm run api:smoke
