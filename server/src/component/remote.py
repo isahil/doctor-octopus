@@ -1,6 +1,6 @@
 import json
 import os
-from config import local_dir, test_reports_dir, max_test_reports_age
+from config import local_dir, test_reports_dir, max_test_reports_age, test_reports_date_format
 from datetime import datetime, timedelta
 from src.util.s3 import S3
 
@@ -28,7 +28,7 @@ def get_all_s3_cards() -> list:
 
         date_obj = None
         try:
-            date_obj = datetime.strptime(root_dir_date, "%m-%d-%Y_%H-%M-%S_%p")
+            date_obj = datetime.strptime(root_dir_date, test_reports_date_format)
             # If the test report is older than max age, skip
             if datetime.now() - date_obj > timedelta(days=max_test_reports_age):
                 continue
