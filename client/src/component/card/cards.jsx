@@ -40,7 +40,8 @@ const Cards = ({ source }) => {
   if (isLoading) {
     return (
       <div className="loading-screen">
-        <p>Loading...</p>
+        {/* <p>Loading...</p> */}
+        <div className="batman"></div>
       </div>
     );
   }
@@ -64,7 +65,9 @@ const Cards = ({ source }) => {
             <Card key={index} source={source} card={card} index={index} />
           ))
         ) : (
-          <p style={{ color: "white", marginTop: "30px" }}>No report cards found in your local directory</p>
+          <p style={{ color: "white", marginTop: "30px" }}>
+            No report cards found in your local directory
+          </p>
         )}
       </div>
     </div>

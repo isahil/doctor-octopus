@@ -8,7 +8,6 @@ import { FitAddon } from '@xterm/addon-fit';
 
 const XTerm = ({ setShowFixMe }) => {
   const terminalRef = useRef(null);
-  const [num, setNum] = useState(1);
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate(); // HandleOptionClickContext that store the function to handle the dd option click
   const { setTerminal } = useTerminal(); // TerminalContext that store the terminal object
   const xterm = (terminal) => {
@@ -93,16 +92,10 @@ const XTerm = ({ setShowFixMe }) => {
     xterm(terminal);
   }, [setTerminal]);
 
-  const incrementNum = () => {
-    setNum(num + 1);
-    console.log("xterm click #", num);
-  };
-
   return (
     <div
       ref={terminalRef}
       id="terminal"
-      onClick={incrementNum}
       className="component"
     ></div>
   );

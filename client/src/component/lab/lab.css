@@ -3,8 +3,9 @@
     height: 250px;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center horizontally */
-    justify-content: center; /* Center vertically */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(22, 47, 65, 0.389);;
 }
 
 .lab.component {

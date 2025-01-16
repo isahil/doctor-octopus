@@ -64,4 +64,3 @@ async def the_lab(sid, command):
     
     await start_streaming_log_file(sio, sid, subscription, the_lab_log_file_path) # start background task to stream the log file
     await command_task # wait for the command task to finish
-

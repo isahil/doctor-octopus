@@ -26,15 +26,6 @@
     background-color: #12161d;
 }
 
-.loading-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-size: 25px;
-    color: var(--octopus-gray);
-}
-
 .cards-header {
     min-width: 99%;
     top: 0;
@@ -66,3 +57,42 @@
     color: white;
     transform: scale(1.2);
 }
+
+.loading-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 25px;
+    color: var(--octopus-gray);
+}
+
+.batman {
+    width: 56px;
+    height: 24.6px;
+    position: relative;
+    margin-top: 20px;
+ }
+ 
+ .batman:before,
+ .batman:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--octopus-green);
+    box-shadow: 0 0 0 28px var(--octopus-green);
+    clip-path: polygon(-28px -11.2px,10% -6.7px,20% 0,calc(50% - 9px) 0,calc(50% - 5.6px) -11.2px,calc(50% - 4.5px) -9px,calc(50% + 4.5px) -9px,calc(50% + 5.6px) -11.2px,calc(50% + 9px) 0,80% 0,90% -6.7px,calc(100% + 28px) -11.2px,100% 80%,calc(100% + 5.6px) calc(100% + 5.6px),60% 100%,50% calc(100% + 9px),40% 100%,-5.6px calc(100% + 5.6px),0 80%);
+ }
+ 
+ .batman:after {
+    animation: batman-ciavg0md 1s infinite;
+    transform: perspective(168px) translateZ(0px);
+ }
+ 
+ @keyframes batman-ciavg0md {
+    to {
+       transform: perspective(168px) translateZ(56px);
+       opacity: 0;
+    }
+ }

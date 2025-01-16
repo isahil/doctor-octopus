@@ -48,4 +48,5 @@ async def view_a_report_on_local(root_dir) -> str | Exception:
         print(f"View report message: {message}")
         return message
     except Exception as e:
+        print(f"Error viewing report: {e}")
         raise e

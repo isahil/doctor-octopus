@@ -73,7 +73,7 @@ def download_s3_folder(root_dir: str, bucket_name = aws_bucket_name) -> str:
     the objects inside root_dir to local, maintaining the same folder 
     structure as in S3 bucket.
     """
-    s3_objects = S3.list_s3_objects(bucket_name)
+    s3_objects = S3.list_all_s3_objects(bucket_name)
     test_report_dir = None
 
     for obj in s3_objects:
