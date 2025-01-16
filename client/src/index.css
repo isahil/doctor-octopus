@@ -27,11 +27,9 @@ body {
 
 .cards-container {
   overflow: auto;
-  height: 204vh;
+  height: 210vh;
   min-width: 600px;
-  scrollbar-color: #30363d;
   scroll-behavior: smooth;
-  overflow: auto;
 }
 
 .tech-container { 
