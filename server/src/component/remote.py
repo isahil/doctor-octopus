@@ -1,6 +1,6 @@
 import json
 import os
-from config import local_dir, test_reports_dir, max_test_reports_age, test_reports_date_format
+from config import local_dir, test_reports_dir, test_reports_date_format
 from datetime import datetime, timedelta
 from src.util.s3 import S3
 
@@ -11,7 +11,7 @@ def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
     return card
 
-def get_all_s3_cards() -> list:
+def get_all_s3_cards(filter: int) -> list:
     ''' Get all report cards object from the S3 bucket'''
     s3_objects = S3.list_all_s3_objects()
     print(f"Total objects found in SDET S3 bucket: {len(s3_objects)}")
@@ -30,13 +30,13 @@ def get_all_s3_cards() -> list:
         try:
             date_obj = datetime.strptime(root_dir_date, test_reports_date_format)
             # If the test report is older than max age, skip
-            if datetime.now() - date_obj > timedelta(days=max_test_reports_age):
+            if datetime.now() - date_obj > timedelta(days=filter):
                 continue
         except ValueError:
             try:
                 # Will discontinue support for this format in the future
                 date_obj = datetime.strptime(root_dir_date, "%Y-%m-%d-%H-%M-%S") # e.g. "2024-12-31-1-40-53" [used in local dev]
-                if datetime.now() - date_obj > timedelta(days=max_test_reports_age):
+                if datetime.now() - date_obj > timedelta(days=filter):
                     continue
             except ValueError:
                 print(f"Error while parsing date: {root_dir_date} | {ValueError}")

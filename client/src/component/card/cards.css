@@ -13,11 +13,6 @@
     justify-content: space-evenly;
 }
 
-/* suppose to make the scrollbar always visible */
-.cards-component::-webkit-scrollbar {
-    width: 1px;
-}
-
 .cards-component::-webkit-scrollbar-thumb {
     background-color: #30363d;
 }
@@ -35,12 +30,12 @@
     margin-bottom: 10px;
     border: 1px solid var(--octopus-gray);
     display: flex;
+    justify-content: center;
 }
 
 .cards-header .total {
     color: white;
     font-size: 12px;
-    margin: 0px auto;
     width: auto;
 }
 
@@ -54,7 +49,6 @@
 }
 
 .refresh-button:hover {
-    color: white;
     transform: scale(1.2);
 }
 
@@ -96,3 +90,59 @@
        opacity: 0;
     }
  }
+
+ .option-wrapper input[type="radio"]:focus {
+  outline: 0;
+  box-shadow: 0 0 0 4px #b5c9fc;
+}
+
+.option-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  top: 7px;
+  left: 5px;
+  position: absolute;
+  margin-left: 50px;
+  font-size: small;
+}
+
+.option-wrapper input[type="radio"] {
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.option-wrapper input[type="radio"]:hover+span {
+  transform: scale(0.95);
+}
+
+.option-wrapper input[type="radio"]:checked+span {
+  box-shadow: 0 0 0 0.0625em cyan;
+  z-index: 1;
+  color: cyan;
+}
+
+.option-wrapper label span {
+  display: block;
+  cursor: pointer;
+  background-color: black;
+  padding: 0.1em .75em;
+  position: relative;
+  margin-left: .0625em;
+  border: var(--octopus-gray) solid .1em;
+  color: cyan;
+  text-align: center;
+  transition: background-color .5s ease;
+}
+
+.option-wrapper label:first-child span {
+  border-radius: .1em 0 0 .1em;
+}
+
+.option-wrapper label:last-child span {
+  border-radius: 0 .1em .1em 0;
+}

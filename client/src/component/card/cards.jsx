@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Card from "./card";
 import "./cards.css";
-import { SERVER_HOST, SERVER_PORT } from "../../index";
+import config from "../../config.json";
+const { SERVER_HOST, SERVER_PORT, CARDS_DAY_FILTERS } = config;
 
 const Cards = ({ source }) => {
   const [cards, setCards] = React.useState([]);
   const [totalCards, setTotalCards] = useState(0);
+  const [cardsFilter, setCardsFilter] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
@@ -15,7 +17,7 @@ const Cards = ({ source }) => {
     setIsLoading(true); // set loading to true before the fetch request starts
     try {
       const response = await fetch(
-        `http://${SERVER_HOST}:${SERVER_PORT}/cards?source=${source}`
+        `http://${SERVER_HOST}:${SERVER_PORT}/cards?source=${source}&filter=${cardsFilter}`
       );
       const data = await response.json();
       setTotalCards(data.length);
@@ -33,9 +35,15 @@ const Cards = ({ source }) => {
     }
   };
 
+  const handle_filter_change = (e) => {
+    const value = e.target.value;
+    console.log("Clicked filter: ", e.target.value);
+    setCardsFilter(value);
+  }
+
   useEffect(() => {
     get_cards();
-  }, [source]); // fetch cards data when the source changes
+  }, [source, cardsFilter]); // fetch cards data when the source changes
 
   if (isLoading) {
     return (
@@ -57,6 +65,23 @@ const Cards = ({ source }) => {
             onClick={get_cards}
           />
         </div>
+        <div className="option-wrapper">
+          {CARDS_DAY_FILTERS.map((day, i) => {
+            return (
+              <label key={i} className={`day-option-${day}`}>
+                <input
+                  key={i}
+                  type="radio"
+                  name={`day-${day}`}
+                  value={day}
+                  onChange={handle_filter_change}
+                  checked={cardsFilter == day}
+                ></input>
+                <span className={`day-${day}`}>{day}</span>
+              </label>
+            );
+          })}
+        </div>
         <div className="total">{totalCards} cards</div>
       </div>
       <div className="cards-body">
@@ -66,7 +91,7 @@ const Cards = ({ source }) => {
           ))
         ) : (
           <p style={{ color: "white", marginTop: "30px" }}>
-            No report cards found in your local directory
+            No report cards found
           </p>
         )}
       </div>

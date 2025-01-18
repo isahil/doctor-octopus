@@ -1,6 +1,6 @@
 import "./header.css";
 
-const Header = ({source, toggle_source}) => {
+const Header = ({ source, toggle_source }) => {
   return (
     <div className="app-header">
       <div className="source">
