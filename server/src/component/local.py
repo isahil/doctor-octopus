@@ -1,7 +1,8 @@
 import json
 import os
-from config import local_dir, test_reports_dir
+from config import local_dir, test_reports_dir, test_reports_date_format
 from src.util.executor import run_a_command_on_local, open_port_on_local
+from src.util.date import less_or_qaul_to_date_time
 
 reports_dir = os.path.join(local_dir, test_reports_dir)
 
@@ -11,19 +12,21 @@ def get_all_local_cards(filter: int) -> list:
     local_reports_dir = os.listdir(reports_dir)
     print(f"Total reports found on local: {len(local_reports_dir)}")
 
-    for folder in local_reports_dir:
-        folder_path = os.path.join(reports_dir, folder)
-        report_card = {"json_report": {}, "html_report": "", "root_dir": folder} # initialize report card with 2 properties needed for the frontend
+    for report_dir in local_reports_dir:
+        report_dir_path = os.path.join(reports_dir, report_dir)
+        report_card = {"json_report": {}, "html_report": "", "root_dir": report_dir} # initialize report card with 2 properties needed for the frontend
 
-        if os.path.isdir(folder_path):
-            for file in os.listdir(folder_path):
-                file_path = os.path.join(folder_path, file)
+        if os.path.isdir(report_dir_path):
+            if not less_or_qaul_to_date_time(report_dir, test_reports_date_format, filter):
+                continue
+            for file in os.listdir(report_dir_path):
+                file_path = os.path.join(report_dir_path, file)
 
                 if file.endswith(".json"):
                     with open(file_path, encoding="utf-8") as f:
                         report_card["json_report"] = json.load(f)
                 if file.endswith(".html"):       
-                    html_file_path = os.path.join(folder, file)
+                    html_file_path = os.path.join(report_dir, file)
                     report_card["html_report"] = str(html_file_path)
 
                 # time.sleep(0.1) # simulate slow connection

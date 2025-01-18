@@ -18,8 +18,8 @@ the_lab_log_file_name: str = "the-lab.log"
 the_lab_log_file_path: str = f"{local_dir}/logs/{the_lab_log_file_name}"
 
 fastapi_app: FastAPI = None
-sio: AsyncServer = None
 socketio_app: ASGIApp = None
+sio: AsyncServer = None
 
 cors_allowed_origins: list = [
     "http://localhost:3000",

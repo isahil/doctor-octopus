@@ -1,7 +1,7 @@
 import json
 import os
 from config import local_dir, test_reports_dir, test_reports_date_format
-from datetime import datetime, timedelta
+from src.util.date import less_or_qaul_to_date_time
 from src.util.s3 import S3
 
 aws_bucket_name = os.environ.get('AWS_SDET_BUCKET_NAME')
@@ -24,23 +24,10 @@ def get_all_s3_cards(filter: int) -> list:
         path_parts = object_name.split("/")
         if len(path_parts) < 4: continue
         root_dir_parts = path_parts[:4]
-        root_dir_date = root_dir_parts[-1] # e.g. '12-31-2025_08-30-00_AM'
+        report_dir = root_dir_parts[-1] # e.g. '12-31-2025_08-30-00_AM'
 
-        date_obj = None
-        try:
-            date_obj = datetime.strptime(root_dir_date, test_reports_date_format)
-            # If the test report is older than max age, skip
-            if datetime.now() - date_obj > timedelta(days=filter):
-                continue
-        except ValueError:
-            try:
-                # Will discontinue support for this format in the future
-                date_obj = datetime.strptime(root_dir_date, "%Y-%m-%d-%H-%M-%S") # e.g. "2024-12-31-1-40-53" [used in local dev]
-                if datetime.now() - date_obj > timedelta(days=filter):
-                    continue
-            except ValueError:
-                print(f"Error while parsing date: {root_dir_date} | {ValueError}")
-                continue
+        if not less_or_qaul_to_date_time(report_dir, test_reports_date_format, filter):
+            continue
 
         root_dir = "/".join(path_parts[:4])
         dir_name = path_parts[3]

@@ -37,7 +37,7 @@ const Cards = ({ source }) => {
 
   const handle_filter_change = (e) => {
     const value = e.target.value;
-    console.log("Clicked filter: ", e.target.value);
+    console.log("Clicked cards filter: ", e.target.value);
     setCardsFilter(value);
   }
 

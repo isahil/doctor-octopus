@@ -8,7 +8,7 @@ import XTerm from "./component/xterm/xterm";
 
 function App() {
   const [source, set_source] = useState("local");
-  const [showFixMe, setShowFixMe ] = useState(false);
+  const [showFixMe, setShowFixMe ] = useState(true);
 
   const toggle_source = () => {
     set_source((current_source) => {
@@ -28,9 +28,9 @@ function App() {
         <div className="tech-container">
           <XTerm setShowFixMe={setShowFixMe} />
           <Lab />
-          {/* showFixMe && <FixMe /> */}{" "}
+          { showFixMe && <FixMe /> }
           {/* Display the FixMe component when showFixMe is true */}
-          <FixMe />
+          {/* <FixMe /> */}
         </div>
       </div>
       <div className="app-footer">
