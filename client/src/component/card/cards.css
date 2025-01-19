@@ -117,11 +117,11 @@
 }
 
 .option-wrapper input[type="radio"]:hover+span {
-  transform: scale(0.95);
+  transform: scale(1.075);
 }
 
 .option-wrapper input[type="radio"]:checked+span {
-  box-shadow: 0 0 0 0.0625em cyan;
+  box-shadow: 0 0 0 0.05em cyan;
   z-index: 1;
   color: cyan;
 }
@@ -134,7 +134,7 @@
   position: relative;
   margin-left: .0625em;
   border: var(--octopus-gray) solid .1em;
-  color: cyan;
+  color: white;
   text-align: center;
   transition: background-color .5s ease;
 }
@@ -145,4 +145,12 @@
 
 .option-wrapper label:last-child span {
   border-radius: 0 .1em .1em 0;
+}
+
+.day-option .day-text {
+  display: none;
+}
+
+.day-option:hover .day-text {
+  display: block;
 }

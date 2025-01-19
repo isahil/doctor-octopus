@@ -68,7 +68,7 @@ const Cards = ({ source }) => {
         <div className="option-wrapper">
           {CARDS_DAY_FILTERS.map((day, i) => {
             return (
-              <label key={i} className={`day-option-${day}`}>
+              <label key={i} className={`day-option`}>
                 <input
                   key={i}
                   type="radio"
@@ -78,6 +78,7 @@ const Cards = ({ source }) => {
                   checked={cardsFilter == day}
                 ></input>
                 <span className={`day-${day}`}>{day}</span>
+                <span className={`day-text`}>{day === 1 ? "day" : "days"}</span>
               </label>
             );
           })}
