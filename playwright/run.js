@@ -17,7 +17,7 @@ const get_est_date_time = () => {
   return date
 };
 
-const { AWS_SDET_BUCKET_NAME } = process.env;
+const { AWS_SDET_BUCKET_NAME, ENVIRONMENT, PRODUCT_TYPE, APP } = process.env;
 const test_script_name = process.argv[2];
 const test_protocol = test_script_name.split(":")[0];
 
@@ -36,6 +36,8 @@ const upload_report = async (code) => {
   // Add the git-branch & username to the report_card object
   report_card["stats"]["git_branch"] = git_branch;
   report_card["stats"]["username"] = os_username;
+  report_card["stats"]["environment"] = ENVIRONMENT;
+  report_card["stats"]["app"] = PRODUCT_TYPE ? PRODUCT_TYPE : APP;
   report_card["stats"]["test_suite"] = test_script_name;
 
   // Write the updated reportCard object back to the report.json file
