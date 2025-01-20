@@ -7,10 +7,9 @@ const { SERVER_HOST, SERVER_PORT } = config;
 
 function Card({ source, card, index }) {
   const { json_report, html_report, root_dir } = card;
-  const { stats, suites } = json_report;
+  const { stats } = json_report;
   const { terminal } = useTerminal();
-  // console.log(`Stats: ${JSON.stringify(stats)} \n${html_report.length === 0 ? "No HTML Report" : "Yes HTML Report"}`);
-  const { expected, flaky, skipped, unexpected, startTime, test_suite } = stats; // scoreboard values to display
+  const { expected, flaky, skipped, unexpected, startTime, git_branch, test_suite, environment, app } = stats; // scoreboard values to display
   const project_name = test_suite ? test_suite : "N/A"
   const total_tests = expected + flaky + unexpected;
 
@@ -78,8 +77,8 @@ function Card({ source, card, index }) {
         </div>
         <span className="project-name">{project_name}</span>
         <div className="card-footer">
-          <span className="branch">{stats.git_branch}</span>
-          <span className="time-stamp">@ {formatted_date_time}</span>
+          <span className="environment-app">{app ? `${app} -` : ''} {environment} </span>
+          <span className="branch-time-stamp">{git_branch} @{formatted_date_time}</span>
         </div>
       </div>
     </div>

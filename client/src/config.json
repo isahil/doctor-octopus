@@ -5,5 +5,5 @@
     "FIXME_SERVER_PORT": 8000,
     "REDIS_HOST": "",
     "REDIS_PORT": 6379,
-    "CARDS_DAY_FILTERS": [1, 3, 7, 15]
+    "CARDS_DAY_FILTERS": [1, 7, 15]
 }

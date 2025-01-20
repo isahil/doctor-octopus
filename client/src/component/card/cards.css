@@ -113,15 +113,19 @@
   overflow: hidden;
   position: absolute;
   white-space: nowrap;
-  width: 1px;
 }
 
 .option-wrapper input[type="radio"]:hover+span {
   transform: scale(1.075);
+  box-shadow: 0 0 0 0.085em white;
+}
+
+.option-wrapper input[type="radio"]+span {
+  width: 50px;
 }
 
 .option-wrapper input[type="radio"]:checked+span {
-  box-shadow: 0 0 0 0.05em cyan;
+  box-shadow: 0 0 0 0.085em cyan;
   z-index: 1;
   color: cyan;
 }

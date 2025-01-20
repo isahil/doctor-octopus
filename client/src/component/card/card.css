@@ -63,28 +63,21 @@ button:hover {
 }
 
 .card-footer {
-    display: flex;
-    justify-content: right;
     align-items: center;
     font-size: 11px;
     margin-top: 5px;
     border-top: 0.5px solid #a3a9a2;
-    color:var(--border-color)
+    color:var(--border-color);
+    position: relative;
 }
 
-.branch {
-    display: inline-block;
-    min-width: 20px;
-    padding: 0 6px;
-    font-style:oblique;
-    font-weight: bolder;
-    line-height: 18px;
-    color: #c9d1d9;
-    text-align: center;
+.environment-app {
+    position: absolute;
+    left: 0;
 }
 
-.time-stamp {
-    display: inline-block;
+.branch-time-stamp {
+    float: right;
     min-width: 20px;
     font-weight: 500;
     color: #c9d1d9;
