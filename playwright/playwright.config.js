@@ -1,11 +1,10 @@
-import "dotenv/config";
-import { PlaywrightTestConfig } from "playwright/test";
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
  
-const { TEST_REPORTS_DIR } = process.env;
+const { TEST_REPORTS_DIR } = process.env; // TODO: copy logic from run.js to create the TEST_REPORTS_DIR
 
-const config: PlaywrightTestConfig = {
+const config = {
   testDir: "tests",
-  // globalSetup: require.resolve("./global.setup.js"),
   timeout: 30000,
   retries: 1,
   use: {
@@ -21,32 +20,32 @@ const config: PlaywrightTestConfig = {
   projects: [
     {
       name: 'api:smoke',
-      testMatch: 'test-example.spec.ts',
+      testMatch: 'test-example.spec.js',
       use: { browserName: 'chromium'}
     },
     {
       name: 'api:sanity',
-      testMatch: 'test-example.spec.ts',
+      testMatch: 'test-example.spec.js',
       use: { browserName: 'chromium' }
     },
     {
       name: 'api:regression',
-      testMatch: 'test-example.spec.ts',
+      testMatch: 'test-example.spec.js',
       use: { browserName: 'chromium' }
     },
     {
       name: 'ui:smoke',
-      testMatch: 'test-example.spec.ts',
+      testMatch: 'test-example.spec.js',
       use: { browserName: 'chromium' }
     },
     {
       name: 'ui:sanity',
-      testMatch: 'test-example.spec.ts',
+      testMatch: 'test-example.spec.js',
       use: { browserName: 'chromium' }
     },
     {
       name: 'ui:regression',
-      testMatch: 'test-example.spec.ts',
+      testMatch: 'test-example.spec.js',
       use: { browserName: 'chromium' }
     }
   ]

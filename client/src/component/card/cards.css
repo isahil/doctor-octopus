@@ -141,7 +141,7 @@
   background-color: black;
   padding: 0.1em .75em;
   position: relative;
-  margin-left: .4em;
+  margin-left: .3em;
   border: var(--octopus-gray) solid .1em;
   color: white;
   text-align: center;
@@ -162,7 +162,7 @@
 
 .day-option:hover .text {
   display: block;
-  width: 49px;
+  width: 45px;
   margin-top: .25em;
   box-shadow: 0 0 0 0.08em white;
 }
