@@ -100,7 +100,7 @@
   display: flex;
   flex-wrap: wrap;
   top: 7px;
-  left: 5px;
+  left: 3px;
   position: absolute;
   margin-left: 50px;
   font-size: small;
@@ -116,12 +116,12 @@
 }
 
 .option-wrapper input[type="radio"]:hover+span {
-  transform: scale(1.075);
-  box-shadow: 0 0 0 0.085em white;
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0.08em white;
 }
 
 .option-wrapper input[type="radio"]+span {
-  width: 50px;
+  width: 47px;
 }
 
 .option-wrapper input[type="radio"]:checked+span {
@@ -130,13 +130,18 @@
   color: cyan;
 }
 
+.option-wrapper input[type="radio"]:checked+span+.text {
+  color: cyan;
+  box-shadow: 0 0 0 0.085em cyan;
+}
+
 .option-wrapper label span {
   display: block;
   cursor: pointer;
   background-color: black;
   padding: 0.1em .75em;
   position: relative;
-  margin-left: .0625em;
+  margin-left: .4em;
   border: var(--octopus-gray) solid .1em;
   color: white;
   text-align: center;
@@ -151,10 +156,13 @@
   border-radius: 0 .1em .1em 0;
 }
 
-.day-option .day-text {
+.day-option .text {
   display: none;
 }
 
-.day-option:hover .day-text {
+.day-option:hover .text {
   display: block;
+  width: 49px;
+  margin-top: .25em;
+  box-shadow: 0 0 0 0.08em white;
 }

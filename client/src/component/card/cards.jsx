@@ -77,8 +77,8 @@ const Cards = ({ source }) => {
                   onChange={handle_filter_change}
                   checked={cardsFilter == day}
                 ></input>
-                <span className={`day-${day}`}>{day}</span>
-                <span className={`day-text`}>{day === 1 ? "day" : "days"}</span>
+                <span className={`filter day-${day}`}>{day}</span>
+                <span className="filter text">{day === 1 ? "day" : "days"}</span>
               </label>
             );
           })}

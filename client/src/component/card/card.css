@@ -66,6 +66,7 @@ button:hover {
     align-items: center;
     font-size: 11px;
     margin-top: 5px;
+    padding-top: 5px;
     border-top: 0.5px solid #a3a9a2;
     color:var(--border-color);
     position: relative;
