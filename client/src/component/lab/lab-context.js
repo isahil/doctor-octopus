@@ -28,9 +28,9 @@ export const useOptionsUpdate = () => {
  * @returns
  */
 const LabProvider = ({ children }) => {
-  const [selectedOptions, setSelectedOptions] = useState({}); // store the selected options
-  const { terminal } = useTerminal();
   const { sio } = useSocketIO();
+  const { terminal } = useTerminal();
+  const [selectedOptions, setSelectedOptions] = useState({}); // store the selected options
 
   const update_options_handler = (option_index, option_value) => {
     // update the option selected for the card so the next card can be enabled

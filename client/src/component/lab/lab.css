@@ -20,6 +20,7 @@
     margin: 0px 0px 20px 0px;
     padding: 0;
     color: var(--octopus-green);
+    font-weight: bold;
 }
 
 .lab-header {

@@ -30,6 +30,7 @@
     margin: 20px;
     padding: 0;
     color: var(--octopus-green);
+    font-weight: bold;
 }
 
 .order-type-label {

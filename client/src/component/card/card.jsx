@@ -36,7 +36,7 @@ function Card({ source, card, index }) {
   };
 
   return (
-    <div className={`card ${index}`}>
+    <div className={`card ${index} ${unexpected === 0 ? "golden" : ""}`}>
       <div className="card-content">
         <div className="score-board-container ">
           <div className="score-board all">
@@ -51,7 +51,7 @@ function Card({ source, card, index }) {
             <span className="score"> {expected} </span>
           </div>
           <div
-            className="score-board fail"
+            className={`score-board fail`}
             style={{ color: unexpected > 0 ? "red" : "inherit" }}
           >
             Failed

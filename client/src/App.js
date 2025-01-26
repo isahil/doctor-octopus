@@ -7,11 +7,11 @@ import Lab from "./component/lab/lab.jsx";
 import XTerm from "./component/xterm/xterm";
 
 function App() {
-  const [source, set_source] = useState("local");
+  const [source, setSource] = useState("local");
   const [showFixMe, setShowFixMe ] = useState(true);
 
   const toggle_source = () => {
-    set_source((current_source) => {
+    setSource((current_source) => {
       const updated_source = current_source === "remote" ? "local" : "remote";
       console.log(`Toggled source: ${updated_source}`);
       return updated_source;
