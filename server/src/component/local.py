@@ -41,7 +41,7 @@ def get_a_local_card_html_report(html) -> str:
         html_file_content = f.read()
         return html_file_content
 
-async def view_a_report_on_local(root_dir) -> str | Exception:
+async def view_a_report_on_local(root_dir):
     try:
         port = "9323" # default port for playwright show-report
         await open_port_on_local(port)

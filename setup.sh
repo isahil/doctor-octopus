@@ -1,17 +1,19 @@
-echo "Setting up the root project directory..."
 MODE=$1 # app, lite, all [app: all dependencies for the app, lite: only client/npm dependencies, all: all dependencies including playwright]
 
+echo "Setting up Doctor Octopus app in "$MODE" mode... [$(date)]"
+echo "Setting up the Root app directory..."
 npm install
-echo "Root project directory set up finished!"
+echo "Root app directory set up finished!"
 
 if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
-    echo "Setting up the server..."
+    echo "Setting up the Server..."
     cd server
 
-    # Get the OS name
+    # Get the OS name to handle OS specific commands
     OS_NAME=$(uname)
 
-    # Check the OS and activate the virtual environment accordingly
+    echo "Creating & activating the python virtual environment..."
+    
     if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
         python3 -m venv $HOME/venv
         source $HOME/venv/bin/activate
@@ -23,6 +25,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
         exit 1
     fi
 
+    echo "Installing the server python dependencies..."
     pip install .
     echo "Server set up finished!"
 
@@ -30,7 +33,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
 fi
 
 if [ "$MODE" = "all" ] || [ "$MODE" = "app" ] || [ "$MODE" = "lite" ]; then
-    echo "Setting up the client..."
+    echo "Setting up the Client..."
     cd client
 
     npm install
@@ -40,11 +43,11 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ] || [ "$MODE" = "lite" ]; then
 fi
 
 if [ "$MODE" = "all" ]; then
-    echo "Setting up the playwright project..."
+    echo "Setting up the Playwright project..."
     cd playwright
     npm install
     echo "Playwright set up finished!"
     cd ..
 fi
 
-echo "Setup finished!"
+echo "Finished setting up Doctor Octopus app in $MODE mode! [$(date)]"

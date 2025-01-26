@@ -26,7 +26,7 @@ app_requires = [
     "sniffio==1.3.1",
     "starlette==0.37.2",
     "typing_extensions==4.12.2",
-    "urllib3==2.2.2",
+    "urllib3<=2.2.2",
     "uvicorn==0.30.1",
     "wsproto==1.2.0",
 ]
@@ -54,7 +54,7 @@ elif current_os == "darwin":
 
 setup(
     name="doctor-octopus",
-    version="0.1.0",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=app_requires,
     extras_require=extras_require,
