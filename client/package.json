@@ -7,8 +7,8 @@
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
     "path": "^0.12.7",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-scripts": "5.0.1",
     "redis": "^4.6.15",
     "socket.io-client": "^4.7.5"

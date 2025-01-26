@@ -35,9 +35,9 @@ const SocketIOProvider = ({ children, host, port }) => {
   }, []);
 
   return (
-    <SocketIOContext.Provider value={{ sio }}>
+    <SocketIOContext value={{ sio }}>
       { children }
-    </SocketIOContext.Provider>
+    </SocketIOContext>
   );
 };
 

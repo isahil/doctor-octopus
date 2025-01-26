@@ -85,8 +85,8 @@ const LabProvider = ({ children }) => {
   };
 
   return (
-    <LabOptionsContext.Provider value={{ selectedOptions }}>
-      <OptionsUpdateContext.Provider
+    <LabOptionsContext value={{ selectedOptions }}>
+      <OptionsUpdateContext
         value={{
           update_options_handler,
           clear_selected_options,
@@ -94,8 +94,8 @@ const LabProvider = ({ children }) => {
         }}
       >
         {children}
-      </OptionsUpdateContext.Provider>
-    </LabOptionsContext.Provider>
+      </OptionsUpdateContext>
+    </LabOptionsContext>
   );
 };
 
