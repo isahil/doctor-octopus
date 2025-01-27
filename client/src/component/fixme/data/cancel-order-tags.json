@@ -1,7 +1,7 @@
 [
-    { "tag": "1", "name": "Account", "Required": "N", "values": ["SDET_OCTAURA"] },
-    { "tag": "11", "name": "ClOrdID", "Required": "Y", "values": "" },
-    { "tag": "15", "name": "Currency", "Required": "N", "values": ["USD"] },
-    { "tag": "18", "name": "ExecInst", "Required": "N", "values": ["G S"] },
-    { "tag": "21", "name": "HandlInst","Required": "N", "values": ["3"] }
+  { "tag": "1", "name": "Account", "Required": "N", "values": ["SDET_OCTAURA"] },
+  { "tag": "11", "name": "ClOrdID", "Required": "Y", "values": "" },
+  { "tag": "15", "name": "Currency", "Required": "N", "values": ["USD"] },
+  { "tag": "18", "name": "ExecInst", "Required": "N", "values": ["G S"] },
+  { "tag": "21", "name": "HandlInst", "Required": "N", "values": ["3"] }
 ]

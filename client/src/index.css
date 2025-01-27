@@ -2,20 +2,20 @@
   margin: 0;
   padding: 10;
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   --border-color: white;
   --border-thickness: 4px;
   --background-color: #15151f;
   --octopus-gray: #30363d;
   --border-radius: 4px;
-  --header-footer-color: rgba(175,184,193,.2);
+  --header-footer-color: rgba(175, 184, 193, 0.2);
   --octopus-green: #1abc9c;
   --octopus-golden: #eddb4c;
 }
 
 body {
   background-color: var(--background-color);
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   margin-top: 75px;
 }
 
@@ -33,11 +33,11 @@ body {
   scroll-behavior: smooth;
 }
 
-.tech-container { 
+.tech-container {
   margin: 10px auto;
 }
 
-.tech-container .component{
+.tech-container .component {
   margin-bottom: 15px;
   border: solid var(--border-thickness) var(--octopus-gray);
 }

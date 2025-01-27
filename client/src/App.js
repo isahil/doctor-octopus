@@ -1,22 +1,22 @@
-import { useState } from "react";
-import Cards from "./component/card/cards";
-import FixMe from "./component/fixme/fixme";
-import Footer from "./component/footer/footer.jsx";
-import Header from "./component/header/header.jsx";
-import Lab from "./component/lab/lab.jsx";
-import XTerm from "./component/xterm/xterm";
+import { useState } from "react"
+import Cards from "./component/card/cards"
+import FixMe from "./component/fixme/fixme"
+import Footer from "./component/footer/footer.jsx"
+import Header from "./component/header/header.jsx"
+import Lab from "./component/lab/lab.jsx"
+import XTerm from "./component/xterm/xterm"
 
 function App() {
-  const [source, setSource] = useState("local");
-  const [showFixMe, setShowFixMe ] = useState(true);
+  const [source, setSource] = useState("local")
+  const [showFixMe, setShowFixMe] = useState(true)
 
   const toggle_source = () => {
     setSource((current_source) => {
-      const updated_source = current_source === "remote" ? "local" : "remote";
-      console.log(`Toggled source: ${updated_source}`);
-      return updated_source;
-    });
-  };
+      const updated_source = current_source === "remote" ? "local" : "remote"
+      console.log(`Toggled source: ${updated_source}`)
+      return updated_source
+    })
+  }
 
   return (
     <div className="app">
@@ -28,7 +28,7 @@ function App() {
         <div className="tech-container">
           <XTerm setShowFixMe={setShowFixMe} />
           <Lab />
-          { showFixMe && <FixMe /> }
+          {showFixMe && <FixMe />}
           {/* Display the FixMe component when showFixMe is true */}
           {/* <FixMe /> */}
         </div>
@@ -37,7 +37,7 @@ function App() {
         <Footer />
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

@@ -1,17 +1,17 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext } from "react"
 
-const TerminalContext = React.createContext();
+const TerminalContext = React.createContext()
 
-export const useTerminal = () => useContext(TerminalContext);
+export const useTerminal = () => useContext(TerminalContext)
 
 const TerminalProvider = ({ children }) => {
-    const [terminal, setTerminal] = useState(null);
+  const [terminal, setTerminal] = useState(null)
 
-    return (
-        <TerminalContext.Provider value={{ terminal, setTerminal }}>
-            {children}
-        </TerminalContext.Provider>
-    );
+  return (
+    <TerminalContext.Provider value={{ terminal, setTerminal }}>
+      {children}
+    </TerminalContext.Provider>
+  )
 }
 
-export default TerminalProvider;
+export default TerminalProvider

@@ -4,6 +4,7 @@
   "description": "doctor-octopus app",
   "main": "setup.sh",
   "scripts": {
+    "format": "prettier --write .",
     "start": "cd client && npm run build && cd .. && concurrently \"cd client && npm start\" \"cd server && sh start.sh\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "setup": "sh setup.sh app",
@@ -22,5 +23,8 @@
   "homepage": "https://github.com/isahil/doctor-octopus#readme",
   "dependencies": {
     "concurrently": "^8.2.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
   }
 }

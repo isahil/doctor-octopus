@@ -1,4 +1,4 @@
-import "./header.css";
+import "./header.css"
 
 const Header = ({ source, toggle_source }) => {
   return (
@@ -13,7 +13,7 @@ const Header = ({ source, toggle_source }) => {
         <h1>Doctor Octopus</h1>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

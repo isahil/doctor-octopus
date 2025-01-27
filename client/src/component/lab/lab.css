@@ -1,112 +1,112 @@
 .lab {
-    border: 7px solid var(--octopus-gray);
-    height: 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(22, 47, 65, 0.389);;
+  border: 7px solid var(--octopus-gray);
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(22, 47, 65, 0.389);
 }
 
 .lab.component {
-    margin-top: 100px;
+  margin-top: 100px;
 }
 
 .lab.component.enabled {
-    border: 1px solid cyan;
+  border: 1px solid cyan;
 }
 
 .lab-title {
-    margin: 0px 0px 20px 0px;
-    padding: 0;
-    color: var(--octopus-green);
-    font-weight: bold;
+  margin: 0px 0px 20px 0px;
+  padding: 0;
+  color: var(--octopus-green);
+  font-weight: bold;
 }
 
 .lab-header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 15px;
-    text-align: center;
-    color: cyan;
-    font-size: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: cyan;
+  font-size: 15px;
 }
 
 .lab-cards {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .lab-card-button {
-    margin-left: 15px;
-    width: 130px;
+  margin-left: 15px;
+  width: 130px;
 }
 
 .lab-card-button.enabled {
-    background: rgba(0, 255, 255, 0.605);
-    margin-left: 10px;
-    color: gray;
+  background: rgba(0, 255, 255, 0.605);
+  margin-left: 10px;
+  color: gray;
 }
 
 .lab-card-button.enabled:hover {
-    background: var(--octopus-green);
+  background: var(--octopus-green);
 }
 
 .lab-card-button.selected {
-    background: var(--octopus-green);
+  background: var(--octopus-green);
 }
 
 .lab-card-button h2 {
-    text-align: center;
-    color: white;
-    margin-top: 5px;
+  text-align: center;
+  color: white;
+  margin-top: 5px;
 }
 
 .lab-card-button.disabled {
-    background-color: inherit;
-    cursor: not-allowed;
+  background-color: inherit;
+  cursor: not-allowed;
 }
 
 .lab-card-button.disabled:hover {
-    background: none;
+  background: none;
 }
 
 .lab-card-button.disabled h2 {
-    color: #7b7272;
+  color: #7b7272;
 }
 
 .option-content {
-    display: none;
-    position: absolute;
-    background-color: var(--octopus-gray);
-    border: solid 1.0px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    width: 127px;
+  display: none;
+  position: absolute;
+  background-color: var(--octopus-gray);
+  border: solid 1px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  width: 127px;
 }
 
 .option-name {
-    color: white;
-    padding: 10px;
-    display: block;
+  color: white;
+  padding: 10px;
+  display: block;
 }
 
 .option-name:hover {
-    background-color: black;
+  background-color: black;
 }
 
 .lab-card-button:hover .option-content {
-    display: block;
-    margin: 12px 0px 0px -26px;
+  display: block;
+  margin: 12px 0px 0px -26px;
 }
 
 .run-button {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 .run-button.enabled:hover {
-    transform: scale(1.2);
+  transform: scale(1.2);
 }

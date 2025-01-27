@@ -4,8 +4,6 @@ A multi-component application with a full battery (a server & a client). The app
 
 ![doctor-octopus](client/doc/doctor-octopus.png)
 
-
-
 ## Setup
 
 From the root of the Doctor-Octopus project directory execute the following commands in your terminal
@@ -26,18 +24,17 @@ project folder structure
 doctor-octopus
 ├─ server
 │ ├─ src
-│ │ └─ ... 
+│ │ └─ ...
 │ ├─ setup.py
-│ └─ ... 
+│ └─ ...
 ├─ client
-│ ├─ src 
-│ │ └─ ... 
-│ ├─ package.json 
-│ └─ ... 
+│ ├─ src
+│ │ └─ ...
+│ ├─ package.json
+│ └─ ...
 ├─ package.json
 └─ README.md
 ```
-
 
 ## Key Tech Stacks
 

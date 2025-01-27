@@ -1,29 +1,26 @@
-import "./lab.css";
-import lab_cards from "./lab.json";
-import { useLabOptions, useOptionsUpdate } from "./lab-context";
-import { useSocketIO } from "../../util/socketio-context";
-import { useTerminal } from "../xterm/terminal-context";
+import "./lab.css"
+import lab_cards from "./lab.json"
+import { useLabOptions, useOptionsUpdate } from "./lab-context"
+import { useSocketIO } from "../../util/socketio-context"
+import { useTerminal } from "../xterm/terminal-context"
 
 const Lab = () => {
-  const { sio } = useSocketIO();
-  const { terminal } = useTerminal();
-  const { selectedOptions } = useLabOptions(); // LabOptionsContext that store the selected options state
-  const { update_options_handler, handle_run_click } = useOptionsUpdate(); // HandleOptionClickContext that store the function to handle the dd option click
+  const { sio } = useSocketIO()
+  const { terminal } = useTerminal()
+  const { selectedOptions } = useLabOptions() // LabOptionsContext that store the selected options state
+  const { update_options_handler, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
 
-  const last_cards_index = lab_cards.length - 1; // index of the last card is used to enable the "Run" button
-  const run_button_enabled =
-    selectedOptions[2] !== "fix" && selectedOptions[last_cards_index]; // enable the run button if the last card has been selected
+  const last_cards_index = lab_cards.length - 1 // index of the last card is used to enable the "Run" button
+  const run_button_enabled = selectedOptions[2] !== "fix" && selectedOptions[last_cards_index] // enable the run button if the last card has been selected
   const proto = selectedOptions[2]
   const suite = selectedOptions[3]
 
   if (proto === "fix" && suite) {
     // if the selected option is "fix" and the last card has been selected, then enable the websocket listener for the respective fixme session.
-    sio.off(`fixme`); // Remove existing listener to avoid duplicate
-    sio.on(`fixme`, (data) => {
-      terminal.write(
-        `\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`
-      );
-    });
+    sio.off("fixme") // Remove existing listener to avoid duplicate
+    sio.on("fixme", (data) => {
+      terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`)
+    })
   }
 
   return (
@@ -36,25 +33,25 @@ const Lab = () => {
       <div className="lab-header">
         {Object.entries(selectedOptions).map((entry, i) => {
           // header displaying the selected options
-          return <h1 key={i}>{entry[1]}</h1>;
+          return <h1 key={i}>{entry[1]}</h1>
         })}
       </div>
 
       <div className="lab-cards">
         {lab_cards.map((card, i) => {
           // iterate through the lab cards and render them with dropdown options
-          const card_name = card.key;
-          let card_options;
+          const card_name = card.key
+          let card_options
 
           if (card_name === "suite") {
             // if the card is "suite", then the options are based on the previous selected option. "api", "ui", "fix" have different suite options
             card_options = selectedOptions[i - 1]
               ? card["options"][selectedOptions[i - 1]]
-              : card.options;
-          } else card_options = card.options;
+              : card.options
+          } else card_options = card.options
 
-          const enabled = i === 0 || selectedOptions[i - 1]; // enable the card if the previous card has been selected
-          const selected = selectedOptions[i]; // check if the card has been selected
+          const enabled = i === 0 || selectedOptions[i - 1] // enable the card if the previous card has been selected
+          const selected = selectedOptions[i] // check if the card has been selected
 
           return (
             <div
@@ -75,12 +72,12 @@ const Lab = () => {
                       >
                         {option}
                       </div>
-                    );
+                    )
                   })}
                 </div>
               )}
             </div>
-          );
+          )
         })}
       </div>
       <div>
@@ -94,7 +91,7 @@ const Lab = () => {
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Lab;
+export default Lab

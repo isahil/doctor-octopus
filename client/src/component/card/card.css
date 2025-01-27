@@ -1,91 +1,95 @@
 .card {
-    background-color: rgba(22, 47, 65, 0.389);
-    border: 3px solid var(--octopus-gray);
-    margin: 10px;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 600px;
-    height: 130px;
-    box-shadow: 0 0 0.5px cyan;
-    color: white;
-    font-family: 'Arial', sans-serif;
-    text-align: center;
+  background-color: rgba(22, 47, 65, 0.389);
+  border: 3px solid var(--octopus-gray);
+  margin: 10px;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 600px;
+  height: 130px;
+  box-shadow: 0 0 0.5px cyan;
+  color: white;
+  font-family: "Arial", sans-serif;
+  text-align: center;
 }
 
 .card.golden {
-    border: 1px solid var(--octopus-golden);
+  border: 1px solid var(--octopus-golden);
 }
 
-.card:hover, .card:focus {
-    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 12px 24px 0 rgba(0, 0, 0, 0.19);
-    transform: scale(1.02);
+.card:hover,
+.card:focus {
+  box-shadow:
+    0 8px 16px 0 rgba(0, 0, 0, 0.2),
+    0 12px 24px 0 rgba(0, 0, 0, 0.19);
+  transform: scale(1.02);
 }
 
 .project-name {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
 }
 
 button:hover {
-    cursor: pointer;
-    font-size: medium;
-    border-color: cyan;
+  cursor: pointer;
+  font-size: medium;
+  border-color: cyan;
 }
 
 .score-board-container {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
 }
 
 .score-board {
-    background-color: black;
-    border: 1px solid var(--octopus-gray);
-    padding: 10px 20px;
-    margin-bottom: 5px;
-    color: white;
-    font-size: 10px;
-    transition: transform 0.2s;
-    /* text-shadow: 1px 1px 2px rgba(80, 169, 80, 0.689); */
+  background-color: black;
+  border: 1px solid var(--octopus-gray);
+  padding: 10px 20px;
+  margin-bottom: 5px;
+  color: white;
+  font-size: 10px;
+  transition: transform 0.2s;
+  /* text-shadow: 1px 1px 2px rgba(80, 169, 80, 0.689); */
 }
 
 .score-board:hover {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .score {
-    display: block;
-    font-size: 15px;
-    margin-top: 5px;
+  display: block;
+  font-size: 15px;
+  margin-top: 5px;
 }
 
-.branch, .time-stamp {
-    margin: 3px;
+.branch,
+.time-stamp {
+  margin: 3px;
 }
 
 .card-footer {
-    align-items: center;
-    font-size: 11px;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 0.5px solid #a3a9a2;
-    color:var(--border-color);
-    position: relative;
+  align-items: center;
+  font-size: 11px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 0.5px solid #a3a9a2;
+  color: var(--border-color);
+  position: relative;
 }
 
 .environment-app {
-    position: absolute;
-    left: 0;
-    font-weight: bold;
+  position: absolute;
+  left: 0;
+  font-weight: bold;
 }
 
 .branch-time-stamp {
-    float: right;
-    min-width: 20px;
-    font-weight: 500;
-    color: #c9d1d9;
-    text-align: center;
+  float: right;
+  min-width: 20px;
+  font-weight: 500;
+  color: #c9d1d9;
+  text-align: center;
 }
