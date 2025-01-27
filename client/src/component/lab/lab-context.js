@@ -60,7 +60,7 @@ const LabProvider = ({ children }) => {
     setSelectedOptions({});
   };
 
-  const handle_run_click = async (interactive = false) => {
+  const handle_run_click = () => {
     // listen for the-lab-log events from the server
     const subscription = "the-lab-log"
     sio.off(subscription); // Remove existing listener to avoid duplicate logs

@@ -15,7 +15,7 @@
 }
 
 .card.golden {
-    border: 1.5px solid var(--octopus-golden);
+    border: 1px solid var(--octopus-golden);
 }
 
 .card:hover, .card:focus {

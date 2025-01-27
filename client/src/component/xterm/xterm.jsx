@@ -10,6 +10,7 @@ const XTerm = ({ setShowFixMe }) => {
   const terminalRef = useRef(null);
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate(); // HandleOptionClickContext that store the function to handle the dd option click
   const { setTerminal } = useTerminal(); // TerminalContext that store the terminal object
+
   const xterm = (terminal) => {
     terminal.options.theme.foreground = `cyan`;
     terminal.options.cursorStyle = "underline";
@@ -21,7 +22,7 @@ const XTerm = ({ setShowFixMe }) => {
     fitAddon.fit();
 
     terminal.write(
-      "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Hi, I'm\x1B[1;3;32m Doctor Octopus\x1B[1;3;37m. Type 'test' to start the Interactive Mode.\x1B[0m\r\n"
+      "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Hi, I'm\x1B[1;3;32m Doctor Octopus\x1B[1;3;37m. Type 'sdet' to start the Interactive Mode.\x1B[0m\r\n"
     );
     terminal.write(`\x1B[1;3;31m You\x1B[0m $ `);
 

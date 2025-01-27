@@ -12,11 +12,9 @@ export const command_handler = ({
   handle_run_click,
 }) => {
   switch (true) {
-    case input === "test":
+    case input === "sdet":
       interactive_mode_status = true; // enable interactive mode
-      terminal.write(
-        "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m .......\x1B[0m\r"
-      );
+      terminal.write("\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m .......\x1B[0m\r");
       terminal.write(
         "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Enter value for each command 'key' below in sequence.\x1B[0m\r"
       );
@@ -61,10 +59,10 @@ export const command_handler = ({
       break;
     case input === "fixme":
       setShowFixMe(true);
-      update_options_handler(0, "qa")
-      update_options_handler(1, "loan")
-      update_options_handler(2, "fix")
-      update_options_handler(3, "client")
+      update_options_handler(0, "qa");
+      update_options_handler(1, "loan");
+      update_options_handler(2, "fix");
+      update_options_handler(3, "client");
       terminal.write(
         "\r\x1B[1;3;32m Doc:\x1B[1;3;37m Starting FixMe App...\x1B[0m\r"
       );
