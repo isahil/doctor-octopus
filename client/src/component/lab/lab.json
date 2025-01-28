@@ -12,14 +12,14 @@
   {
     "key": "proto",
     "description": "protocol to run the test suite with",
-    "options": ["api", "ui", "fix"]
+    "options": ["ui", "api", "fix"]
   },
   {
     "key": "suite",
     "description": "test suite to run for the given protocol",
     "options": {
-      "api": ["smoke", "sanity", "regression"],
-      "ui": ["smoke", "sanity", "regression", "rfq", "bilat", "list", "runs", "history", "admin"],
+      "api": ["sanity", "smoke", "regression"],
+      "ui": ["sanity", "smoke", "regression", "admin", "bilat", "history", "list", "liquidity", "rfq", "runs"],
       "fix": ["client", "dealer"]
     }
   }

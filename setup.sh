@@ -1,6 +1,7 @@
-MODE=$1 # app, lite, all [app: all dependencies for the app, lite: only client/npm dependencies, all: all dependencies including playwright]
-
-echo "Setting up Doctor Octopus app in "$MODE" mode... [$(date)]"
+MODE=$1 # app, lite, e2e [app: all dependencies for the app, lite: only client/npm dependencies, e2e: all dependencies including playwright]
+: "${MODE:=app}" # Default mode is app
+START_TIME=$(date)
+echo "Setting up Doctor Octopus in "$MODE" mode... [START TIME: $START_TIME]"
 echo "Setting up the Root app directory..."
 npm install
 echo "Root app directory set up finished!"
@@ -50,4 +51,6 @@ if [ "$MODE" = "all" ]; then
     cd ..
 fi
 
-echo "Finished setting up Doctor Octopus app in $MODE mode! [$(date)]"
+END_TIME=$(date)
+TIME_TAKEN=$(($(date -d "$END_TIME" +%s) - $(date -d "$START_TIME" +%s)))
+echo "Finished setting up Doctor Octopus in "$MODE" mode! [TIME TAKEN: $TIME_TAKEN seconds, END TIME: $END_TIME]"
