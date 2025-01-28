@@ -217,5 +217,6 @@
 @media screen and (min-width: 1800px) {
   .xterm {
     min-height: 650px;
+    padding: 15px 35px 15px 15px;
   }
 }
