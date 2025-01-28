@@ -8,10 +8,6 @@
   background-color: rgba(22, 47, 65, 0.389);
 }
 
-.lab.component {
-  margin-top: 100px;
-}
-
 .lab.component.enabled {
   border: 1px solid cyan;
 }
@@ -52,11 +48,11 @@
 }
 
 .lab-card-button.enabled:hover {
-  background: var(--octopus-green);
+  background: green;
 }
 
 .lab-card-button.selected {
-  background: var(--octopus-green);
+  background: green;
 }
 
 .lab-card-button h2 {

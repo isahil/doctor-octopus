@@ -38,7 +38,7 @@ body {
 }
 
 .tech-container .component {
-  margin-bottom: 15px;
+  margin-bottom: 60px;
   border: solid var(--border-thickness) var(--octopus-gray);
 }
 

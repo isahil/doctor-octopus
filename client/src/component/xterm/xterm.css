@@ -6,11 +6,11 @@
   -webkit-user-select: none;
   border: solid (--border-thickness) var(--octopus-gray);
   border-radius: var(--border-radius);
-  min-width: 675px;
-  min-height: 600px;
+  min-height: 300px;
   padding: 5px 15px 5px 5px;
   box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.5);
-  z-index: 1; /* index needs to be lower than the header */
+  z-index: 1;
+  /* index needs to be lower than the header */
 }
 
 .xterm.focus,
@@ -147,15 +147,19 @@
 .xterm-underline-1 {
   text-decoration: underline;
 }
+
 .xterm-underline-2 {
   text-decoration: double underline;
 }
+
 .xterm-underline-3 {
   text-decoration: wavy underline;
 }
+
 .xterm-underline-4 {
   text-decoration: dotted underline;
 }
+
 .xterm-underline-5 {
   text-decoration: dashed underline;
 }
@@ -167,15 +171,19 @@
 .xterm-overline.xterm-underline-1 {
   text-decoration: overline underline;
 }
+
 .xterm-overline.xterm-underline-2 {
   text-decoration: overline double underline;
 }
+
 .xterm-overline.xterm-underline-3 {
   text-decoration: overline wavy underline;
 }
+
 .xterm-overline.xterm-underline-4 {
   text-decoration: overline dotted underline;
 }
+
 .xterm-overline.xterm-underline-5 {
   text-decoration: overline dashed underline;
 }
@@ -204,4 +212,10 @@
 .xterm-decoration-top {
   z-index: 2;
   position: relative;
+}
+
+@media screen and (min-width: 1800px) {
+  .xterm {
+    min-height: 650px;
+  }
 }

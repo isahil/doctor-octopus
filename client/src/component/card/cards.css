@@ -146,14 +146,14 @@
 }
 
 .option-wrapper input[type="radio"]:checked + span {
-  box-shadow: 0 0 0 0.085em cyan;
+  box-shadow: 0 0 0 0.050em cyan;
   z-index: 1;
   color: cyan;
 }
 
 .option-wrapper input[type="radio"]:checked + span + .text {
   color: cyan;
-  box-shadow: 0 0 0 0.085em cyan;
+  box-shadow: 0 0 0 0.050em cyan;
 }
 
 .option-wrapper label span {

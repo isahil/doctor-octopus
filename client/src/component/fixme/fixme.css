@@ -10,10 +10,6 @@
   position: relative;
 }
 
-.fixme.component {
-  margin-top: 150px;
-}
-
 .fixme.component.enabled {
   border: 1px solid cyan;
 }
