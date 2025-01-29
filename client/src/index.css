@@ -23,13 +23,12 @@ body {
   display: grid;
   grid-template-columns: 2fr 1fr;
   margin: 0 30px;
-  grid-gap: 30px;
+  grid-gap: 50px;
 }
 
 .cards-container {
   overflow: auto;
   height: 210vh;
-  min-width: 600px;
   scroll-behavior: smooth;
 }
 
