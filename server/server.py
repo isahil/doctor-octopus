@@ -14,17 +14,17 @@ from src.util.fix_client import FixClient
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ''' 
+    """
     Lifespan event handler for the FastAPI server.
     Steps before yield gets executed before the server starts.
     Steps after yield gets executed after the server shuts down
-    '''
+    """
     print("Starting the server lifespan...")
     if os.path.exists(the_lab_log_file_path):
         with open(the_lab_log_file_path, "w") as f:
             pass
 
-    if(server_mode == "fixme"):
+    if server_mode == "fixme":
         fix_client = FixClient(env="qa", app="fix", fix_side="client", broadcast=True, sio=sio)
         fix_client_task = asyncio.create_task(fix_client.start_mock_client())
         app.state.fix_client = fix_client
@@ -36,19 +36,20 @@ async def lifespan(app: FastAPI):
     yield
 
     print("Shutting down the server lifespan...")
-    if(server_mode == "fixme"):
+    if server_mode == "fixme":
         fix_client_task.cancel()
         try:
             await fix_client_task
         except asyncio.CancelledError:
             print("fix_client_app task cancelled")
 
+
 fastapi_app = FastAPI(lifespan=lifespan)
 config.fastapi_app = fastapi_app
 
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins='*',
+    allow_origins="*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -32,7 +32,7 @@ app_requires = [
 ]
 
 test_requires = []
-app_test_requires =  app_requires + test_requires
+app_test_requires = app_requires + test_requires
 
 # Define OS-specific dependencies
 extras_require = {

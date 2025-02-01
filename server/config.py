@@ -1,18 +1,23 @@
 import os
 from dotenv import load_dotenv
-load_dotenv('.env', verbose=False, override=True)
-local_dir: str = os.environ.get("LOCAL_DIRECTORY", "../../") # path to the local project directory
+
+load_dotenv(".env", verbose=False, override=True)
+local_dir: str = os.environ.get("LOCAL_DIRECTORY", "../../")  # path to the local project directory
 environment: str = os.environ.get("ENVIRONMENT", "qa")
-load_dotenv(f'{local_dir}.env', verbose=False)
-load_dotenv(f'{local_dir}.dotenv/.{environment}', verbose=False)
+load_dotenv(f"{local_dir}.env", verbose=False)
+load_dotenv(f"{local_dir}.dotenv/.{environment}", verbose=False)
 
 from fastapi import FastAPI
 from socketio import ASGIApp, AsyncServer
 
-server_mode: str = os.environ.get("SERVER_MODE", "local") # [fixme, local]
+server_mode: str = os.environ.get("SERVER_MODE", "local")  # [fixme, local]
 
-test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports") # test reports directory can be changed in the .env file
-test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p" # date format used for the remote test reports directory
+test_reports_dir: str = os.environ.get(
+    "TEST_REPORTS_DIR", "test_reports"
+)  # test reports directory can be changed in the .env file
+test_reports_date_format = (
+    "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
+)
 
 the_lab_log_file_name: str = "the-lab.log"
 the_lab_log_file_path: str = f"{local_dir}/logs/{the_lab_log_file_name}"
@@ -26,4 +31,14 @@ cors_allowed_origins: list = [
     "http://localhost:8000",
 ]
 
-__all__ = ["sio","fastapi_app", "socketio_app", "cors_allowed_origins", "local_dir", "environment", "test_reports_dir", "the_lab_log_file_name", "the_lab_log_file_path"] # export the variables
+__all__ = [
+    "sio",
+    "fastapi_app",
+    "socketio_app",
+    "cors_allowed_origins",
+    "local_dir",
+    "environment",
+    "test_reports_dir",
+    "the_lab_log_file_name",
+    "the_lab_log_file_path",
+]  # export the variables

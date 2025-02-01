@@ -4,6 +4,7 @@ import asyncio
 
 stream_tasks = {}
 
+
 async def start_streaming_log_file(sio, sid, subscription, log_file_path):
     file_exists = os.path.exists(log_file_path)
     if not file_exists:
@@ -14,10 +15,10 @@ async def start_streaming_log_file(sio, sid, subscription, log_file_path):
         stream_tasks[sid] = stream_task
     else:
         print(f"Stream task already exists for {sid}")
-     
+
 
 async def stream_log_file(sio, sid, subscription, log_file_path):
-    async with aiofiles.open(log_file_path, "r", encoding='utf-8') as log_file:
+    async with aiofiles.open(log_file_path, "r", encoding="utf-8") as log_file:
         while True:
             line = await log_file.readline()
             if line:
