@@ -19,7 +19,18 @@
     "description": "test suite to run for the given protocol",
     "options": {
       "api": ["sanity", "smoke", "regression"],
-      "ui": ["sanity", "smoke", "regression", "admin", "bilat", "history", "list", "liquidity", "rfq", "runs"],
+      "ui": [
+        "sanity",
+        "smoke",
+        "regression",
+        "admin",
+        "bilat",
+        "history",
+        "list",
+        "liquidity",
+        "rfq",
+        "runs"
+      ],
       "fix": ["client", "dealer"]
     }
   }
