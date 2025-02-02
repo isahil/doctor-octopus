@@ -1,7 +1,7 @@
 MODE=$1 # app, lite, e2e [app: all dependencies for the app, lite: only client/npm dependencies, e2e: all dependencies including playwright]
 : "${MODE:=app}" # Default mode is app
 START_TIME=$(date +%s)
-echo "Setting up Doctor Octopus in "$MODE" mode... [START TIME: $START_TIME]"
+echo "Setting up Doctor Octopus in \""$MODE"\" mode. START TIME: [$(date)]"
 echo "Setting up the Root app directory..."
 npm install
 echo "Root app directory set up finished!"
@@ -52,5 +52,6 @@ if [ "$MODE" = "all" ]; then
 fi
 
 END_TIME=$(date +%s)
-TIME_TAKEN=$((END_TIME - START_TIME))
-echo "Finished setting up Doctor Octopus in "$MODE" mode! [TIME TAKEN: $TIME_TAKEN seconds, END TIME: $END_TIME]"
+TIME_TAKEN=$(($END_TIME - $START_TIME))
+
+echo "Finished setting up Doctor Octopus in \""$MODE"\" mode! | TIME TAKEN: $TIME_TAKEN second/s | END TIME: [$(date)]"
