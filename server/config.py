@@ -1,14 +1,13 @@
 import os
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from socketio import ASGIApp, AsyncServer
 
 load_dotenv(".env", verbose=False, override=True)
 local_dir: str = os.environ.get("LOCAL_DIRECTORY", "../../")  # path to the local project directory
 environment: str = os.environ.get("ENVIRONMENT", "qa")
 load_dotenv(f"{local_dir}.env", verbose=False)
 load_dotenv(f"{local_dir}.dotenv/.{environment}", verbose=False)
-
-from fastapi import FastAPI
-from socketio import ASGIApp, AsyncServer
 
 server_mode: str = os.environ.get("SERVER_MODE", "local")  # [fixme, local]
 

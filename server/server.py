@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
   """
   print("Starting the server lifespan...")
   if os.path.exists(the_lab_log_file_path):
-    with open(the_lab_log_file_path, "w") as f:
+    with open(the_lab_log_file_path, "w"):
       pass
 
   if server_mode == "fixme":
