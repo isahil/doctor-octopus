@@ -14,7 +14,6 @@
     "socket.io-client": "^4.7.5"
   },
   "scripts": {
-    "format": "prettier --write .",
     "start": "react-scripts start",
     "build": "react-scripts build"
   },

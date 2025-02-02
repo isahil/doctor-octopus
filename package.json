@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "doctor-octopus app",
   "main": "setup.sh",
+  "type": "module",
   "scripts": {
     "format": "prettier --write .",
+    "lint": "npx eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd client && npm run build && cd .. && concurrently \"cd client && npm start\" \"cd server && sh start.sh\"",
     "setup": "sh setup.sh",
@@ -25,6 +27,7 @@
     "concurrently": "^8.2.2"
   },
   "devDependencies": {
+    "eslint": "^9.19.0",
     "prettier": "^3.4.2"
   }
 }
