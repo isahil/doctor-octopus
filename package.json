@@ -5,8 +5,8 @@
   "main": "setup.sh",
   "scripts": {
     "format": "prettier --write .",
-    "start": "cd client && npm run build && cd .. && concurrently \"cd client && npm start\" \"cd server && sh start.sh\"",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd client && npm run build && cd .. && concurrently \"cd client && npm start\" \"cd server && sh start.sh\"",
     "setup": "sh setup.sh",
     "setup-lite": "sh setup.sh lite",
     "setup-all": "sh setup.sh all"
