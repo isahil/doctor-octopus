@@ -2,7 +2,7 @@
 name = "doctor-octopus"
 version = "1.0.0"
 description = "Doctor Octopus Test Runner Application"
-requires-python = "==3.9"
+requires-python = "==3.9.6"
 dependencies = [
   "aiofiles==24.1.0",
   "annotated-types==0.7.0",
