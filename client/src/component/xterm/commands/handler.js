@@ -25,7 +25,7 @@ export const command_handler = ({
         terminal.write(`\r\n\x1B[1;3;37m options = ${JSON.stringify(setting.options)}\x1B[0m\r`)
       })
       terminal.write(
-        `\r\n\x1B[1;3;36m ----------------- [ Interactive Mode: ON ] ------------------- \x1B[0m\r\n`
+        "\r\n\x1B[1;3;36m ----------------- [ Interactive Mode: ON ] ------------------- \x1B[0m\r\n"
       )
 
       // start with the first setting in the LabSettings array in interactive mode. the output will be passed to the interactive_mode function next time the user enters
@@ -63,7 +63,7 @@ export const command_handler = ({
       interactive_mode_status = false // disable interactive mode
       terminal.write("\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m exiting Interactive Mode ta ta...\x1B[0m\r")
       terminal.write(
-        `\r\n\x1B[1;3;31m  ----------------- [ Interactive Mode: OFF ] ------------------- \x1B[0m\r\n`
+        "\r\n\x1B[1;3;31m  ----------------- [ Interactive Mode: OFF ] ------------------- \x1B[0m\r\n"
       )
       clear_selected_options()
       break

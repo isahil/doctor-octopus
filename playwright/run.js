@@ -21,7 +21,7 @@ const { AWS_SDET_BUCKET_NAME, ENVIRONMENT, PRODUCT_TYPE, APP } = process.env
 const test_script_name = process.argv[2]
 const test_protocol = test_script_name.split(":")[0]
 
-const test_reports_dir = `test_reports`
+const test_reports_dir = "test_reports"
 const report_dir = `${get_est_date_time()}`
 const local_test_reports_dir = `./${test_reports_dir}/${report_dir}`
 process.env.TEST_REPORTS_DIR = local_test_reports_dir
@@ -43,7 +43,7 @@ const upload_report = async (code) => {
   // Write the updated reportCard object back to the report.json file
   fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2))
   console.log(`Uploading test reports to S3 bucket: ${AWS_SDET_BUCKET_NAME}`)
-  // await upload_directory(AWS_SDET_BUCKET_NAME, local_test_reports_dir, s3_test_reports_dir);
+  await upload_directory(AWS_SDET_BUCKET_NAME, local_test_reports_dir, s3_test_reports_dir);
   process.exit(code ?? 1)
 }
 

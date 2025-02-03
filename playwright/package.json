@@ -9,7 +9,6 @@
   },
   "scripts": {
     "test": "node run.js",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
     "api:smoke": "npm test api:smoke",
     "api:sanity": "npm test api:sanity",
     "api:regression": "npm test api:regression",
