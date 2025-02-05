@@ -7,7 +7,7 @@
   justify-content: center;
   align-items: center;
   min-width: 600px;
-  height: 130px;
+  height: 150px;
   box-shadow: 0 0 0.5px cyan;
   color: white;
   font-family: "Arial", sans-serif;
@@ -26,9 +26,16 @@
   transform: scale(1.02);
 }
 
+.card-header {
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-size: 15px;
+}
+
 .project-name {
   font-size: 14px;
-  font-weight: bold;
   color: white;
 }
 
@@ -80,13 +87,15 @@ button:hover {
   position: relative;
 }
 
-.environment-app {
-  position: absolute;
-  left: 0;
-  font-weight: bold;
+.branch {
+  float: left;
+  min-width: 20px;
+  font-weight: 500;
+  color: #c9d1d9;
+  text-align: center;
 }
 
-.branch-time-stamp {
+.time-stamp {
   float: right;
   min-width: 20px;
   font-weight: 500;

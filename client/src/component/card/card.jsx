@@ -19,6 +19,7 @@ function Card({ source, card, index }) {
     test_suite,
     environment,
     app,
+    duration
   } = stats // scoreboard values to display
   const project_name = test_suite ? test_suite : "N/A"
   const total_tests = expected + flaky + unexpected
@@ -48,6 +49,9 @@ function Card({ source, card, index }) {
   return (
     <div className={`card ${index} ${unexpected === 0 ? "golden" : ""}`}>
       <div className="card-content">
+        <div className="card-header">
+          <span className="card-title">{app ? `${app} -` : ""} {environment}{" "}</span>
+        </div>
         <div className="score-board-container ">
           <div className="score-board all">
             All
@@ -78,11 +82,9 @@ function Card({ source, card, index }) {
         </div>
         <span className="project-name">{project_name}</span>
         <div className="card-footer">
-          <span className="environment-app">
-            {app ? `${app} -` : ""} {environment}{" "}
-          </span>
-          <span className="branch-time-stamp">
-            {git_branch} @{formatted_date_time}
+          <span className="branch">{git_branch}</span>
+          <span className="time-stamp">
+            [{duration} sec] {formatted_date_time}
           </span>
         </div>
       </div>
