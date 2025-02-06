@@ -20,7 +20,6 @@ const get_est_date_time = () => {
 const { AWS_SDET_BUCKET_NAME, ENVIRONMENT, PRODUCT_TYPE, APP } = process.env
 const test_script_name = process.argv[2]
 const test_protocol = test_script_name.split(":")[0]
-const start_time = performance.now()
 
 const test_reports_dir = "test_reports"
 const report_dir = `${get_est_date_time()}`
@@ -33,8 +32,6 @@ const git_branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim()
 const json_report = `${local_test_reports_dir}/report.json` // Need to read the report_card.json file to upload
 
 const upload_report = async (code) => {
-  const end_time = performance.now()
-  const duration = end_time - start_time
   const report_card = JSON.parse(fs.readFileSync(json_report, "utf-8"))
 
   // Add the git-branch & username to the report_card object
@@ -43,7 +40,6 @@ const upload_report = async (code) => {
   report_card["stats"]["environment"] = ENVIRONMENT
   report_card["stats"]["app"] = PRODUCT_TYPE ? PRODUCT_TYPE : APP
   report_card["stats"]["test_suite"] = test_script_name
-  report_card["stats"]["duration"] = Math.ceil(duration / 1000)
 
   // Write the updated reportCard object back to the report.json file
   fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2))

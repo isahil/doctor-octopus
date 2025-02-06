@@ -32,6 +32,7 @@
 
 .card-title {
   font-size: 15px;
+  font-weight: bold;
 }
 
 .project-name {
@@ -93,6 +94,13 @@ button:hover {
   font-weight: 500;
   color: #c9d1d9;
   text-align: center;
+}
+
+.duration {
+  color: #c9d1d9;
+  float: left;
+  margin-left: 20px;
+  margin-top: 4px;
 }
 
 .time-stamp {
