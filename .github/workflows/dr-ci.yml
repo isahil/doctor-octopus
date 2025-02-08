@@ -26,7 +26,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - name: Install Playwright Dependencies
-        run: cd playwright && npm ci
+        run: |
+          cd playwright
+          npm ci
+          npx playwright install
       - name: Run Playwright Tests
         run: |
           pwd
