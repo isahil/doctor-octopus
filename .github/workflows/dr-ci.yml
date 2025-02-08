@@ -30,12 +30,12 @@ jobs:
           npm ci
           npx playwright install
       - name: Run Playwright Tests
-        run: |
-          pwd
-          cd playwright
-          ENVIRONMENT=qa APP=loan npm run api:smoke
         env:
           AWS_SDET_BUCKET_NAME: ${{ secrets.AWS_SDET_BUCKET_NAME }}
           AWS_SDET_BUCKET_REGION: ${{ secrets.AWS_SDET_BUCKET_REGION }}
           AWS_SDET_BUCKET_ACCESS_KEY_ID: ${{ secrets.AWS_SDET_BUCKET_ACCESS_KEY_ID }}
           AWS_SDET_BUCKET_SECRET_ACCESS_KEY: ${{ secrets.AWS_SDET_BUCKET_SECRET_ACCESS_KEY }}
+        run: |
+          pwd
+          cd playwright
+          ENVIRONMENT=qa APP=loan npm run api:smoke
