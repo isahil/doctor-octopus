@@ -2,7 +2,6 @@
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 name: Doctor Octopus Tests
 
-
 on:
   push:
     branches: ["main"]
@@ -15,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -34,5 +33,9 @@ jobs:
         run: |
           pwd
           cd playwright
-          pwd
-          npm run api:smoke
+          ENVIRONMENT=qa APP=loan npm run api:smoke
+        env:
+          AWS_SDET_BUCKET_NAME: ${{ secrets.AWS_SDET_BUCKET_NAME }}
+          AWS_SDET_BUCKET_REGION: ${{ secrets.AWS_SDET_BUCKET_REGION }}
+          AWS_SDET_BUCKET_ACCESS_KEY_ID: ${{ secrets.AWS_SDET_BUCKET_ACCESS_KEY_ID }}
+          AWS_SDET_BUCKET_SECRET_ACCESS_KEY: ${{ secrets.AWS_SDET_BUCKET_SECRET_ACCESS_KEY }}

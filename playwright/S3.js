@@ -10,9 +10,9 @@ import {
 
 const {
   AWS_SDET_BUCKET_NAME: bucketName,
-  AWS_BUCKET_REGION: region,
-  AWS_ACCESS_KEY_ID: accessKeyId,
-  AWS_SECRET_ACCESS_KEY: secretAccessKeyId,
+  AWS_SDET_BUCKET_REGION: region,
+  AWS_SDET_BUCKET_ACCESS_KEY_ID: accessKeyId,
+  AWS_SDET_BUCKET_SECRET_ACCESS_KEY: secretAccessKeyId,
 } = process.env
 
 const S3_Client = new S3Client({
