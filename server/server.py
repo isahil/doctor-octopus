@@ -11,7 +11,6 @@ from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
 from src.util.fix_client import FixClient
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   """

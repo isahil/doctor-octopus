@@ -4,7 +4,6 @@ import asyncio
 
 stream_tasks = {}
 
-
 async def start_streaming_log_file(sio, sid, subscription, log_file_path):
   file_exists = os.path.exists(log_file_path)
   if not file_exists:

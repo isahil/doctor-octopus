@@ -2,7 +2,6 @@ import asyncio
 import platform
 import subprocess
 
-
 async def open_port_on_local(port):
   pid = await is_port_open(port)
   if pid:

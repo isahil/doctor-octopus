@@ -1,7 +1,6 @@
 import redis
 import datetime
 
-
 class RedisClient:
   def __init__(self):
     self.ids = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -16,12 +15,12 @@ class RedisClient:
   def get(self, key):
     return self.redis_client.get(key)
 
-  def has_it_been_used(self, key, value):
+  def has_it_been_cached(self, key, value):
     used = self.redis_client.lpos(key, value) is not None
     print(f"Checking if {key} value: {value} has been used: {used}")
     return used
 
-  def mark_as_used(self, key, value):
+  def it_has_been_cached(self, key, value):
     print(f"Marking id {value} as used for {key}")
     self.redis_client.lpush(key, value)
 
@@ -29,18 +28,18 @@ class RedisClient:
     key = "used_security_ids"
     value = self.ids.pop()
 
-    while self.has_it_been_used(key, value):
+    while self.has_it_been_cached(key, value):
       value = self.ids.pop()
-    self.mark_as_used(key, value)
+    self.it_has_been_cached(key, value)
     return value
 
   def create_a_unique_order_id(self):
     key = "used_order_ids"
     value = f"sdet-{datetime.datetime.now().strftime('%m%d-%H:%M:%S')}"
 
-    while self.has_it_been_used(key, value):
+    while self.has_it_been_cached(key, value):
       value = f"sdet-{datetime.datetime.now().strftime('%m%d-%H:%M:%S')}"
-    self.mark_as_used(key, value)
+    self.it_has_been_cached(key, value)
     return value
 
   def main(self):

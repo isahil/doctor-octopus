@@ -11,5 +11,4 @@ else
     source $HOME/venv/Scripts/Activate
 fi
 
-# uvicorn server:fastapi_app --reload
 uvicorn server:fastapi_app --reload

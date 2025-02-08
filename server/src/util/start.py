@@ -2,7 +2,6 @@ import os
 import platform
 import subprocess
 
-
 def main():
   os_name = platform.system()
   print(os_name)
@@ -17,7 +16,6 @@ def main():
     print("Unknown OS")
 
   subprocess.run(["sh", "./start.sh"])
-
 
 if __name__ == "__main__":
   main()

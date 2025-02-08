@@ -1,6 +1,5 @@
 import asyncio
 
-
 class Application:
   sio = None
   broadcast = False

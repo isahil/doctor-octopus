@@ -6,7 +6,6 @@ from src.util.date import less_or_qaul_to_date_time
 
 reports_dir = os.path.join(local_dir, test_reports_dir)
 
-
 def get_all_local_cards(filter: int) -> list:
   """get all local report cards in the local test reports directory"""
   test_results = []
