@@ -2,20 +2,7 @@ import "dotenv/config"
 import os from "os"
 import fs from "fs"
 import { execSync } from "child_process"
-import { upload_directory } from "./S3.js"
-import { spawn_child_process } from "./spawn_child_process.js"
-
-const get_est_date_time = () => {
-  const options = { timeZone: "America/New_York" }
-  const date = new Date()
-    .toLocaleString("en-US", options)
-    .replace(/\//g, "-")
-    .replace(/,/g, "")
-    .replace(/ /g, "_")
-    .replace(/:/g, "-")
-
-  return date
-}
+import { get_est_date_time, spawn_child_process, upload_directory } from "./index.js"
 
 const { AWS_SDET_BUCKET_NAME, ENVIRONMENT, PRODUCT_TYPE, APP } = process.env
 const test_script_name = process.argv[2]
@@ -44,7 +31,7 @@ const upload_report = async (code) => {
   // Write the updated reportCard object back to the report.json file
   fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2))
   console.log(`Uploading test reports to S3 bucket: ${AWS_SDET_BUCKET_NAME}`)
-  await upload_directory(AWS_SDET_BUCKET_NAME, local_test_reports_dir, s3_test_reports_dir);
+  await upload_directory(AWS_SDET_BUCKET_NAME, local_test_reports_dir, s3_test_reports_dir)
   process.exit(code ?? 1)
 }
 

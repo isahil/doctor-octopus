@@ -1,4 +1,3 @@
-import "dotenv/config"
 import fs from "fs"
 import path from "path"
 import {
@@ -31,7 +30,6 @@ export async function list_objects() {
 
   const command = new ListObjectsCommand(params)
   const response = await S3_Client.send(command)
-  // console.log(`List S3 response ::: ${JSON.stringify(response.Contents)}`);
   return response
 }
 

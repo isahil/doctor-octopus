@@ -1,7 +1,8 @@
 import dotenv from "dotenv"
+import { get_est_date_time } from "./utils"
 dotenv.config({ path: ".env" })
 
-const { TEST_REPORTS_DIR } = process.env // TODO: copy logic from run.js to create the TEST_REPORTS_DIR
+const { TEST_REPORTS_DIR = `./test_reports/${get_est_date_time()}` } = process.env
 const config = {
   testDir: "tests",
   timeout: 30000,

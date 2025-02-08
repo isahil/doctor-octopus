@@ -8,7 +8,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "node run.js",
+    "test": "node utils/runner.js",
     "api:smoke": "npm test api:smoke",
     "api:sanity": "npm test api:sanity",
     "api:regression": "npm test api:regression",
