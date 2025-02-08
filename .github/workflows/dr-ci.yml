@@ -28,4 +28,8 @@ jobs:
       - name: Install Playwright Dependencies
         run: cd playwright && npm ci
       - name: Run Playwright Tests
-        run: npm run api:smoke
+        run:
+          pwd
+          cd playwright
+          pwd
+          npm run api:smoke
