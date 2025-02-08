@@ -28,7 +28,7 @@ jobs:
       - name: Install Playwright Dependencies
         run: cd playwright && npm ci
       - name: Run Playwright Tests
-        run:
+        run: |
           pwd
           cd playwright
           pwd
