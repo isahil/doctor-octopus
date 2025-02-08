@@ -2,6 +2,7 @@
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 name: Doctor Octopus Tests
 
+
 on:
   push:
     branches: ["main"]
@@ -27,4 +28,4 @@ jobs:
       - name: Install Playwright Dependencies
         run: cd playwright && npm ci
       - name: Run Playwright Tests
-        run: cd playwright && npm run api:smoke
+        run: npm run api:smoke
