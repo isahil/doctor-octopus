@@ -13,7 +13,7 @@ const config = {
     trace: "on-first-retry",
   },
   reporter: [
-    ["github"]
+    ["github"],
     ["list"],
     ["html", { outputFolder: TEST_REPORTS_DIR, open: "never" }],
     ["json", { outputFile: `${TEST_REPORTS_DIR}/report.json` }],
