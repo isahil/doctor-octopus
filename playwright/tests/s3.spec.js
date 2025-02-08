@@ -1,15 +1,10 @@
 import { test, expect } from "playwright/test"
-import { list_objects, upload_directory } from "../S3"
-const { AWS_BUCKET_NAME, REPORTS_DIR } = process.env
+import { list_objects } from "../S3"
 
-test("S3 List", async () => {
+test("S3 Bucket Connection Test", async () => {
   console.log("Running S3 List test...")
-  await list_objects()
+  const total_objects = await list_objects()
+  console.log(`Total objects in S3 bucket: ${total_objects}`)
+  expect(total_objects).toBeGreaterThan(1)
   console.log("S3 List test complete.")
-  expect(true).toBe(true)
-})
-
-test.skip("S3 Upload", async () => {
-  console.log("Running S3 Upload test...")
-  await upload_directory(AWS_BUCKET_NAME, `${REPORTS_DIR}/results_4`)
 })

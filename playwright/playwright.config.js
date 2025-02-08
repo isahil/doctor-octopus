@@ -48,6 +48,10 @@ const config = {
       testMatch: "test-example.spec.js",
       use: { browserName: "chromium" },
     },
+    {
+      name: "s3:smoke",
+      testMatch: "s3.spec.js"
+    },
   ],
 }
 

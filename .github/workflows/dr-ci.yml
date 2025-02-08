@@ -38,4 +38,4 @@ jobs:
         run: |
           pwd
           cd playwright
-          ENVIRONMENT=qa APP=loan npm run api:smoke
+          npm run s3:smoke

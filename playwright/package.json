@@ -12,6 +12,7 @@
     "api:smoke": "npm test api:smoke",
     "api:sanity": "npm test api:sanity",
     "api:regression": "npm test api:regression",
+    "s3:smoke": "npm test s3:smoke",
     "ui:smoke": "npm test ui:smoke",
     "ui:sanity": "npm test ui:sanity",
     "ui:regression": "npm test ui:regression"
