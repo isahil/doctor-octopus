@@ -14,7 +14,6 @@ const {
   AWS_SDET_BUCKET_ACCESS_KEY_ID: accessKeyId,
   AWS_SDET_BUCKET_SECRET_ACCESS_KEY: secretAccessKeyId,
 } = process.env
-console.log(`bucket name ::: ${bucketName} - region ::: ${region}`);
 
 const S3_Client = new S3Client({
   credentials: {
@@ -25,7 +24,6 @@ const S3_Client = new S3Client({
 })
 
 export async function list_objects() {
-  // console.log(`bucket name ::: ${bucketName} - region ::: ${region} ::: ${accessKeyId} ::: ${secretAccessKeyId}`);
   const params = {
     Bucket: "doctor-octopus",
     Prefix: "test_reports/",

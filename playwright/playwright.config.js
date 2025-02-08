@@ -1,8 +1,7 @@
 import dotenv from "dotenv"
-dotenv.config({ path: "./.env" })
+dotenv.config({ path: ".env" })
 
 const { TEST_REPORTS_DIR } = process.env // TODO: copy logic from run.js to create the TEST_REPORTS_DIR
-
 const config = {
   testDir: "tests",
   timeout: 30000,
