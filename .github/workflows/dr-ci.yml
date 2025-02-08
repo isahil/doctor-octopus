@@ -7,7 +7,24 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - regression
+          - all
+  workflow_call:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        type: string
+        default: 'smoke'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,4 +55,12 @@ jobs:
         run: |
           pwd
           cd playwright
-          npm run s3:smoke
+          if [[ "${{ inputs.test_suite }}" == "smoke" ]]; then
+            npm run api:smoke
+          elif [[ "${{ inputs.test_suite }}" == "sanity" ]]; then
+            npm run api:sanity
+          elif [[ "${{ inputs.test_suite }}" == "regression" ]]; then
+            npm run api:regression
+          else
+            npm run s3:smoke  # Default to smoke tests
+          fi
