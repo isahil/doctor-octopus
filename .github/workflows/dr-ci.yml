@@ -27,11 +27,12 @@ on:
         default: 'regression'
 jobs:
   build:
+    name: DO ${{ inputs.test_suite }} Tests
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [23.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -56,11 +57,11 @@ jobs:
           pwd
           cd playwright
           if [[ "${{ inputs.test_suite }}" == "smoke" ]]; then
-            npm run api:smoke
+            ENVIRONMENT=qa APP=clo npm run api:smoke
           elif [[ "${{ inputs.test_suite }}" == "sanity" ]]; then
-            npm run api:sanity
+            ENVIRONMENT=qa APP=loan npm run api:sanity
           elif [[ "${{ inputs.test_suite }}" == "regression" ]]; then
-            npm run api:regression
+            ENVIRONMENT=qa APP=loan npm run api:regression
           else
-            npm run s3:smoke  # Default to smoke tests
+            ENVIRONMENT=qa APP=loan npm run s3:smoke  # Default to smoke tests
           fi

@@ -11,7 +11,7 @@ const SocketIOProvider = ({ children, host, port }) => {
   const [sio, setSio] = React.useState(null)
 
   useEffect(() => {
-    // Establish a WebSocket connection to your server
+    // Establish a WebSocket connection to the server w. the specified host and port on component mount
     const socket = io(`http://${host}:${port}`, {
       path: "/ws/socket.io",
       transports: ["websocket", "polling", "flashsocket"],
@@ -25,7 +25,7 @@ const SocketIOProvider = ({ children, host, port }) => {
 
     setSio(socket)
 
-    return () => socket.disconnect()
+    return () => socket.disconnect() // Disconnect the WebSocket connection when the component unmounts
   }, [])
 
   return <SocketIOContext value={{ sio }}>{children}</SocketIOContext>
