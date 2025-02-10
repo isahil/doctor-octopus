@@ -28,7 +28,7 @@ on:
         default: 'regression'
 jobs:
   build:
-    name: ${{ inputs.test_suite }} tests
+    name: ${{ inputs.test_suite }} Tests
     runs-on: ubuntu-latest
 
     strategy:
