@@ -16,9 +16,9 @@ on:
         default: 'smoke'
         type: choice
         options:
-          - smoke
-          - sanity
-          - regression
+          - Smoke
+          - Sanity
+          - Regression
   workflow_call:
     inputs:
       test_suite:
@@ -57,11 +57,11 @@ jobs:
         run: |
           pwd
           cd playwright
-          if [[ "${{ inputs.test_suite }}" == "smoke" ]]; then
+          if [[ "${{ inputs.test_suite }}" == "Smoke" ]]; then
             ENVIRONMENT=qa APP=clo npm run api:smoke
-          elif [[ "${{ inputs.test_suite }}" == "sanity" ]]; then
+          elif [[ "${{ inputs.test_suite }}" == "Sanity" ]]; then
             ENVIRONMENT=qa APP=loan npm run api:sanity
-          elif [[ "${{ inputs.test_suite }}" == "regression" ]]; then
+          elif [[ "${{ inputs.test_suite }}" == "Regression" ]]; then
             ENVIRONMENT=qa APP=loan npm run ui:regression
           else
             ENVIRONMENT=qa APP=loan npm run s3:smoke  # Default to smoke tests
