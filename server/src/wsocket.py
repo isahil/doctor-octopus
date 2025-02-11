@@ -3,6 +3,8 @@ import sys
 import asyncio
 import socketio
 import config
+from src.component.local import get_all_local_cards
+from src.component.remote import get_all_s3_cards
 
 sys.path.append("./src")
 from config import cors_allowed_origins, the_lab_log_file_path, the_lab_log_file_name, local_dir
@@ -35,6 +37,21 @@ async def disconnect(sid):
     sio_client_count -= 1
     await stop_streaming_log_file(sid)
     print(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
+
+
+@sio.on("cards")
+async def cards(sid, data):
+  print(f"Socket client [{sid}] sent data to cards: {data}")
+  source = data.get("source")
+  filter = data.get("filter")
+  print(f"Report Source: {source} | Filter: {filter}")
+  cards = []
+  if source == "remote":
+    cards = get_all_s3_cards(filter)
+  else:
+    cards = get_all_local_cards(filter)
+  for card in cards:
+    await sio.emit("cards", card, room=sid)
 
 
 @sio.on("fixme")
