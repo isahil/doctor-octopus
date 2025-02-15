@@ -43,7 +43,7 @@ async def disconnect(sid):
 async def cards(sid, data):
   print(f"Socket client [{sid}] sent data to cards: {data}")
   source = data.get("source")
-  filter = data.get("filter")
+  filter = int(data.get("filter"))
   print(f"Report Source: {source} | Filter: {filter}")
   cards = []
   if source == "remote":
