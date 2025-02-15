@@ -12,11 +12,9 @@ load_dotenv(f"{local_dir}.dotenv/.{environment}", verbose=False)
 server_mode: str = os.environ.get("SERVER_MODE", "local")  # [fixme, local]
 
 test_reports_dir: str = os.environ.get(
-  "TEST_REPORTS_DIR", "test_reports"
+    "TEST_REPORTS_DIR", "test_reports"
 )  # test reports directory can be changed in the .env file
-test_reports_date_format = (
-  "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
-)
+test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
 
 the_lab_log_file_name: str = "the-lab.log"
 the_lab_log_file_path: str = f"{local_dir}/logs/{the_lab_log_file_name}"
@@ -26,18 +24,18 @@ socketio_app: ASGIApp = None
 sio: AsyncServer = None
 
 cors_allowed_origins: list = [
-  "http://localhost:3000",
-  "http://localhost:8000",
+    "http://localhost:3000",
+    "http://localhost:8000",
 ]
 
 __all__ = [
-  "sio",
-  "fastapi_app",
-  "socketio_app",
-  "cors_allowed_origins",
-  "local_dir",
-  "environment",
-  "test_reports_dir",
-  "the_lab_log_file_name",
-  "the_lab_log_file_path",
+    "sio",
+    "fastapi_app",
+    "socketio_app",
+    "cors_allowed_origins",
+    "local_dir",
+    "environment",
+    "test_reports_dir",
+    "the_lab_log_file_name",
+    "the_lab_log_file_path",
 ]  # export the variables
