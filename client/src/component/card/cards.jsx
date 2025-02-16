@@ -28,8 +28,7 @@ const Cards = ({ source }) => {
       // setCards(filtered_data)
       if (!sio) {
         console.warn("Socket connection not initialized")
-        // await new Promise((resolve, reject) => { setTimeout(() => { resolve() }, 1000) })
-        // .then(() => get_cards())
+        return
       }
 
       // Remove existing listener before adding a new one
@@ -40,7 +39,7 @@ const Cards = ({ source }) => {
         setTotalCards((prevTotalCards) => prevTotalCards + 1)
         if(card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
         console.log(`Total ${source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
-        setCards(prevCards => [...prevCards, ...card])
+        setCards(prevCards => [...prevCards, card])
       })
 
       sio.emit("cards", { source, filter })
@@ -59,7 +58,7 @@ const Cards = ({ source }) => {
 
   useEffect(() => {
     get_cards()
-  }, [source, filter]) // fetch cards data when the source changes
+  }, [sio, source, filter]) // fetch cards data when the source changes
 
   if (isLoading) {
     return (
