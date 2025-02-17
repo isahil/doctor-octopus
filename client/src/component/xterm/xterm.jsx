@@ -10,7 +10,7 @@ import { useSocketIO } from "../../util/socketio-context.js"
 const XTerm = ({ setShowFixMe }) => {
   const terminalRef = useRef(null)
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
-  const { setTerminal } = useTerminal() // TerminalContext that store the terminal object
+  const { terminal, setTerminal } = useTerminal() // TerminalContext that store the terminal object
   const { sio } = useSocketIO()
 
   const xterm = (terminal) => {
@@ -85,15 +85,20 @@ const XTerm = ({ setShowFixMe }) => {
     })
   }
 
-  useEffect(() => {
-    const terminal = new Terminal()
-    const fitAddon = new FitAddon()
-    terminal.loadAddon(fitAddon)
-    fitAddon.fit()
-    setTerminal(terminal)
+  let terminal_instance
 
-    if(sio) xterm(terminal)
-  }, [sio, setTerminal])
+  useEffect(() => {
+    terminal_instance = new Terminal()
+    setTerminal(terminal_instance)
+    if (sio) {
+      terminal_instance = new Terminal()
+      const fitAddon = new FitAddon()
+      terminal.loadAddon(fitAddon)
+      fitAddon.fit()
+      setTerminal(terminal_instance)
+      xterm(terminal_instance)
+    }
+  }, [sio])
 
   return <div ref={terminalRef} id="terminal" className="component"></div>
 }

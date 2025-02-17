@@ -10,7 +10,7 @@ export const interactive_mode = ({ terminal, input, update_options_handler, hand
   // TODO: Add the logic to disable the handle_run_click function if the selected_options is ["client", "dealer"]
   // TODO: Add the logic to disable interactiveMode after the "Run" button is clicked
   if (current_option_index === last_cards_index && input === "run") {
-    handle_run_click()
+    handle_run_click(terminal)
     current_option_index = 0 // reset the current_option_index for the next interactive
     selected_option = ""
     return
