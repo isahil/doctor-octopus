@@ -79,7 +79,7 @@ async def the_lab(sid, command):
     app = lab_options.get("app")
     proto = lab_options.get("proto")
     suite = lab_options.get("suite")
-    subscription = "the-lab-log"
+    subscription = "the-lab"
 
     os = platform.system().lower()
     if os == "darwin" or os == "linux":

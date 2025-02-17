@@ -5,11 +5,13 @@ import { useOptionsUpdate } from "../lab/lab-context"
 import { command_handler } from "./commands/handler.js"
 import { useTerminal } from "./terminal-context.js"
 import { FitAddon } from "@xterm/addon-fit"
+import { useSocketIO } from "../../util/socketio-context.js"
 
 const XTerm = ({ setShowFixMe }) => {
   const terminalRef = useRef(null)
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
   const { setTerminal } = useTerminal() // TerminalContext that store the terminal object
+  const { sio } = useSocketIO()
 
   const xterm = (terminal) => {
     terminal.options.theme.foreground = "cyan"
@@ -90,8 +92,8 @@ const XTerm = ({ setShowFixMe }) => {
     fitAddon.fit()
     setTerminal(terminal)
 
-    xterm(terminal)
-  }, [setTerminal])
+    if(sio) xterm(terminal)
+  }, [sio, setTerminal])
 
   return <div ref={terminalRef} id="terminal" className="component"></div>
 }

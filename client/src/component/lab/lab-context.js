@@ -62,7 +62,7 @@ const LabProvider = ({ children }) => {
 
   const handle_run_click = () => {
     // listen for the-lab-log events from the server
-    const subscription = "the-lab-log"
+    const subscription = "the-lab"
     sio.off(subscription) // Remove existing listener to avoid duplicate logs
     sio.on(subscription, (line) => {
       terminal.write(`\r ${line}\r`)
@@ -80,7 +80,7 @@ const LabProvider = ({ children }) => {
     )
     // terminal.write(`▁▁▂▃▄▅▆▇█ \n`)
     clear_selected_options()
-    sio.emit("the-lab", command)
+    sio.emit(subscription, command)
     terminal.write(`\r\n\x1B[1;3;31m You\x1B[0m $ `)
   }
 
