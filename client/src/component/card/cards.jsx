@@ -17,15 +17,9 @@ const Cards = ({ source }) => {
    */
   const get_cards = async () => {
     setIsLoading(true) // set loading to true before the fetch request starts
+    setCards([]) // clear the existing cards
+    setTotalCards(0) // clear the existing total cards
     try {
-      // const response = await fetch(
-      //   `http://${SERVER_HOST}:${SERVER_PORT}/cards?source=${source}&filter=${cardsFilter}`
-      // )
-      // const data = await response.json()
-      // setTotalCards(data.length)
-      // const filtered_data = data.filter((card) => card.json_report.suites.length > 0) // filter out cards that did not run any test suites
-      // console.log(`Total ${source} cards: ${data.length} | filtered cards: ${filtered_data.length}`)
-      // setCards(filtered_data)
       if (!sio) {
         console.warn("Socket connection not initialized")
         return
