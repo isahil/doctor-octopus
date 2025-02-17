@@ -69,11 +69,11 @@ const LabProvider = ({ children }) => {
     })
 
     // data to send in the request query
-    const env = selectedOptions[0]
+    const environment = selectedOptions[0]
     const app = selectedOptions[1]
     const proto = selectedOptions[2]
     const suite = selectedOptions[3]
-    const command = { environment: env, app: app, proto: proto, suite: suite }
+    const command = { environment, app, proto, suite }
 
     terminal.write(
       `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Running command ⫷⫷⫷⫷⫷  ${JSON.stringify(command)}  ⫸⫸⫸⫸⫸\r\n`
