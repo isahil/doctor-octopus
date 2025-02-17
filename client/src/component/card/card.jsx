@@ -28,13 +28,13 @@ function Card({ source, card, index }) {
   const formatted_date_time = date.toLocaleString() // adjust formatting as needed
 
   const handle_view_report_click = async () => {
-    console.log(`View report: ${html_report}`)
+    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Report opening in a new tab on host 'http://localhost:9323'\x1B[0m\r\n`)
+    terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
     const response = await fetch(
       `http://${SERVER_HOST}:${SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
     )
-    const output = await response.text()
-    terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(output)} \r\n`)
-    terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
+    await response.text()
+
     // try {
     //   const reportWindow = window.open('http://localhost:9323', '_blank');
     //   if (!reportWindow) {
