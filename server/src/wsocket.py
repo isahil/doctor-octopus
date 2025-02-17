@@ -41,17 +41,17 @@ async def disconnect(sid):
 
 @sio.on("cards")
 async def cards(sid, data):
-  print(f"Socket client [{sid}] sent data to cards: {data}")
-  source = data.get("source")
-  filter = int(data.get("filter"))
-  print(f"Report Source: {source} | Filter: {filter}")
-  cards = []
-  if source == "remote":
-    cards = get_all_s3_cards(filter)
-  else:
-    cards = get_all_local_cards(filter)
-  for card in cards:
-    await sio.emit("cards", card, room=sid)
+    print(f"Socket client [{sid}] sent data to cards: {data}")
+    source = data.get("source")
+    filter = int(data.get("filter"))
+    print(f"Report Source: {source} | Filter: {filter}")
+    cards = []
+    if source == "remote":
+        cards = get_all_s3_cards(sio, sid, filter)
+    else:
+        cards = get_all_local_cards(sio, sid, filter)
+    await cards
+
 
 
 @sio.on("fixme")

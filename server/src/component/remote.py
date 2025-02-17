@@ -13,12 +13,12 @@ def get_a_s3_card_html_report(html) -> str:
     return card
 
 
-def get_all_s3_cards(filter: int) -> list:
+async def get_all_s3_cards(sio, sid, filter: int) -> list:
     """Get all report cards object from the S3 bucket"""
     s3_objects = S3.list_all_s3_objects()
     print(f"Total objects found in SDET S3 bucket: {len(s3_objects)}")
-    test_results = []  # List that will be sent to the client
-    report_cards = {}  # Temporary dictionary to store the reports
+    results = []  # List that will be sent to the client
+    cards = {}  # Temporary dictionary to store the reports
     # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object", ... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
 
     for obj in s3_objects:
@@ -36,28 +36,29 @@ def get_all_s3_cards(filter: int) -> list:
         dir_name = path_parts[3]
         file_name = path_parts[-1]
 
-        if dir_name not in report_cards:
-            report_cards[dir_name] = {"json_report": {}, "html_report": "", "root_dir": root_dir}
+        if dir_name not in cards:
+            cards[dir_name] = {"json_report": {}, "html_report": "", "root_dir": root_dir}
 
         if file_name.endswith("report.json"):
-            report_cards[dir_name]["json_report"] = {
+            cards[dir_name]["json_report"] = {
                 "object_name": object_name
             }  # Create a new folder in the reports dict to save the contents of the folder later
         if file_name.endswith("index.html"):
-            report_cards[dir_name]["html_report"] = object_name
+            cards[dir_name]["html_report"] = object_name
 
-    for dir_key, dir_value in report_cards.items():
+    for _, card in cards.items():
         try:
-            object_name = dir_value["json_report"]["object_name"]
+            object_name = card["json_report"]["object_name"]
             if object_name is False:
                 print("no valid object")
         except KeyError:
             continue
 
         j_report = S3.get_a_s3_object(object_name)
-        dir_value["json_report"] = json.loads(j_report)  # Load the json report into the dictionary
-        test_results.append(dir_value)
-    sorted_test_results = sorted(test_results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+        card["json_report"] = json.loads(j_report)  # Load the json report into the dictionary
+        results.append(card)
+        await sio.emit("cards", card, room=sid)
+    sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
     return sorted_test_results
 
 

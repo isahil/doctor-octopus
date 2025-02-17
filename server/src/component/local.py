@@ -7,15 +7,15 @@ from src.util.date import less_or_qaul_to_date_time
 reports_dir = os.path.join(local_dir, test_reports_dir)
 
 
-def get_all_local_cards(filter: int) -> list:
+async def get_all_local_cards(sio, sid, filter: int) -> list:
     """get all local report cards in the local test reports directory"""
-    test_results = []
+    results = []
     local_reports_dir = os.listdir(reports_dir)
     print(f"Total reports found on local: {len(local_reports_dir)}")
 
     for report_dir in local_reports_dir:
         report_dir_path = os.path.join(reports_dir, report_dir)
-        report_card = {
+        card = {
             "json_report": {},
             "html_report": "",
             "root_dir": report_dir,
@@ -29,14 +29,15 @@ def get_all_local_cards(filter: int) -> list:
 
                 if file.endswith(".json"):
                     with open(file_path, encoding="utf-8") as f:
-                        report_card["json_report"] = json.load(f)
+                        card["json_report"] = json.load(f)
                 if file.endswith(".html"):
                     html_file_path = os.path.join(report_dir, file)
-                    report_card["html_report"] = str(html_file_path)
+                    card["html_report"] = str(html_file_path)
 
                 # time.sleep(0.1) # simulate slow connection
-        test_results.append(report_card)
-    sorted_test_results = sorted(test_results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+        results.append(card)
+        await sio.emit("cards", card, room=sid)
+    sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
     return sorted_test_results
 
 
