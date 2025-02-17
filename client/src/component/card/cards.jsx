@@ -29,7 +29,7 @@ const Cards = ({ source }) => {
       sio.off("cards")
 
       sio.on("cards", (card) => {
-        console.log("Received cards data: ", card)
+        setIsLoading(false)
         setTotalCards((prevTotalCards) => prevTotalCards + 1)
         if(card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
         console.log(`Total ${source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
@@ -40,7 +40,7 @@ const Cards = ({ source }) => {
     } catch (error) {
       console.error("Error fetching cards data:", error)
     } finally {
-      setIsLoading(false) // set loading to false after the fetch request completes
+     if(totalCards > 0) setIsLoading(false) // set loading to false after the fetch request completes
     }
   }
 
@@ -98,7 +98,7 @@ const Cards = ({ source }) => {
         {cards.length > 0 ? (
           cards.map((card, index) => <Card key={index} source={source} card={card} index={index} />)
         ) : (
-          <p style={{ color: "white", marginTop: "30px" }}>No report cards found</p>
+          <p style={{ color: "white", marginTop: "30px" }}>No cards yet</p>
         )}
       </div>
     </div>
