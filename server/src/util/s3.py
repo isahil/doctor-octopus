@@ -57,6 +57,7 @@ class S3Client:
                 continuation = response.get("NextContinuationToken")
             else:
                 break
+        all_objects.sort(key=lambda obj: obj["LastModified"], reverse=True)
         print(f"Total objects found on S3: {len(all_objects)}")
         return all_objects
 
