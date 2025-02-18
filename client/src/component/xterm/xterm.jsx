@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Terminal } from "@xterm/xterm"
 import "./xterm.css"
 import { useOptionsUpdate } from "../lab/lab-context"
@@ -91,6 +91,7 @@ const XTerm = ({ setShowFixMe }) => {
     terminal_instance = new Terminal()
     setTerminal(terminal_instance)
     if (sio) {
+      // terminal needs to be initialized with the socket.io instance for interactive mode to work with sio
       terminal_instance = new Terminal()
       const fitAddon = new FitAddon()
       terminal.loadAddon(fitAddon)
