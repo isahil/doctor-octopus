@@ -2,12 +2,11 @@
   background-color: rgba(22, 47, 65, 0.389);
   border: 3px solid var(--octopus-gray);
   margin: 10px;
-  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   min-width: 600px;
-  height: 150px;
+  height: 170px;
   box-shadow: 0 0 0.5px cyan;
   color: white;
   font-family: "Arial", sans-serif;

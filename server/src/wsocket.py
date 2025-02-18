@@ -3,6 +3,8 @@ import sys
 import asyncio
 import socketio
 import config
+from src.component.local import get_all_local_cards
+from src.component.remote import get_all_s3_cards
 
 sys.path.append("./src")
 from config import cors_allowed_origins, the_lab_log_file_path, the_lab_log_file_name, local_dir
@@ -37,6 +39,21 @@ async def disconnect(sid):
     print(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 
 
+@sio.on("cards")
+async def cards(sid, data):
+    print(f"Socket client [{sid}] sent data to cards: {data}")
+    source = data.get("source")
+    filter = int(data.get("filter"))
+    print(f"Report Source: {source} | Filter: {filter}")
+    cards = []
+    if source == "remote":
+        cards = get_all_s3_cards(sio, sid, filter)
+    else:
+        cards = get_all_local_cards(sio, sid, filter)
+    await cards
+
+
+
 @sio.on("fixme")
 async def fixme_client(sid, order_data):
     print(f"Socket client [{sid}] sent data to fixme: {order_data}")
@@ -62,7 +79,7 @@ async def the_lab(sid, command):
     app = lab_options.get("app")
     proto = lab_options.get("proto")
     suite = lab_options.get("suite")
-    subscription = "the-lab-log"
+    subscription = "the-lab"
 
     os = platform.system().lower()
     if os == "darwin" or os == "linux":

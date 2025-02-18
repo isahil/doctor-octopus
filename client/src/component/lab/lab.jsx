@@ -68,7 +68,7 @@ const Lab = () => {
                       <div
                         key={j}
                         className="option-name"
-                        onClick={() => update_options_handler(i, option)}
+                        onClick={() => update_options_handler(i, option, terminal)}
                       >
                         {option}
                       </div>
@@ -85,7 +85,7 @@ const Lab = () => {
           className={`button run-button ${
             run_button_enabled ? "enabled" : "disabled" // enable the run button if the last card has been selected
           }`}
-          onClick={() => handle_run_click()}
+          onClick={() => handle_run_click({terminal})}
         >
           Run
         </button>

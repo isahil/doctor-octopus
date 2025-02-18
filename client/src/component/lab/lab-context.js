@@ -47,7 +47,7 @@ const LabProvider = ({ children }) => {
     })
 
     if (selectedOptions[2] === "fix" && selectedOptions[3]) {
-      console.log("FixMe selected")
+      console.log("FixMe enabled")
       sio.off("fixme") // Remove existing listener to avoid duplicate
       sio.on("fixme", (data) => {
         console.log("W.Socket server: ", data)
@@ -60,28 +60,31 @@ const LabProvider = ({ children }) => {
     setSelectedOptions({})
   }
 
-  const handle_run_click = () => {
-    // listen for the-lab-log events from the server
-    const subscription = "the-lab-log"
+  const handle_run_click = ({ terminal: interactive_terminal, interactive_selectedOptions }) => {
+    // interactive mode will pass the terminal and selectedOptions as a parameter
+    const _terminal = interactive_terminal ?? terminal
+    const _selectedOptions = interactive_selectedOptions ?? selectedOptions
+    
+    const subscription = "the-lab" // listen for the-lab-log events from the server
     sio.off(subscription) // Remove existing listener to avoid duplicate logs
     sio.on(subscription, (line) => {
-      terminal.write(`\r ${line}\r`)
+      _terminal.write(`\r ${line}\r`)
     })
 
     // data to send in the request query
-    const env = selectedOptions[0]
-    const app = selectedOptions[1]
-    const proto = selectedOptions[2]
-    const suite = selectedOptions[3]
-    const command = { environment: env, app: app, proto: proto, suite: suite }
+    const environment = _selectedOptions[0]
+    const app = _selectedOptions[1]
+    const proto = _selectedOptions[2]
+    const suite = _selectedOptions[3]
+    const command = { environment, app, proto, suite }
 
-    terminal.write(
+    _terminal.write(
       `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Running command ⫷⫷⫷⫷⫷  ${JSON.stringify(command)}  ⫸⫸⫸⫸⫸\r\n`
     )
     // terminal.write(`▁▁▂▃▄▅▆▇█ \n`)
     clear_selected_options()
-    sio.emit("the-lab", command)
-    terminal.write(`\r\n\x1B[1;3;31m You\x1B[0m $ `)
+    sio.emit(subscription, command)
+    _terminal.write(`\r\n\x1B[1;3;31m You\x1B[0m $ `)
   }
 
   return (

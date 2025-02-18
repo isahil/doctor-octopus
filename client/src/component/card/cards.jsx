@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react"
 import Card from "./card"
 import "./cards.css"
 import config from "../../config.json"
+import { useSocketIO } from "../../util/socketio-context"
 const { SERVER_HOST, SERVER_PORT, CARDS_DAY_FILTERS } = config
 
 const Cards = ({ source }) => {
-  const [cards, setCards] = React.useState([])
+  const { sio } = useSocketIO()
+  const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
-  const [cardsFilter, setCardsFilter] = useState(1)
+  const [filter, setFilter] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
 
   /**
@@ -15,31 +17,42 @@ const Cards = ({ source }) => {
    */
   const get_cards = async () => {
     setIsLoading(true) // set loading to true before the fetch request starts
+    setCards([]) // clear the existing cards
+    setTotalCards(0) // clear the existing total cards
     try {
-      const response = await fetch(
-        `http://${SERVER_HOST}:${SERVER_PORT}/cards?source=${source}&filter=${cardsFilter}`
-      )
-      const data = await response.json()
-      setTotalCards(data.length)
-      const filtered_data = data.filter((card) => card.json_report.suites.length > 0) // filter out cards that did not run any test suites
-      console.log(`Total ${source} cards: ${data.length} | filtered cards: ${filtered_data.length}`)
-      setCards(filtered_data)
+      if (!sio) {
+        console.warn("Socket connection not initialized")
+        return
+      }
+
+      // Remove existing listener before adding a new one
+      sio.off("cards")
+
+      sio.on("cards", (card) => {
+        setIsLoading(false)
+        setTotalCards((prevTotalCards) => prevTotalCards + 1)
+        if(card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
+        console.log(`Total ${source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
+        setCards(prevCards => [...prevCards, card])
+      })
+
+      sio.emit("cards", { source, filter })
     } catch (error) {
       console.error("Error fetching cards data:", error)
     } finally {
-      setIsLoading(false) // set loading to false after the fetch request completes
+     if(totalCards > 0) setIsLoading(false) // set loading to false after the fetch request completes
     }
   }
 
   const handle_filter_change = (e) => {
     const value = e.target.value
     console.log("Clicked cards filter: ", e.target.value)
-    setCardsFilter(value)
+    setFilter(value)
   }
 
   useEffect(() => {
     get_cards()
-  }, [source, cardsFilter]) // fetch cards data when the source changes
+  }, [sio, source, filter]) // fetch cards data when the source changes
 
   if (isLoading) {
     return (
@@ -71,7 +84,7 @@ const Cards = ({ source }) => {
                   name={`day-${day}`}
                   value={day}
                   onChange={handle_filter_change}
-                  checked={cardsFilter == day}
+                  checked={filter == day}
                 ></input>
                 <span className={`filter day-${day}`}>{day}</span>
                 <span className="filter text">{day === 1 ? "day" : "days"}</span>
@@ -85,7 +98,7 @@ const Cards = ({ source }) => {
         {cards.length > 0 ? (
           cards.map((card, index) => <Card key={index} source={source} card={card} index={index} />)
         ) : (
-          <p style={{ color: "white", marginTop: "30px" }}>No report cards found</p>
+          <p style={{ color: "white", marginTop: "30px" }}>No cards yet</p>
         )}
       </div>
     </div>

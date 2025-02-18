@@ -1,7 +1,8 @@
 import LabSettings from "../../lab/lab.json"
 
 let current_option_index = 0,
-  selected_option = ""
+  interactive_selectedOptions = {},  // store the selected options so far. equivalent of selectedOptions in lab-context.js
+  selected_option = "" // store the currently selected option to verify if the "run" option should be prompted
 
 export const interactive_mode = ({ terminal, input, update_options_handler, handle_run_click }) => {
   const last_cards_index = LabSettings.length // index of the last card is used to enable the "Run" button
@@ -10,13 +11,15 @@ export const interactive_mode = ({ terminal, input, update_options_handler, hand
   // TODO: Add the logic to disable the handle_run_click function if the selected_options is ["client", "dealer"]
   // TODO: Add the logic to disable interactiveMode after the "Run" button is clicked
   if (current_option_index === last_cards_index && input === "run") {
-    handle_run_click()
+    console.log("xterm - Run typed")
+    handle_run_click({ terminal, interactive_selectedOptions })
     current_option_index = 0 // reset the current_option_index for the next interactive
     selected_option = ""
     return
   }
 
-  selected_option = input // store the selected option for the current card to verify if the "Run" button should be enabled
+  selected_option = input
+  interactive_selectedOptions[current_option_index] = selected_option
   update_options_handler(current_option_index, input) // update the selected option for the currentOptionIndex card
   current_option_index++ // increment the display messages for the next card options
 
