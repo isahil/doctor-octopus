@@ -7,7 +7,6 @@ from src.util.s3 import S3
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
 
-
 def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
     return card

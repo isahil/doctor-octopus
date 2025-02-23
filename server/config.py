@@ -24,6 +24,7 @@ socketio_app: ASGIApp = None
 sio: AsyncServer = None
 
 cors_allowed_origins: list = [
+    "http://localhost:2222",
     "http://localhost:3000",
     "http://localhost:8000",
 ]
