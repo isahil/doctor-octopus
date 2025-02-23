@@ -3,7 +3,7 @@ import Card from "./card"
 import "./cards.css"
 import config from "../../config.json"
 import { useSocketIO } from "../../util/socketio-context"
-const { SERVER_HOST, SERVER_PORT, CARDS_DAY_FILTERS } = config
+const { CARDS_DAY_FILTERS } = config
 
 const Cards = ({ source }) => {
   const { sio } = useSocketIO()
