@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react"
 import { Terminal } from "@xterm/xterm"
 import "./xterm.css"
-import { useOptionsUpdate } from "../lab/lab-context"
+import { useOptionsUpdate } from "../lab/lab-context.jsx"
 import { command_handler } from "./commands/handler.js"
-import { useTerminal } from "./terminal-context.js"
+import { useTerminal } from "./terminal-context.jsx"
 import { FitAddon } from "@xterm/addon-fit"
-import { useSocketIO } from "../../util/socketio-context.js"
+import { useSocketIO } from "../../util/socketio-context.jsx"
 
 const XTerm = ({ setShowFixMe }) => {
   const terminalRef = useRef(null)

@@ -1,10 +1,10 @@
 import { useState } from "react"
-import Cards from "./component/card/cards"
-import FixMe from "./component/fixme/fixme"
+import Cards from "./component/card/cards.jsx"
+import FixMe from "./component/fixme/fixme.jsx"
 import Footer from "./component/footer/footer.jsx"
 import Header from "./component/header/header.jsx"
 import Lab from "./component/lab/lab.jsx"
-import XTerm from "./component/xterm/xterm"
+import XTerm from "./component/xterm/xterm.jsx"
 
 function App() {
   const [source, setSource] = useState("remote")

@@ -7,7 +7,6 @@ from src.util.s3 import S3
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
 
-
 def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
     return card
@@ -59,6 +58,8 @@ async def get_all_s3_cards(sio, sid, filter: int) -> list:
         results.append(card)
         await sio.emit("cards", card, room=sid)
     sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    if len(sorted_test_results) == 0:
+        await sio.emit("cards", False, room=sid)
     return sorted_test_results
 
 

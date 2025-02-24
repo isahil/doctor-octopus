@@ -8,6 +8,7 @@ test.*
 node_modules/
 client/node_modules/
 client/build/
+client/dist/
 server/venv/
 server/.venv/
 /.pnp
