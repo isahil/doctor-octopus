@@ -5,7 +5,7 @@ from src.component.remote import get_all_s3_cards, download_s3_folder
 
 router = APIRouter()
 
-@router.get("/cards/", response_class=JSONResponse, status_code=200)
+@router.get("/cards/", response_class=JSONResponse, status_code=200, deprecated=True)
 async def get_all_cards(
     source: str = Query(
         ...,

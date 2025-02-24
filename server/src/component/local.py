@@ -39,6 +39,8 @@ async def get_all_local_cards(sio, sid, filter: int) -> list:
     sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
     for card in sorted_test_results:
         await sio.emit("cards", card, room=sid)
+    if len(sorted_test_results) == 0:
+        await sio.emit("cards", False, room=sid)
     return sorted_test_results
 
 

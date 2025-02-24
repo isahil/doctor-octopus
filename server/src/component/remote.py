@@ -58,6 +58,8 @@ async def get_all_s3_cards(sio, sid, filter: int) -> list:
         results.append(card)
         await sio.emit("cards", card, room=sid)
     sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    if len(sorted_test_results) == 0:
+        await sio.emit("cards", False, room=sid)
     return sorted_test_results
 
 

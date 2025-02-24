@@ -53,7 +53,6 @@ async def cards(sid, data):
     await cards
 
 
-
 @sio.on("fixme")
 async def fixme_client(sid, order_data):
     print(f"Socket client [{sid}] sent data to fixme: {order_data}")

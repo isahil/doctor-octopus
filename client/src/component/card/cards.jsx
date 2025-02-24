@@ -25,11 +25,14 @@ const Cards = ({ source }) => {
         return
       }
 
-      // Remove existing listener before adding a new one
-      sio.off("cards")
+      sio.off("cards") // Remove existing listener before adding a new one
 
       sio.on("cards", (card) => {
         setIsLoading(false)
+        if(!card) {
+          console.log("No cards found") // log a message if no cards are found
+          return setCards([]) // clear the existing cards if no cards are found
+        }
         setTotalCards((prevTotalCards) => prevTotalCards + 1)
         if(card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
         console.log(`Total ${source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
