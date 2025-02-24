@@ -25,7 +25,7 @@ doctor-octopus
 ├─ server
 │ ├─ src
 │ │ └─ ...
-│ ├─ setup.py
+│ ├─ pyproject.toml
 │ └─ ...
 ├─ client
 │ ├─ src
@@ -38,9 +38,9 @@ doctor-octopus
 
 ## Key Tech Stacks
 
-- **FastAPI**: server/back-end using Python
-- **React**: client/front-end using JavaScript
-- **SocketIO**: communicates between the client & the server to execute test suites on the server and then stream the logs in the integrated xterm terminal
-- **AWS S3**: remote repository for the test reports
+- **FastAPI**: server/back-end using Python.
+- **React**: client/front-end using JavaScript.
+- **SocketIO**: communicates between the client & the server to execute test suites on the server and then stream the logs in to the integrated xterm terminal.
+- **AWS S3**: remote repository where the test reports are stored.
 
 Developer: **IMRAN SAHIL**
