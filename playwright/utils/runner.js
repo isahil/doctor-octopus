@@ -1,5 +1,5 @@
 import "dotenv/config"
-import ci from "ci"
+import CI from "is-ci"
 import os from "os"
 import fs from "fs"
 import { execSync } from "child_process"
@@ -32,7 +32,7 @@ const upload_report = async (code) => {
   // Write the updated reportCard object back to the report.json file
   fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2))
   console.log(`Uploading test reports to S3 bucket: ${AWS_SDET_BUCKET_NAME}`)
-  if(ci) await upload_directory(AWS_SDET_BUCKET_NAME, local_test_reports_dir, s3_test_reports_dir)
+  if(CI) await upload_directory(AWS_SDET_BUCKET_NAME, local_test_reports_dir, s3_test_reports_dir)
   process.exit(code ?? 1)
 }
 
