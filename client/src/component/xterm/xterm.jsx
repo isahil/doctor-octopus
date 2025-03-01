@@ -14,12 +14,13 @@ const XTerm = ({ setShowFixMe }) => {
   const { sio } = useSocketIO()
 
   const xterm = (terminal) => {
+    if (!terminal) return
     terminal.options.theme.foreground = "cyan"
     terminal.options.cursorStyle = "underline"
     terminal.options.cursorBlink = true
 
     const fitAddon = new FitAddon() // FitAddon to fit the terminal to the container
-    terminal.loadAddon(fitAddon)
+    if (terminal) terminal.loadAddon(fitAddon)
     terminal.open(terminalRef.current)
     fitAddon.fit()
 
@@ -85,23 +86,24 @@ const XTerm = ({ setShowFixMe }) => {
     })
   }
 
-  let terminal_instance
-
   useEffect(() => {
-    terminal_instance = new Terminal()
-    setTerminal(terminal_instance)
-    if (sio) {
-      // terminal needs to be initialized with the socket.io instance for interactive mode to work with sio
-      terminal_instance = new Terminal()
+    if (terminalRef.current && sio) {
+      const terminal = new Terminal()
+      setTerminal(terminal)
       const fitAddon = new FitAddon()
       terminal.loadAddon(fitAddon)
       fitAddon.fit()
-      setTerminal(terminal_instance)
-      xterm(terminal_instance)
+      xterm(terminal)
     }
-  }, [sio])
 
-  return <div ref={terminalRef} id="terminal" className="component"></div>
+    return () => {
+      if (terminal) {
+        terminal.dispose()
+      }
+    }
+  }, [sio, terminalRef])
+
+  return <div ref={terminalRef} id="terminal" className="xterm component"></div>
 }
 
 export default XTerm

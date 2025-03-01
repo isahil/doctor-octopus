@@ -1,6 +1,7 @@
 .cards-component {
-  display: flex;
-  flex-wrap: wrap; /* Allow wrapping if there are too many cards-component */
+  overflow: auto;
+  height: 210vh;
+  scroll-behavior: smooth;
   justify-content: center;
   margin-top: 2px;
   position: relative;

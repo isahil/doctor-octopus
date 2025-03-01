@@ -1,0 +1,20 @@
+
+.navigation-tabs {
+    display: flex;
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .nav-link {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 4px;
+    margin-right: 10px;
+  }
+  
+  .nav-link.active {
+    background-color: #007bff;
+    color: white;
+  }

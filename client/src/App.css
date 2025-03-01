@@ -19,26 +19,14 @@ body {
   margin-top: 75px;
 }
 
-.app-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  margin: 0 30px;
-  grid-gap: 50px;
-}
-
-.cards-container {
-  overflow: auto;
-  height: 210vh;
-  scroll-behavior: smooth;
-}
-
 .tech-container {
-  margin: 10px auto;
+  display: flex;
+  justify-content: center;
 }
 
 .tech-container .component {
-  margin-bottom: 60px;
   border: solid var(--border-thickness) var(--octopus-gray);
+  margin-bottom: 40px;
 }
 
 .button {
@@ -74,6 +62,6 @@ body {
 
 @media screen and (min-width: 1800px) {
   .tech-container .component {
-    margin-bottom: 120px;
+    margin: 0px 80px 50px 50px;
   }
 }

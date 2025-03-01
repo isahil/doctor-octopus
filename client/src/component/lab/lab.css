@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: center;
   background-color: rgba(22, 47, 65, 0.389);
+  /* grid-column: 2; */
 }
 
 .lab.component.enabled {

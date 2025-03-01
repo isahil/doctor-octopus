@@ -1,13 +1,14 @@
 .fixme {
-  flex-wrap: wrap;
   justify-content: space-around;
   color: cyan;
   border: 7px solid var(--octopus-gray);
   border-radius: var(--border-radius);
   text-align: center;
   padding: 10px;
-  height: auto;
+  min-width: 700px;
+  /* height: auto; */
   position: relative;
+  margin: 0px 70px 0px 30px;
 }
 
 .fixme.component.enabled {
@@ -313,9 +314,16 @@
 }
 
 .submit-button {
-  margin-top: 15px;
+  margin-top: 35px;
 }
 
 .submit-button.enabled:hover {
   transform: scale(1.2);
+}
+
+@media screen and (min-width: 1800px) {
+  .fixme {
+    min-width: 800px;
+    margin: 0px 100px;
+  }
 }

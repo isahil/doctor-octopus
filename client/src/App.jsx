@@ -1,4 +1,6 @@
 import { useState } from "react"
+import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom"
+import NavBar from "./component/navbar/navbar.jsx"
 import Cards from "./component/card/cards.jsx"
 import FixMe from "./component/fixme/fixme.jsx"
 import Footer from "./component/footer/footer.jsx"
@@ -7,7 +9,7 @@ import Lab from "./component/lab/lab.jsx"
 import XTerm from "./component/xterm/xterm.jsx"
 
 function App() {
-  const [source, setSource] = useState("remote")
+  const [source, setSource] = useState("local")
   const [showFixMe, setShowFixMe] = useState(true)
 
   const toggle_source = () => {
@@ -19,24 +21,32 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <Header source={source} toggle_source={toggle_source} />
-      <div className="app-grid">
-        <div className="cards-container">
-          <Cards source={source} />
+    <Router>
+      <div className="app">
+        <Header source={source} toggle_source={toggle_source} />
+        <NavBar />
+        <div className="app-grid">
+          <Routes>
+            <Route path="/" element={<Cards source={source} />} />
+            <Route
+              path="/the-lab"
+              element={
+                <div className="tech-container">
+                  {showFixMe && <FixMe />}
+                  <div className="xterm-lab">
+                    <XTerm setShowFixMe={setShowFixMe} />
+                    <Lab />
+                  </div>
+                </div>
+              }
+            />
+          </Routes>
         </div>
-        <div className="tech-container">
-          <XTerm setShowFixMe={setShowFixMe} />
-          <Lab />
-          {showFixMe && <FixMe />}
-          {/* Display the FixMe component when showFixMe is true */}
-          {/* <FixMe /> */}
+        <div className="app-footer">
+          <Footer />
         </div>
       </div>
-      <div className="app-footer">
-        <Footer />
-      </div>
-    </div>
+    </Router>
   )
 }
 
