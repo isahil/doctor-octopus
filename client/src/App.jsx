@@ -1,10 +1,9 @@
 import { useState } from "react"
-import { BrowserRouter as Router, Routes, Route, NavLink } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import NavBar from "./component/navbar/navbar.jsx"
 import Cards from "./component/card/cards.jsx"
 import FixMe from "./component/fixme/fixme.jsx"
 import Footer from "./component/footer/footer.jsx"
-import Header from "./component/header/header.jsx"
 import Lab from "./component/lab/lab.jsx"
 import XTerm from "./component/xterm/xterm.jsx"
 
@@ -23,9 +22,8 @@ function App() {
   return (
     <Router>
       <div className="app">
-        <Header source={source} toggle_source={toggle_source} />
-        <NavBar />
-        <div className="app-grid">
+        <NavBar source={source} toggle_source={toggle_source} />
+        <div>
           <Routes>
             <Route path="/" element={<Cards source={source} />} />
             <Route
@@ -33,7 +31,7 @@ function App() {
               element={
                 <div className="tech-container">
                   {showFixMe && <FixMe />}
-                  <div className="xterm-lab">
+                  <div>
                     <XTerm setShowFixMe={setShowFixMe} />
                     <Lab />
                   </div>

@@ -26,7 +26,7 @@ body {
 
 .tech-container .component {
   border: solid var(--border-thickness) var(--octopus-gray);
-  margin-bottom: 40px;
+  margin: 0px 20px 40px 20px;
 }
 
 .button {
@@ -62,6 +62,6 @@ body {
 
 @media screen and (min-width: 1800px) {
   .tech-container .component {
-    margin: 0px 80px 50px 50px;
+    margin: 0px 50px 50px 30px;
   }
 }
