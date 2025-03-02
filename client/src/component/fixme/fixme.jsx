@@ -1,10 +1,8 @@
 import React, { useState } from "react"
 import "./fixme.css"
-import new_order_tags from "./data/new-order-tags.json"
-import cancel_order_tags from "./data/cancel-order-tags.json"
-import { useSocketIO } from "../../util/socketio-context"
-import { useLabOptions } from "../lab/lab-context"
-import { useTerminal } from "../xterm/terminal-context"
+import new_order_tags from "../../data/new-order-tags.json"
+import cancel_order_tags from "../../data/cancel-order-tags.json"
+import { useLabOptions, useSocketIO, useTerminal } from "../../hooks"
 
 const FixMe = () => {
   const { terminal } = useTerminal()

@@ -1,8 +1,6 @@
 import "./lab.css"
 import lab_cards from "./lab.json"
-import { useLabOptions, useOptionsUpdate } from "./lab-context"
-import { useSocketIO } from "../../util/socketio-context"
-import { useTerminal } from "../xterm/terminal-context"
+import { useLabOptions, useOptionsUpdate, useSocketIO, useTerminal } from "../../hooks"
 
 const Lab = () => {
   const { sio } = useSocketIO()

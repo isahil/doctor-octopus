@@ -1,7 +1,7 @@
 import React from "react"
 import "./card.css"
 import config from "../../config.json"
-import { useTerminal } from "../xterm/terminal-context"
+import { useTerminal } from "../../hooks"
 
 const { SERVER_HOST, SERVER_PORT } = config
 

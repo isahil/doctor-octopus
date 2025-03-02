@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import Card from "./card"
 import "./cards.css"
 import config from "../../config.json"
-import { useSocketIO } from "../../util/socketio-context"
+import { useSocketIO } from "../../hooks"
 const { CARDS_DAY_FILTERS } = config
 
 const Cards = () => {
