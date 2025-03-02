@@ -13,10 +13,18 @@
   --octopus-golden: #eddb4c;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: scroll;
+}
+
 body {
-  background-color: var(--background-color);
   font-family: "Roboto", sans-serif;
-  margin-top: 75px;
+  margin-top: 65px;
+  background-color: var(--background-color);
 }
 
 .tech-container {
@@ -26,7 +34,7 @@ body {
 
 .tech-container .component {
   border: solid var(--border-thickness) var(--octopus-gray);
-  margin: 0px 20px 40px 20px;
+  margin: 20px 20px 40px 20px;
 }
 
 .button {
@@ -60,8 +68,8 @@ body {
   cursor: not-allowed;
 }
 
-@media screen and (min-width: 1800px) {
+@media screen and (min-width: 1600px) {
   .tech-container .component {
-    margin: 0px 50px 50px 30px;
+    margin: 50px 50px 50px 30px;
   }
 }

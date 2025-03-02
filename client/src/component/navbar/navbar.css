@@ -55,8 +55,8 @@
   margin: 0 5px;
   height: 100%;
   padding: 0 18px;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  border-right: 2px solid rgba(255, 255, 255, 0.2);
   transition: background-color 0.2s;
 }
 
@@ -65,7 +65,7 @@
 }
 
 .nav-link.active {
-  background-color: rgba(11, 140, 183, 0.2);
-  color: cyan;
+  background-color: rgba(25, 162, 208, 0.2);
+  color: white;
   font-weight: bold;
 }
