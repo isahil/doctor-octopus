@@ -19,8 +19,11 @@ playwright/test_reports/*
 playwright/test-results/*
 playwright/playwright-report/*
 playwright/logs/*.log
+
 server/test_reports/*
 server/doctor_octopus.egg-info/*
+server/src/doctor_octopus.egg-info/*
+server/build/*
 
 # production
 /build
