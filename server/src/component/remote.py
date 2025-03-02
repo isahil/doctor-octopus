@@ -1,11 +1,12 @@
 import json
 import os
 from config import local_dir, test_reports_dir, test_reports_date_format
-from src.util.date import less_or_qaul_to_date_time
+from src.util.date import less_or_eqaul_to_date_time
 from src.util.s3 import S3
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
+
 
 def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
@@ -28,7 +29,7 @@ async def get_all_s3_cards(sio, sid, filter: int) -> list:
         root_dir_parts = path_parts[:4]
         report_dir = root_dir_parts[-1]  # e.g. '12-31-2025_08-30-00_AM'
 
-        if not less_or_qaul_to_date_time(report_dir, test_reports_date_format, filter):
+        if not less_or_eqaul_to_date_time(report_dir, test_reports_date_format, filter):
             continue
 
         root_dir = "/".join(path_parts[:4])

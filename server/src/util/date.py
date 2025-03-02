@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 
-def less_or_qaul_to_date_time(report_dir_date, date_format, filter) -> bool:
+def less_or_eqaul_to_date_time(report_dir_date, date_format, filter) -> bool:
     """
     Compare the date of the report directory with the current date.
     If the report is older than the filter, return False.
