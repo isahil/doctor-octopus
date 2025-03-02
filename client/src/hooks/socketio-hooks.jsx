@@ -1,6 +1,6 @@
-import { useContext } from 'react'
-import { SocketIOContext } from '../context'
+import { useContext } from "react"
+import { SocketIOContext } from "../context"
 
 export const useSocketIO = () => {
-    return useContext(SocketIOContext)
-  }
+  return useContext(SocketIOContext)
+}

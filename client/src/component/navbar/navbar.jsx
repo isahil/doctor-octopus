@@ -5,7 +5,6 @@ export default function NavBar({ source, toggle_source }) {
   return (
     <header className="header">
       <div className="header-content">
-        
         <nav className="navigation-tabs">
           <NavLink
             to="/the-lab"
@@ -13,10 +12,7 @@ export default function NavBar({ source, toggle_source }) {
           >
             Lab
           </NavLink>
-          <NavLink 
-            to="/" 
-            className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-          >
+          <NavLink to="/" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
             Reports
           </NavLink>
         </nav>

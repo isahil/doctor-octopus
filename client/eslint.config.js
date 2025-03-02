@@ -5,12 +5,12 @@ export default [
     ignores: ["**/node_modules/", "**/test_reports/**/*", "**/dist/**/*", "**/build/**/*"],
     rules: {
       "no-unused-vars": "warn",
-      "quotes": ["warn", "double"]
+      quotes: ["warn", "double"],
     },
     settings: {
       react: {
-        version: "detect"
-      }
-    }
-  }
+        version: "detect",
+      },
+    },
+  },
 ]

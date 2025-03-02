@@ -11,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       test_suite:
-        description: 'Test suite to run'
+        description: "Test suite to run"
         required: true
-        default: 'smoke'
+        default: "smoke"
         type: choice
         options:
           - Smoke
@@ -22,10 +22,10 @@ on:
   workflow_call:
     inputs:
       test_suite:
-        description: 'Test suite to run'
+        description: "Test suite to run"
         required: true
         type: string
-        default: 'regression'
+        default: "regression"
 jobs:
   build:
     name: ${{ inputs.test_suite }} Tests

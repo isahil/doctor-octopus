@@ -1,8 +1,9 @@
-import dotenv from "dotenv"
-import { get_est_date_time } from "./utils"
-dotenv.config({ path: ".env" })
+import dotenv from "dotenv";
+import { get_est_date_time } from "./utils";
+dotenv.config({ path: ".env" });
 
-const { TEST_REPORTS_DIR = `./test_reports/${get_est_date_time()}` } = process.env
+const { TEST_REPORTS_DIR = `./test_reports/${get_est_date_time()}` } =
+  process.env;
 const config = {
   testDir: "tests",
   timeout: 30000,
@@ -51,9 +52,9 @@ const config = {
     },
     {
       name: "s3:smoke",
-      testMatch: "s3.spec.js"
+      testMatch: "s3.spec.js",
     },
   ],
-}
+};
 
-export default config
+export default config;

@@ -46,7 +46,7 @@ const LabProvider = ({ children }) => {
     // interactive mode will pass the terminal and selectedOptions as a parameter
     const _terminal = interactive_terminal ?? terminal
     const _selectedOptions = interactive_selectedOptions ?? selectedOptions
-    
+
     const subscription = "the-lab" // listen for the-lab-log events from the server
     sio.off(subscription) // Remove existing listener to avoid duplicate logs
     sio.on(subscription, (line) => {
