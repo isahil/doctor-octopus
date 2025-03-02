@@ -11,7 +11,7 @@ export default function NavBar({ source, toggle_source }) {
             to="/the-lab"
             className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
           >
-            The Lab
+            Lab
           </NavLink>
           <NavLink 
             to="/" 

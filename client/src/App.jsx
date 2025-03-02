@@ -8,24 +8,15 @@ import Lab from "./component/lab/lab.jsx"
 import XTerm from "./component/xterm/xterm.jsx"
 
 function App() {
-  const [source, setSource] = useState("local")
   const [showFixMe, setShowFixMe] = useState(true)
-
-  const toggle_source = () => {
-    setSource((current_source) => {
-      const updated_source = current_source === "remote" ? "local" : "remote"
-      console.log(`Toggled source: ${updated_source}`)
-      return updated_source
-    })
-  }
 
   return (
     <Router>
       <div className="app">
-        <NavBar source={source} toggle_source={toggle_source} />
+        <NavBar />
         <div>
           <Routes>
-            <Route path="/" element={<Cards source={source} />} />
+            <Route path="/" element={<Cards />} />
             <Route
               path="/the-lab"
               element={
