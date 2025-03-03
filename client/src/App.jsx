@@ -31,9 +31,7 @@ function App() {
             />
           </Routes>
         </div>
-        <div className="app-footer">
           <Footer />
-        </div>
       </div>
     </Router>
   )
