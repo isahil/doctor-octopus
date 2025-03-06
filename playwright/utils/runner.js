@@ -18,7 +18,7 @@ const test_reports_dir = "test_reports";
 const report_dir = `${get_est_date_time()}`;
 const local_test_reports_dir = `./${test_reports_dir}/${report_dir}`;
 process.env.TEST_REPORTS_DIR = local_test_reports_dir;
-const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${APP}/${test_protocol}/${ENVIRONMENT}/${report_dir}`;
+const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${APP}/${ENVIRONMENT}/${test_protocol}/${report_dir}`;
 
 const os_username = os.userInfo().username;
 const git_branch = execSync("git rev-parse --abbrev-ref HEAD")
