@@ -11,7 +11,7 @@ const Cards = () => {
   const [totalCards, setTotalCards] = useState(0)
   const [filter, setFilter] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
-  const [source, setSource] = useState("local")
+  const [source, setSource] = useState("remote")
 
   const toggle_source = () => {
     setSource((current_source) => {
