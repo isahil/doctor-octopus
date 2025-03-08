@@ -54,11 +54,12 @@ def get_a_local_card_html_report(html) -> str:
 
 async def view_a_report_on_local(root_dir):
     try:
+        server_host = os.environ.get("SERVER_HOST", "localhost")
         port = "9323"  # default port for playwright show-report
         await open_port_on_local(port)
         command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir}"
         await run_a_command_on_local(command)
-        message = f"http://localhost:{port}"
+        message = f"http://{server_host}:{port}"
         print(f"View report message: {message}")
         return message
     except Exception as e:
