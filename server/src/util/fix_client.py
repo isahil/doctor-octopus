@@ -21,10 +21,10 @@ class Application:
             timeout -= 1
             await asyncio.sleep(2)
 
-    async def submit_order(self, order_data):
-        print(f"fix app received order: {order_data}")
-        await self.sio.emit("fixme", order_data)
-        return order_data
+    async def submitOrder(self, order, validation, tradeValidation):
+        print(f"fix app received order: {order}")
+        await self.sio.emit("fixme", {order, validation, tradeValidation})
+        return order
 
 
 class FixClient:
@@ -33,12 +33,12 @@ class FixClient:
     fix_side = None
     sio = None
 
-    def __init__(self, **kwargs):
-        self.env = kwargs.get("env", "prod")
-        self.app = kwargs.get("app", "fix")
-        self.fix_side = kwargs.get("fix_side", "buy")
-        self.broadcast = kwargs.get("broadcast", False)
-        self.sio = kwargs.get("sio", None)
+    def __init__(self, settings):
+        self.env = settings.get("env", "prod")
+        self.app = settings.get("app", "fix")
+        self.fix_side = settings.get("fix_side", "buy")
+        self.broadcast = settings.get("broadcast", False)
+        self.sio = settings.get("sio", None)
 
     async def start_mock_client(self):
         env = self.env

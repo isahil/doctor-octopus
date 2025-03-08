@@ -21,17 +21,15 @@ function Card({ source, card, index }) {
     app,
     duration,
   } = stats // scoreboard values to display
-  const project_name = test_suite ? test_suite : "N/A"
+  const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected
 
   const date = new Date(startTime) // convert startTime to a Date object
   const formatted_date_time = date.toLocaleString() // adjust formatting as needed
 
   const handle_view_report_click = async () => {
-    terminal.write(
-      `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Report opening in a new tab on host 'http://localhost:9323'\x1B[0m\r\n`
-    )
-    terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
+    // terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Report opening in a new tab on host 'http://localhost:9323'\x1B[0m\r\n`)
+    // terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
     const response = await fetch(
       `http://${SERVER_HOST}:${SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
     )
