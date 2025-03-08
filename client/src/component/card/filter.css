@@ -1,0 +1,75 @@
+.option-wrapper input[type="radio"]:focus {
+    outline: 0;
+    box-shadow: 0 0 0 4px #b5c9fc;
+}
+
+.option-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    top: 7px;
+    left: 3px;
+    position: absolute;
+    margin-left: 175px;
+    font-size: small;
+}
+
+.option-wrapper input[type="radio"] {
+    clip: rect(0 0 0 0);
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+}
+
+.option-wrapper input[type="radio"]:hover+span {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0.08em white;
+}
+
+.option-wrapper input[type="radio"]+span {
+    width: 47px;
+}
+
+.option-wrapper input[type="radio"]:checked+span {
+    box-shadow: 0 0 0 0.05em cyan;
+    z-index: 1;
+    color: cyan;
+}
+
+.option-wrapper input[type="radio"]:checked+span+.text {
+    color: cyan;
+    box-shadow: 0 0 0 0.05em cyan;
+}
+
+.option-wrapper label span {
+    display: block;
+    cursor: pointer;
+    background-color: black;
+    padding: 0.1em 0.75em;
+    position: relative;
+    margin-left: 0.3em;
+    border: var(--octopus-gray) solid 0.1em;
+    color: white;
+    text-align: center;
+    transition: background-color 0.5s ease;
+}
+
+.option-wrapper label:first-child span {
+    border-radius: 0.1em 0 0 0.1em;
+}
+
+.option-wrapper label:last-child span {
+    border-radius: 0 0.1em 0.1em 0;
+}
+
+.name-option .text {
+    display: none;
+}
+
+.name-option:hover .text {
+    display: block;
+    width: 45px;
+    margin-top: 0.25em;
+    box-shadow: 0 0 0 0.08em white;
+}

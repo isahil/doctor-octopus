@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react"
 import Card from "./card"
 import "./cards.css"
-import config from "../../config.json"
 import { useSocketIO } from "../../hooks"
-const { CARDS_DAY_FILTERS } = config
+import Filters from "./filter"
+import config from "../../config.json"
+const { day_filter_conf } = config
 
 const Cards = () => {
   const { sio } = useSocketIO()
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
-  const [filter, setFilter] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [source, setSource] = useState("remote")
+  const [dayFilter, setDayFilter] = useState(1)
 
   const toggle_source = () => {
     setSource((current_source) => {
@@ -49,7 +50,7 @@ const Cards = () => {
         setCards((prevCards) => [...prevCards, card])
       })
 
-      sio.emit("cards", { source, filter })
+      sio.emit("cards", { source, filter: dayFilter })
     } catch (error) {
       console.error("Error fetching cards data:", error)
     } finally {
@@ -57,15 +58,9 @@ const Cards = () => {
     }
   }
 
-  const handle_filter_change = (e) => {
-    const value = e.target.value
-    console.log("Clicked cards filter: ", e.target.value)
-    setFilter(value)
-  }
-
   useEffect(() => {
     get_cards()
-  }, [sio, source, filter]) // fetch cards data when the source changes
+  }, [sio, source, dayFilter]) // fetch cards data when the source changes
 
   if (isLoading) {
     return (
@@ -87,25 +82,11 @@ const Cards = () => {
             onClick={get_cards}
           />
         </div>
-        <div className="option-wrapper">
-          {CARDS_DAY_FILTERS.map((day, i) => {
-            return (
-              <label key={i} className={`day-option`}>
-                <input
-                  key={i}
-                  type="radio"
-                  name={`day-${day}`}
-                  value={day}
-                  onChange={handle_filter_change}
-                  checked={filter == day}
-                ></input>
-                <span className={`filter day-${day}`}>{day}</span>
-                <span className="filter text">{day === 1 ? "day" : "days"}</span>
-              </label>
-            )
-          })}
-        </div>
+        <Filters filter_conf={day_filter_conf} filter={dayFilter} setFilter={setDayFilter} />
+
         <div className="total">{totalCards} cards</div>
+        <div className="bars"></div>
+        <div className="pulse"></div>
         <div className="source">
           <span className="source-header">{source}</span>
           <label>
