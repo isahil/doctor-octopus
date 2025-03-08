@@ -84,7 +84,6 @@
   transition: all 0.15s ease;
 }
 
-/* Add subtle top highlight */
 .nav-link::after {
   content: '';
   position: absolute;
@@ -109,14 +108,14 @@
 }
 
 .nav-link.active {
-  background-color: rgba(19, 67, 83, 0.4);
+  background-color: rgba(22, 47, 65, 0.389);
   color: white;
   font-weight: bold;
   transform: translateY(2px);
   box-shadow: 
     0 0px 0 rgba(0, 0, 0, 0.5),
     0 1px 3px rgba(0, 0, 0, 0.4) inset;
-  text-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
+  text-shadow: 0 0 5px rgba(0, 255, 170, 0.9);
   animation: key-glow 2s infinite;
 }
 
