@@ -7,13 +7,13 @@ from src.component.local import get_all_local_cards
 from src.component.remote import get_all_s3_cards
 
 sys.path.append("./src")
-from config import cors_allowed_origins, the_lab_log_file_path, the_lab_log_file_name, local_dir
+from config import the_lab_log_file_path, the_lab_log_file_name, local_dir
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
 
 sio_client_count = 0
 
-sio = socketio.AsyncServer(cors_allowed_origins=cors_allowed_origins, async_mode="asgi")
+sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
 config.sio = sio
 config.socketio_app = socketio_app
@@ -54,8 +54,8 @@ async def cards(sid, data):
 
 
 @sio.on("fixme")
-async def fixme_client(sid, order_data):
-    print(f"Socket client [{sid}] sent data to fixme: {order_data}")
+async def fixme_client(sid, order):
+    print(f"Socket client [{sid}] sent data to fixme: {order}")
     if not config.fastapi_app:
         print("FastAPI app not set in config.")
         return
@@ -66,7 +66,7 @@ async def fixme_client(sid, order_data):
         print("fix_client_app not found on app.state.")
         return
 
-    await fix_client_app.submit_order(order_data)
+    await fix_client_app.submitOrder(order , {}, {})
 
 
 @sio.on("the-lab")
