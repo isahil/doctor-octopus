@@ -51,7 +51,7 @@ const Cards = () => {
         setCards((prevCards) => [...prevCards, card])
       })
 
-      sio.emit("cards", { source, filter: dayFilter })
+      sio.emit("cards", { source, filter: { day: dayFilter, environment: envFilter } })
     } catch (error) {
       console.error("Error fetching cards data:", error)
     } finally {
@@ -61,7 +61,7 @@ const Cards = () => {
 
   useEffect(() => {
     get_cards()
-  }, [sio, source, dayFilter]) // fetch cards data when the source changes
+  }, [sio, source, envFilter, dayFilter]) // fetch cards data when the source changes
 
   if (isLoading) {
     return (

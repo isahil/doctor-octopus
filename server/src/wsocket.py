@@ -43,13 +43,14 @@ async def disconnect(sid):
 async def cards(sid, data):
     print(f"Socket client [{sid}] sent data to cards: {data}")
     source = data.get("source")
-    filter = int(data.get("filter"))
-    print(f"Report Source: {source} | Filter: {filter}")
+    filter = data.get("filter")
+    day = int(filter["day"])
+    print(f"Report Source: {source} | Filter: {day}")
     cards = []
     if source == "remote":
-        cards = get_all_s3_cards(sio, sid, filter)
+        cards = get_all_s3_cards(sio, sid, day)
     else:
-        cards = get_all_local_cards(sio, sid, filter)
+        cards = get_all_local_cards(sio, sid, day)
     await cards
 
 
