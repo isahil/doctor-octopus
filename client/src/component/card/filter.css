@@ -79,6 +79,8 @@
 .options-wrapper input[type="radio"]:checked+.option .filter {
     color: cyan;
     box-shadow: 0 0 0 0.05em cyan;
+    border: solid 0.05em white;
+    border-radius: 0.1em;
 }
 
 .options-wrapper label span {
@@ -92,6 +94,12 @@
     color: white;
     text-align: center;
     transition: background-color 0.5s ease;
+    min-width: 55px;
+}
+
+.options-wrapper:hover label span {
+    border-radius: 0.1em;
+    border: solid 0.1em white;
 }
 
 .options-wrapper label:first-child span {

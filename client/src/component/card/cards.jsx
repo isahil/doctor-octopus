@@ -12,8 +12,7 @@ const Cards = () => {
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [source, setSource] = useState("remote")
-  const [dayFilter, setDayFilter] = useState("1")
-  const [envFilter, setEnvFilter] = useState("qa")
+  const [filter, setFilter] = useState({ day: "1", environment: "qa" })
 
   const toggle_source = () => {
     setSource((current_source) => {
@@ -51,7 +50,7 @@ const Cards = () => {
         setCards((prevCards) => [...prevCards, card])
       })
 
-      sio.emit("cards", { source, filter: { day: dayFilter, environment: envFilter } })
+      sio.emit("cards", { source, filter }) // emit a message to the server to fetch cards data
     } catch (error) {
       console.error("Error fetching cards data:", error)
     } finally {
@@ -61,7 +60,7 @@ const Cards = () => {
 
   useEffect(() => {
     get_cards()
-  }, [sio, source, envFilter, dayFilter]) // fetch cards data when the source changes
+  }, [sio, source, filter]) // fetch cards data when the source changes
 
   if (isLoading) {
     return (
@@ -85,13 +84,13 @@ const Cards = () => {
         </div>
         <div className="filter-wrapper">
           <div className="day-filters-wrapper">
-            <Filters filter_conf={day_filter_conf} filter={dayFilter} setFilter={setDayFilter} />
+            <Filters filter_conf={day_filter_conf} filter={filter} setFilter={setFilter} />
           </div>
           <div className="env-filters-wrapper">
             <Filters
               filter_conf={environment_filter_conf}
-              filter={envFilter}
-              setFilter={setEnvFilter}
+              filter={filter}
+              setFilter={setFilter}
             />
           </div>
         </div>

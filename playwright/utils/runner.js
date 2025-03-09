@@ -39,7 +39,7 @@ const upload_report = async (code) => {
   // Write the updated reportCard object back to the report.json file
   fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2));
   console.log(`Uploading test reports to S3 bucket: ${AWS_SDET_BUCKET_NAME}`);
-  // if (CI)
+  if (CI)
     await upload_directory(
       AWS_SDET_BUCKET_NAME,
       local_test_reports_dir,

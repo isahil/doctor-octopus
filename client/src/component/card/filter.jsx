@@ -6,13 +6,13 @@ const Filters = ({ filter_conf, filter, setFilter }) => {
   const handle_filter_change = (e) => {
     const { value } = e.target
     console.log(`clicked ${name} filter:  ${value}`)
-    setFilter(value)
+    setFilter((prevFilter) => ({ ...prevFilter, [name]: value }))
   }
 
   return (
     <div className={`${name} options-wrapper`}>
       {options
-        .sort((a, b) => (a === filter ? -1 : b === filter ? 1 : 0))
+        .sort((a, b) => (a[name] === filter[name] ? -1 : b[name]  === filter[name] ? 1 : 0))
         .map((option, i) => {
           return (
             <label key={i} className={`${name} option-wrapper`}>
@@ -22,7 +22,7 @@ const Filters = ({ filter_conf, filter, setFilter }) => {
                 name={`${name}-${option}`}
                 value={option}
                 onChange={handle_filter_change}
-                checked={filter == option}
+                checked={filter[name] == option}
               ></input>
               <div className="option">
                 <span className={`filter ${name}-${option}`}>{option}</span>

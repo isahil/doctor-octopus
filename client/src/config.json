@@ -10,7 +10,7 @@
     "options": ["1", "7", "15"]
   },
   "environment_filter_conf": {
-    "name": "env",
+    "name": "environment",
     "options": ["dev", "qa", "uat"]
   },
   "app_filter_conf": {
