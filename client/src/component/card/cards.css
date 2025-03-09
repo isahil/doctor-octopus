@@ -108,6 +108,18 @@
   transform: rotate(180deg) scale(1.2);
 }
 
+.env-filters-wrapper {
+  top: 7px;
+  left: 175px;
+  position: absolute;
+}
+
+.day-filters-wrapper {
+  top: 7px;
+  left: 235px;
+  position: absolute;
+}
+
 .source {
   display: flex;
   align-items: center;

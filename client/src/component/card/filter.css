@@ -1,19 +1,13 @@
-.option-wrapper input[type="radio"]:focus {
+.options-wrapper input[type="radio"]:focus {
     outline: 0;
     box-shadow: 0 0 0 4px #b5c9fc;
 }
 
-.option-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    top: 7px;
-    left: 3px;
-    position: absolute;
-    margin-left: 175px;
+.options-wrapper {
     font-size: small;
 }
 
-.option-wrapper input[type="radio"] {
+.options-wrapper input[type="radio"] {
     clip: rect(0 0 0 0);
     clip-path: inset(100%);
     height: 1px;
@@ -22,27 +16,31 @@
     white-space: nowrap;
 }
 
-.option-wrapper input[type="radio"]:hover+span {
+.options-wrapper input[type="radio"]:hover+span {
     transform: scale(0.95);
     box-shadow: 0 0 0 0.08em white;
 }
 
-.option-wrapper input[type="radio"]+span {
+.options-wrapper input[type="radio"]+span {
     width: 47px;
 }
 
-.option-wrapper input[type="radio"]:checked+span {
+.options-wrapper input[type="radio"]:checked + .option {
+    display: flex;  /* Show only the checked option */
+}
+
+.options-wrapper input[type="radio"]:checked+.option span {
     box-shadow: 0 0 0 0.05em cyan;
     z-index: 1;
     color: cyan;
 }
 
-.option-wrapper input[type="radio"]:checked+span+.text {
+.options-wrapper input[type="radio"]:checked+.option .filter {
     color: cyan;
     box-shadow: 0 0 0 0.05em cyan;
 }
 
-.option-wrapper label span {
+.options-wrapper label span {
     display: block;
     cursor: pointer;
     background-color: black;
@@ -55,21 +53,32 @@
     transition: background-color 0.5s ease;
 }
 
-.option-wrapper label:first-child span {
+.options-wrapper label:first-child span {
     border-radius: 0.1em 0 0 0.1em;
 }
 
-.option-wrapper label:last-child span {
+.options-wrapper label:last-child span {
     border-radius: 0 0.1em 0.1em 0;
 }
 
-.name-option .text {
+.option-wrapper .text {
     display: none;
 }
 
-.name-option:hover .text {
+.option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.option:hover {
+    margin-top: 0.20em;
+}
+
+.option:hover .text {
     display: block;
     width: 45px;
-    margin-top: 0.25em;
+    margin-top: 0.20em;
     box-shadow: 0 0 0 0.08em white;
 }

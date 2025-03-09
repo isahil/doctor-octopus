@@ -10,23 +10,27 @@ const Filters = ({ filter_conf, filter, setFilter }) => {
   }
 
   return (
-    <div className="option-wrapper">
-      {options.map((option, i) => {
-        return (
-          <label key={i} className={`${name} name-option`}>
-            <input
-              key={i}
-              type="radio"
-              name={`${name}-${option}`}
-              value={option}
-              onChange={handle_filter_change}
-              checked={filter == option}
-            ></input>
-            <span className={`filter ${name}-${option}`}>{option}</span>
-            <span className="filter text">{name}</span>
-          </label>
-        )
-      })}
+    <div className={`${name} options-wrapper`}>
+      {options
+        .sort((a, b) => (a === filter ? -1 : b === filter ? 1 : 0))
+        .map((option, i) => {
+          return (
+            <label key={i} className={`${name} option-wrapper`}>
+              <input
+                key={i}
+                type="radio"
+                name={`${name}-${option}`}
+                value={option}
+                onChange={handle_filter_change}
+                checked={filter == option}
+              ></input>
+              <div className="option">
+                <span className={`filter ${name}-${option}`}>{option}</span>
+                {/* <span className="text">{name}</span> */}
+              </div>
+            </label>
+          )
+        })}
     </div>
   )
 }

@@ -6,15 +6,15 @@
   "REDIS_HOST": "",
   "REDIS_PORT": 6379,
   "day_filter_conf": {
-    "name": "Day",
-    "options": [1, 7, 15]
+    "name": "day",
+    "options": ["1", "7", "15"]
   },
   "environment_filter_conf": {
-    "name": "Env",
+    "name": "env",
     "options": ["dev", "qa", "uat"]
   },
   "app_filter_conf": {
-    "name": "App",
+    "name": "app",
     "options": ["loan", "clo"]
   }
 }

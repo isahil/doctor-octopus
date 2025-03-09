@@ -4,7 +4,7 @@ import "./cards.css"
 import { useSocketIO } from "../../hooks"
 import Filters from "./filter"
 import config from "../../config.json"
-const { day_filter_conf } = config
+const { day_filter_conf, environment_filter_conf } = config
 
 const Cards = () => {
   const { sio } = useSocketIO()
@@ -12,7 +12,8 @@ const Cards = () => {
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [source, setSource] = useState("remote")
-  const [dayFilter, setDayFilter] = useState(1)
+  const [dayFilter, setDayFilter] = useState("1")
+  const [envFilter, setEnvFilter] = useState("qa")
 
   const toggle_source = () => {
     setSource((current_source) => {
@@ -82,7 +83,18 @@ const Cards = () => {
             onClick={get_cards}
           />
         </div>
-        <Filters filter_conf={day_filter_conf} filter={dayFilter} setFilter={setDayFilter} />
+        <div className="filter-wrapper">
+          <div className="day-filters-wrapper">
+            <Filters filter_conf={day_filter_conf} filter={dayFilter} setFilter={setDayFilter} />
+          </div>
+          <div className="env-filters-wrapper">
+            <Filters
+              filter_conf={environment_filter_conf}
+              filter={envFilter}
+              setFilter={setEnvFilter}
+            />
+          </div>
+        </div>
 
         <div className="total">{totalCards} cards</div>
         <div className="bars"></div>
