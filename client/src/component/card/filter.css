@@ -1,10 +1,55 @@
+.options-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+
+.options-wrapper:hover .option-wrapper {
+    display: block;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.options-wrapper:hover .option-wrapper:has(input[type="radio"]:checked) {
+    opacity: 1;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+}
+
+.options-wrapper:hover .option-wrapper:not(:has(input[type="radio"]:checked)) {
+    animation: slideDown 0.25s ease forwards;
+}
+
+.options-wrapper:hover {
+    z-index: 10;
+}
+
 .options-wrapper input[type="radio"]:focus {
     outline: 0;
     box-shadow: 0 0 0 4px #b5c9fc;
 }
 
-.options-wrapper {
-    font-size: small;
+.option-wrapper {
+    display: none;
+}
+
+.option-wrapper input[type="radio"]:checked~.option {
+    display: flex;
+}
+
+.option-wrapper:has(input[type="radio"]:checked) {
+    display: block;
 }
 
 .options-wrapper input[type="radio"] {
@@ -23,10 +68,6 @@
 
 .options-wrapper input[type="radio"]+span {
     width: 47px;
-}
-
-.options-wrapper input[type="radio"]:checked + .option {
-    display: flex;  /* Show only the checked option */
 }
 
 .options-wrapper input[type="radio"]:checked+.option span {

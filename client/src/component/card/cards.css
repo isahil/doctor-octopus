@@ -90,13 +90,13 @@
 
 .cards-header .total {
   color: white;
-  font-size: 12px;
+  font-size: 14px;
   width: auto;
   font-weight: bold;
 }
 
 .refresh-button {
-  width: 18px;
+  width: 22px;
   cursor: pointer;
   top: 8px;
   left: 5px;
@@ -110,13 +110,13 @@
 
 .env-filters-wrapper {
   top: 7px;
-  left: 175px;
+  left: 180px;
   position: absolute;
 }
 
 .day-filters-wrapper {
   top: 7px;
-  left: 235px;
+  left: 260px;
   position: absolute;
 }
 
