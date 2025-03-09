@@ -1,6 +1,7 @@
 # This is the entry point of the server application
 import config
 import os
+import sys  # noqa
 import asyncio
 import uvicorn
 from contextlib import asynccontextmanager
@@ -10,6 +11,8 @@ from config import the_lab_log_file_path, server_mode
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
 from src.util.fix_client import FixClient
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))
+# from fix_client_async import FixClient # type: ignore
 
 
 @asynccontextmanager
@@ -25,11 +28,11 @@ async def lifespan(app: FastAPI):
             pass
 
     if server_mode == "fixme":
-        fix_client = FixClient(env="qa", app="fix", fix_side="client", broadcast=True, sio=sio)
+        fix_client = FixClient({"environment": "qa", "app": "loan", "fix_side": "client", "sio": sio})
         fix_client_task = asyncio.create_task(fix_client.start_mock_client())
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
-        # fix_dealer = FixClient(env="qa", app="fix", fix_side="dealer", broadcast=True, sio=sio)
+        # fix_dealer = FixClient({"environment": "qa", "app": "loan", "fix_side": "dealer", "fix_mode": "stp": "sio": sio})
         # fix_dealer_task = asyncio.create_task(fix_dealer.start_mock_client())
         # app.state.fix_dealer_task = fix_dealer_task
 

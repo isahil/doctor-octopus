@@ -1,14 +1,10 @@
 import { io } from "socket.io-client"
-import React, { useEffect, useContext } from "react"
+import { createContext, useEffect, useState } from "react"
 
-const SocketIOContext = React.createContext()
-
-export const useSocketIO = () => {
-  return useContext(SocketIOContext)
-}
+export const SocketIOContext = createContext()
 
 const SocketIOProvider = ({ children, host, port }) => {
-  const [sio, setSio] = React.useState(null)
+  const [sio, setSio] = useState(null)
 
   useEffect(() => {
     // Establish a WebSocket connection to the server w. the specified host and port on component mount

@@ -5,5 +5,16 @@
   "FIXME_SERVER_PORT": 8000,
   "REDIS_HOST": "",
   "REDIS_PORT": 6379,
-  "CARDS_DAY_FILTERS": [1, 7, 15]
+  "day_filter_conf": {
+    "name": "day",
+    "options": ["1", "7", "15"]
+  },
+  "environment_filter_conf": {
+    "name": "env",
+    "options": ["dev", "qa", "uat"]
+  },
+  "app_filter_conf": {
+    "name": "app",
+    "options": ["loan", "clo"]
+  }
 }

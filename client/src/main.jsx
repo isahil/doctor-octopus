@@ -2,11 +2,11 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 import App from "./App.jsx"
-import "./index.css"
+import "./App.css"
 import config from "./config"
-import LabProvider from "./component/lab/lab-context.jsx"
-import SocketIOProvider from "./util/socketio-context.jsx"
-import TerminalProvider from "./component/xterm/terminal-context.jsx"
+import LabProvider from "./context/lab-context.jsx"
+import SocketIOProvider from "./context/socketio-context.jsx"
+import TerminalProvider from "./context/terminal-context.jsx"
 
 export const { SERVER_HOST, SERVER_PORT } = config
 console.log(`Server host: ${SERVER_HOST} | Server port: ${SERVER_PORT}`)

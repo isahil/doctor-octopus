@@ -23,17 +23,10 @@ fastapi_app: FastAPI = None
 socketio_app: ASGIApp = None
 sio: AsyncServer = None
 
-cors_allowed_origins: list = [
-    "http://localhost:2222",
-    "http://localhost:3000",
-    "http://localhost:8000",
-]
-
 __all__ = [
     "sio",
     "fastapi_app",
     "socketio_app",
-    "cors_allowed_origins",
     "local_dir",
     "environment",
     "test_reports_dir",

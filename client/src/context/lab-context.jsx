@@ -1,26 +1,8 @@
-import { useContext, useState } from "react"
-import React from "react"
-import { useTerminal } from "../xterm/terminal-context"
-import { useSocketIO } from "../../util/socketio-context"
+import { createContext, useState } from "react"
+import { useTerminal, useSocketIO } from "../hooks"
 
-const LabOptionsContext = React.createContext()
-const OptionsUpdateContext = React.createContext()
-
-/**
- * custom hooks for handling the lab options context/state
- * @returns {Object} context for lab options - selected options
- */
-export const useLabOptions = () => {
-  return useContext(LabOptionsContext)
-}
-
-/**
- * custom hooks for handling the option click context/state
- * @returns {Object} context for handle_option_click - function to handle the dd option click
- */
-export const useOptionsUpdate = () => {
-  return useContext(OptionsUpdateContext)
-}
+export const LabOptionsContext = createContext()
+export const OptionsUpdateContext = createContext()
 
 /**
  * LabProvider component/context to handle and share the state of the selected lab options
@@ -64,7 +46,7 @@ const LabProvider = ({ children }) => {
     // interactive mode will pass the terminal and selectedOptions as a parameter
     const _terminal = interactive_terminal ?? terminal
     const _selectedOptions = interactive_selectedOptions ?? selectedOptions
-    
+
     const subscription = "the-lab" // listen for the-lab-log events from the server
     sio.off(subscription) // Remove existing listener to avoid duplicate logs
     sio.on(subscription, (line) => {

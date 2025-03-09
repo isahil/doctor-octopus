@@ -1,8 +1,6 @@
 import "./lab.css"
 import lab_cards from "./lab.json"
-import { useLabOptions, useOptionsUpdate } from "./lab-context"
-import { useSocketIO } from "../../util/socketio-context"
-import { useTerminal } from "../xterm/terminal-context"
+import { useLabOptions, useOptionsUpdate, useSocketIO, useTerminal } from "../../hooks"
 
 const Lab = () => {
   const { sio } = useSocketIO()
@@ -85,7 +83,7 @@ const Lab = () => {
           className={`button run-button ${
             run_button_enabled ? "enabled" : "disabled" // enable the run button if the last card has been selected
           }`}
-          onClick={() => handle_run_click({terminal})}
+          onClick={() => handle_run_click({ terminal })}
         >
           Run
         </button>

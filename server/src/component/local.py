@@ -2,7 +2,7 @@ import json
 import os
 from config import local_dir, test_reports_dir, test_reports_date_format
 from src.util.executor import run_a_command_on_local, open_port_on_local
-from src.util.date import less_or_qaul_to_date_time
+from src.util.date import less_or_eqaul_to_date_time
 
 reports_dir = os.path.join(local_dir, test_reports_dir)
 
@@ -22,7 +22,7 @@ async def get_all_local_cards(sio, sid, filter: int) -> list:
         }  # initialize report card with 2 properties needed for the frontend
 
         if os.path.isdir(report_dir_path):
-            if not less_or_qaul_to_date_time(report_dir, test_reports_date_format, filter):
+            if not less_or_eqaul_to_date_time(report_dir, test_reports_date_format, filter):
                 continue
             for file in os.listdir(report_dir_path):
                 file_path = os.path.join(report_dir_path, file)
@@ -54,11 +54,12 @@ def get_a_local_card_html_report(html) -> str:
 
 async def view_a_report_on_local(root_dir):
     try:
+        server_host = os.environ.get("SERVER_HOST", "localhost")
         port = "9323"  # default port for playwright show-report
         await open_port_on_local(port)
         command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir}"
         await run_a_command_on_local(command)
-        message = f"http://localhost:{port}"
+        message = f"http://{server_host}:{port}"
         print(f"View report message: {message}")
         return message
     except Exception as e:

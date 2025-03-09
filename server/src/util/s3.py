@@ -67,5 +67,13 @@ class S3Client:
         """
         self.S3.download_file(bucket_name, object_key, local_path)
 
+    def upload_to_s3(self, path: str, content, bucket_name=aws_bucket_name):
+        try:
+            S3.upload_to_s3(path, content, bucket_name)
+            print(f"Successfully uploaded content to {path}")
+            return True
+        except Exception as e:
+            print(f"Error uploading to S3 path {path}: {str(e)}")
+            return False
 
 S3 = S3Client()

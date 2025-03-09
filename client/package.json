@@ -9,6 +9,7 @@
     "path": "^0.12.7",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-router-dom": "^7.2.0",
     "react-scripts": "5.0.1",
     "redis": "^4.6.15",
     "socket.io-client": "^4.7.5"

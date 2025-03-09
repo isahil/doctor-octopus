@@ -1,11 +1,12 @@
 import json
 import os
 from config import local_dir, test_reports_dir, test_reports_date_format
-from src.util.date import less_or_qaul_to_date_time
+from src.util.date import less_or_eqaul_to_date_time
 from src.util.s3 import S3
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
+
 
 def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
@@ -23,27 +24,28 @@ async def get_all_s3_cards(sio, sid, filter: int) -> list:
     for obj in s3_objects:
         object_name = obj["Key"]
         path_parts = object_name.split("/")
-        if len(path_parts) < 4:
-            continue
-        root_dir_parts = path_parts[:4]
-        report_dir = root_dir_parts[-1]  # e.g. '12-31-2025_08-30-00_AM'
 
-        if not less_or_qaul_to_date_time(report_dir, test_reports_date_format, filter):
+        if len(path_parts) < 6:
             continue
 
-        root_dir = "/".join(path_parts[:4])
-        dir_name = path_parts[3]
+        root_dir_parts = path_parts[:6]
+        root_dir_path = "/".join(root_dir_parts)
+
+        report_dir = path_parts[5]  # e.g. '12-31-2025_08-30-00_AM'
         file_name = path_parts[-1]
 
-        if dir_name not in cards:
-            cards[dir_name] = {"json_report": {}, "html_report": "", "root_dir": root_dir}
+        if not less_or_eqaul_to_date_time(report_dir, test_reports_date_format, filter):
+            continue
+
+        if report_dir not in cards:
+            cards[report_dir] = {"json_report": {}, "html_report": "", "root_dir": root_dir_path}
 
         if file_name.endswith("report.json"):
-            cards[dir_name]["json_report"] = {
+            cards[report_dir]["json_report"] = {
                 "object_name": object_name
             }  # Create a new folder in the reports dict to save the contents of the folder later
         if file_name.endswith("index.html"):
-            cards[dir_name]["html_report"] = object_name
+            cards[report_dir]["html_report"] = object_name
 
     for _, card in cards.items():
         try:

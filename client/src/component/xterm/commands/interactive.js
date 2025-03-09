@@ -1,7 +1,7 @@
 import LabSettings from "../../lab/lab.json"
 
 let current_option_index = 0,
-  interactive_selectedOptions = {},  // store the selected options so far. equivalent of selectedOptions in lab-context.js
+  interactive_selectedOptions = {}, // store the selected options so far. equivalent of selectedOptions in lab-context.js
   selected_option = "" // store the currently selected option to verify if the "run" option should be prompted
 
 export const interactive_mode = ({ terminal, input, update_options_handler, handle_run_click }) => {
@@ -27,11 +27,13 @@ export const interactive_mode = ({ terminal, input, update_options_handler, hand
     console.log(`xterm - selected_options: ${JSON.stringify(selected_option)}`)
     let message
     if (["client", "dealer"].includes(selected_option)) {
-      message = "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m all options selected. FixMe app is enabled.\x1B[0m\r"
+      message =
+        "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m all options selected. FixMe app is enabled.\x1B[0m\r"
       current_option_index = 0
       selected_option = ""
     } else
-      message = "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m All options selected. Type 'run' to execute the command.\x1B[0m\r"
+      message =
+        "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m All options selected. Type 'run' to execute the command.\x1B[0m\r"
     terminal.write(message)
   } else {
     // display the next card options for the user to select

@@ -1,0 +1,159 @@
+.header {
+  background-color: rgba(173, 170, 170, 0.1);
+  width: 100%;
+  height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-bottom: solid 1px white;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  max-width: 1920px;
+  height: 100%;
+  margin: 0px auto;
+}
+
+.logo-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.logo {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.header h1 {
+  font-size: 20px;
+  color: white;
+  margin: 0;
+}
+
+.navigation-tabs {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+  margin-left: 30px;
+  height: 100%;
+  align-items: stretch;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+  height: 97%;
+  padding: 0 18px;
+  position: relative;
+  transition: all 0.15s ease;
+  border: solid 1.3px var(--octopus-gray);
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 
+    0 2px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  background: linear-gradient(to bottom, 
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(0, 0, 0, 0.3) 100%);
+  z-index: -1;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.15s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.1) 100%);
+  transition: all 0.15s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(25, 162, 208, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 3px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+}
+
+.nav-link.active {
+  background-color: rgba(22, 47, 65, 0.389);
+  color: white;
+  font-weight: bold;
+  transform: translateY(2px);
+  box-shadow: 
+    0 0px 0 rgba(0, 0, 0, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.4) inset;
+  text-shadow: 0 0 5px rgba(0, 255, 170, 0.9);
+  animation: key-glow 2s infinite;
+}
+
+.nav-link.active::before {
+  background: linear-gradient(to bottom, 
+                rgba(0, 0, 0, 0.2) 0%,
+                rgba(2, 64, 78, 0.4) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px); /* Move up to simulate press */
+}
+
+.nav-link.active::after {
+  opacity: 0.3;
+  height: 1px;
+  transform: translateY(2px); /* Move down to simulate press */
+}
+
+/* Mechanical keyboard style separators */
+.navigation-tabs .nav-link:not(:first-child) {
+  position: relative;
+}
+
+.navigation-tabs .nav-link:not(:first-child)::after {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 30%;
+  bottom: 30%;
+  width: 1px;
+  background: linear-gradient(to bottom,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0) 100%);
+}
+
+/* Add a subtle keyboard key highlight effect */
+@keyframes key-glow {
+  0% { text-shadow: 0 0 5px rgba(0, 255, 170, 0.5); }
+  50% { text-shadow: 0 0 10px rgba(0, 255, 170, 0.7); }
+  100% { text-shadow: 0 0 5px rgba(0, 255, 170, 0.5); }
+}
