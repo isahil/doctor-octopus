@@ -12,13 +12,12 @@ from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
 
 sio_client_count = 0
+global_total_s3_objects = 0
 
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
 config.sio = sio
 config.socketio_app = socketio_app
-
-global_total_s3_objects = 0
 
 
 async def update_total_s3_objects():
@@ -34,7 +33,6 @@ async def update_total_s3_objects():
             global_total_s3_objects = current_total_s3_objects
 
 
-
 @sio.on("connect")
 async def connect(sid, environ):
     global sio_client_count
@@ -45,7 +43,7 @@ async def connect(sid, environ):
         f"Hello from the FASTAPI W.S. server! | Clients connected: {sio_client_count}",
         room=sid,
     )
-    # asyncio.create_task(update_total_s3_objects())
+    asyncio.create_task(update_total_s3_objects())
 
 
 @sio.on("disconnect")
