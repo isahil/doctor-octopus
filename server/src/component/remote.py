@@ -22,7 +22,6 @@ async def get_all_s3_cards(sio, sid, filter: dict) -> list:
     day_filter = int(filter.get("day"))
 
     s3_objects = S3.list_all_s3_objects()
-    print(f"Total objects found in SDET S3 bucket: {len(s3_objects)}")
     results = []  # List that will be sent to the client
     cards = {}  # Temporary dictionary to store the reports
     # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object", ... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }

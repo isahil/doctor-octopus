@@ -5,6 +5,8 @@ from config import local_dir, test_reports_dir, test_reports_date_format
 from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
 from src.util.date import less_or_eqaul_to_date_time
 
+server_host = os.environ.get("VITE_SERVER_HOST", "localhost")
+reporter_port = os.environ.get("VITE_REPORTER_PORT", "9323")  # default port for playwright show-report
 reports_dir = os.path.join(local_dir, test_reports_dir) # ""../../test-reports"
 
 
@@ -68,18 +70,16 @@ async def wait_for_local_report_to_be_ready(root_dir):
 
 async def view_a_report_on_local(root_dir):
     try:
-        server_host = os.environ.get("SERVER_HOST", "localhost")
-        port = "9323"  # default port for playwright show-report
         command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir}"
 
-        await open_port_on_local(port)
+        await open_port_on_local(reporter_port)
 
         wait_for_port_readiness_task = asyncio.create_task(wait_for_local_report_to_be_ready(root_dir))
         asyncio.create_task(run_a_command_on_local(command))
         
         await wait_for_port_readiness_task
 
-        message = f"http://{server_host}:{port}"
+        message = f"http://{server_host}:{reporter_port}"
         print(f"Report is ready to be viewed at: {message}")
         return message
     except Exception as e:

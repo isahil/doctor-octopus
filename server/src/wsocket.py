@@ -22,9 +22,7 @@ config.socketio_app = socketio_app
 
 async def update_total_s3_objects():
     global global_total_s3_objects
-    # retry = 0
-    # while retry < 300:
-    # retry += 1
+
     while True:
         current_total_s3_objects = total_s3_objects()
         await asyncio.sleep(7)

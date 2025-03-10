@@ -9,7 +9,7 @@ environment: str = os.environ.get("ENVIRONMENT", "qa")
 load_dotenv(f"{local_dir}.env", verbose=False)
 load_dotenv(f"{local_dir}.dotenv/.{environment}", verbose=False)
 
-server_mode: str = os.environ.get("SERVER_MODE", "local")  # [fixme, local]
+server_mode: str = os.environ.get("VITE_SERVER_MODE", "local")  # [fixme, local]
 
 test_reports_dir: str = os.environ.get(
     "TEST_REPORTS_DIR", "test_reports"

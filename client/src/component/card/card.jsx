@@ -1,9 +1,8 @@
 import React from "react"
 import "./card.css"
-import config from "../../config.json"
 // import { useTerminal } from "../../hooks"
 
-const { SERVER_HOST, SERVER_PORT } = config
+const { VITE_SERVER_HOST, VITE_SERVER_PORT } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
   const { source } = filter
@@ -35,7 +34,7 @@ function Card({ card, index, filter, setAlert }) {
     // terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Report opening in a new tab on host 'http://localhost:9323'\x1B[0m\r\n`)
     // terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
     const response = await fetch(
-      `http://${SERVER_HOST}:${SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
+      `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
     )
     const url = await response.text()
 
