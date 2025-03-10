@@ -21,13 +21,13 @@ config.socketio_app = socketio_app
 
 
 async def update_total_s3_objects():
-    retry = 0
     global global_total_s3_objects
-    while retry < 300:
+    # retry = 0
+    # while retry < 300:
+    # retry += 1
+    while True:
         current_total_s3_objects = total_s3_objects()
-        await asyncio.sleep(1)
-        print(f" current_total_s3_objects: {current_total_s3_objects}... Retrying# {retry}")
-        retry += 1
+        await asyncio.sleep(7)
         if current_total_s3_objects > global_total_s3_objects:
             await sio.emit("alert", {"new_alert": True})
             global_total_s3_objects = current_total_s3_objects
