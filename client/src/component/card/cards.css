@@ -190,7 +190,7 @@
   padding-right: 0;
 }
 
-.pulse {
+.new-pulse {
   width: 9.6px;
   height: 9.6px;
   border-radius: 50%;
@@ -201,8 +201,8 @@
   right: 275px;
 }
 
-.pulse:before,
-.pulse:after {
+.new-pulse:before,
+.new-pulse:after {
   content: "";
   position: absolute;
   inset: 0;
@@ -212,7 +212,7 @@
   animation-delay: -0.5s;
 }
 
-.pulse:after {
+.new-pulse:after {
   animation-delay: -1s;
 }
 
@@ -222,7 +222,7 @@
   }
 }
 
-.bars {
+.opening-bars {
   width: 21.6px;
   height: 15px;
   position: absolute;

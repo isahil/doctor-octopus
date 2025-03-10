@@ -1,14 +1,15 @@
 import React from "react"
 import "./card.css"
 import config from "../../config.json"
-import { useTerminal } from "../../hooks"
+// import { useTerminal } from "../../hooks"
 
 const { SERVER_HOST, SERVER_PORT } = config
 
-function Card({ source, card, index }) {
-  const { json_report, html_report, root_dir } = card
+function Card({ card, index, filter, setAlert }) {
+  const { source } = filter
+  const { json_report, root_dir } = card
   const { stats } = json_report
-  const { terminal } = useTerminal()
+  // const { terminal } = useTerminal()
   const {
     expected,
     flaky,
@@ -28,22 +29,26 @@ function Card({ source, card, index }) {
   const formatted_date_time = date.toLocaleString() // adjust formatting as needed
 
   const handle_view_report_click = async () => {
+    setAlert((prev) => {
+      return { ...prev, opening: true }
+    })
     // terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Report opening in a new tab on host 'http://localhost:9323'\x1B[0m\r\n`)
     // terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
     const response = await fetch(
       `http://${SERVER_HOST}:${SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
     )
-    await response.text()
+    const url = await response.text()
 
-    // try {
-    //   const reportWindow = window.open('http://localhost:9323', '_blank');
-    //   if (!reportWindow) {
-    //     alert('Popup was blocked. Please allow popups for this website.');
-    //   }
-    // } catch (error) {
-    //   console.error('Error opening report window:', error);
-    //   alert('Failed to open report window. Please try again.');
-    // }
+    try {
+      const reportWindow = window.open(url, '_blank');
+      if (!reportWindow) {
+        alert('Popup was blocked. Please allow popups for doctor-octopus website.');
+      }
+    } catch (error) {
+      console.error('Error opening report window:', error);
+      alert('Failed to open report window. Please try again.');
+    }
+    setAlert({ ...alert, opening: false })
   }
 
   return (

@@ -12,9 +12,15 @@ def get_a_s3_card_html_report(html) -> str:
     card = S3.get_a_s3_object(html)
     return card
 
+def total_s3_objects() -> int:
+    total = S3.list_all_s3_objects()
+    return len(total)
 
-async def get_all_s3_cards(sio, sid, filter: int) -> list:
+async def get_all_s3_cards(sio, sid, filter: dict) -> list:
     """Get all report cards object from the S3 bucket"""
+    environment_filter = filter.get("environment")
+    day_filter = int(filter.get("day"))
+
     s3_objects = S3.list_all_s3_objects()
     print(f"Total objects found in SDET S3 bucket: {len(s3_objects)}")
     results = []  # List that will be sent to the client
@@ -32,9 +38,12 @@ async def get_all_s3_cards(sio, sid, filter: int) -> list:
         root_dir_path = "/".join(root_dir_parts)
 
         report_dir = path_parts[5]  # e.g. '12-31-2025_08-30-00_AM'
+        environment = path_parts[3]  # e.g. 'dev'
         file_name = path_parts[-1]
 
-        if not less_or_eqaul_to_date_time(report_dir, test_reports_date_format, filter):
+        if environment_filter and environment_filter != environment:
+            continue
+        if not less_or_eqaul_to_date_time(report_dir, test_reports_date_format, day_filter):
             continue
 
         if report_dir not in cards:

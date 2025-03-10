@@ -4,37 +4,40 @@ import "./cards.css"
 import { useSocketIO } from "../../hooks"
 import Filters from "./filter"
 import config from "../../config.json"
-const { day_filter_conf, environment_filter_conf } = config
+const { SERVER_HOST, SERVER_PORT, day_filter_conf, environment_filter_conf } = config
 
 const Cards = () => {
   const { sio } = useSocketIO()
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [source, setSource] = useState("remote")
-  const [filter, setFilter] = useState({ day: "1", environment: "qa" })
+  const [filter, setFilter] = useState({ source: "remote", day: "1", environment: "qa" })
+  const [alert, setAlert] = useState({ new: false, opening: false })
 
   const toggle_source = () => {
-    setSource((current_source) => {
+    setFilter((current_filter) => {
+      const current_source = current_filter.source
       const updated_source = current_source === "remote" ? "local" : "remote"
       console.log(`Toggled source: ${updated_source}`)
-      return updated_source
+      return { ...current_filter, source: updated_source }
     })
   }
   /**
    * fetch cards data from the FASTAPI server. TODO: Implement the WebSocket subscription logic
    */
   const get_cards = async () => {
-    setIsLoading(true) // set loading to true before the fetch request starts
-    setCards([]) // clear the existing cards
-    setTotalCards(0) // clear the existing total cards
+    // clear the existing states before fetching new cards data
+    setIsLoading(true)
+    setCards([])
+    setTotalCards(0)
+    setAlert({ new: false, opening: false })
     try {
       if (!sio) {
-        console.warn("Socket connection not initialized")
+        console.warn("Socket connection not initialized yet...")
         return
       }
-
-      sio.off("cards") // Remove existing listener before adding a new one
+      sio.off("alert") // Remove existing listeners before adding a new one
+      sio.off("cards")
 
       sio.on("cards", (card) => {
         setIsLoading(false)
@@ -42,15 +45,18 @@ const Cards = () => {
           console.log("No cards found") // log a message if no cards are found
           return setCards([]) // clear the existing cards if no cards are found
         }
-        setTotalCards((prevTotalCards) => prevTotalCards + 1)
         if (card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
-        console.log(
-          `Total ${source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`
-        )
+        setTotalCards((prevTotalCards) => prevTotalCards + 1)
         setCards((prevCards) => [...prevCards, card])
+        // console.log(`Total ${filter.source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
       })
 
-      sio.emit("cards", { source, filter }) // emit a message to the server to fetch cards data
+      sio.emit("cards", filter) // emit a message to the server to fetch cards data
+
+      sio.on("alert", (data) => {
+        const { new_alert } = data
+        setAlert((prev) => ({ ...prev, new: new_alert }))
+      })
     } catch (error) {
       console.error("Error fetching cards data:", error)
     } finally {
@@ -60,7 +66,7 @@ const Cards = () => {
 
   useEffect(() => {
     get_cards()
-  }, [sio, source, filter]) // fetch cards data when the source changes
+  }, [sio, filter]) // fetch cards data when the source changes
 
   if (isLoading) {
     return (
@@ -87,19 +93,15 @@ const Cards = () => {
             <Filters filter_conf={day_filter_conf} filter={filter} setFilter={setFilter} />
           </div>
           <div className="env-filters-wrapper">
-            <Filters
-              filter_conf={environment_filter_conf}
-              filter={filter}
-              setFilter={setFilter}
-            />
+            <Filters filter_conf={environment_filter_conf} filter={filter} setFilter={setFilter} />
           </div>
         </div>
 
         <div className="total">{totalCards} cards</div>
-        <div className="bars"></div>
-        <div className="pulse"></div>
+        {alert["new"] && <div className="new-pulse"></div>}
+        {alert["opening"] && <div className="opening-bars"></div>}
         <div className="source">
-          <span className="source-header">{source}</span>
+          <span className="source-header">{filter["source"]}</span>
           <label>
             <input type="checkbox" onClick={toggle_source} />
           </label>
@@ -107,7 +109,9 @@ const Cards = () => {
       </div>
       <div className="cards-body">
         {cards.length > 0 ? (
-          cards.map((card, index) => <Card key={index} source={source} card={card} index={index} />)
+          cards.map((card, index) => (
+            <Card key={index} card={card} index={index} filter={filter} setAlert={setAlert} />
+          ))
         ) : (
           <p style={{ color: "white", marginTop: "30px" }}>No cards yet</p>
         )}
