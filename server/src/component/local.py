@@ -1,10 +1,11 @@
 import json
 import os
+import asyncio
 from config import local_dir, test_reports_dir, test_reports_date_format
-from src.util.executor import run_a_command_on_local, open_port_on_local
+from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
 from src.util.date import less_or_eqaul_to_date_time
 
-reports_dir = os.path.join(local_dir, test_reports_dir)
+reports_dir = os.path.join(local_dir, test_reports_dir) # ""../../test-reports"
 
 
 async def get_all_local_cards(sio, sid, filter: int) -> list:
@@ -52,15 +53,34 @@ def get_a_local_card_html_report(html) -> str:
         return html_file_content
 
 
+async def wait_for_local_report_to_be_ready(root_dir):
+    try:
+        report_dir = os.path.join(reports_dir, root_dir)
+        pid = await is_port_open("9323")
+        while not os.path.exists(report_dir) and pid:
+            await asyncio.sleep(1)
+            pid = await is_port_open("9323")
+        await asyncio.sleep(1) # wait for the report to be ready
+        return report_dir
+    except Exception as e:
+        print(f"Error waiting for report to be ready: {e}")
+        raise e
+
 async def view_a_report_on_local(root_dir):
     try:
         server_host = os.environ.get("SERVER_HOST", "localhost")
         port = "9323"  # default port for playwright show-report
-        await open_port_on_local(port)
         command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir}"
-        await run_a_command_on_local(command)
+
+        await open_port_on_local(port)
+
+        wait_for_port_readiness_task = asyncio.create_task(wait_for_local_report_to_be_ready(root_dir))
+        asyncio.create_task(run_a_command_on_local(command))
+        
+        await wait_for_port_readiness_task
+
         message = f"http://{server_host}:{port}"
-        print(f"View report message: {message}")
+        print(f"Report is ready to be viewed at: {message}")
         return message
     except Exception as e:
         print(f"Error viewing report: {e}")

@@ -23,7 +23,7 @@ async def get_all_cards(
     """Get available report cards based on the source requested"""
     print(f"Report Source: {source}")
     if source == "remote":
-        s3_cards = get_all_s3_cards(filter)
+        s3_cards = get_all_s3_cards({"day": filter})
         return s3_cards
     else:
         return get_all_local_cards(filter)

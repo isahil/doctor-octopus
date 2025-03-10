@@ -4,7 +4,7 @@ import asyncio
 import socketio
 import config
 from src.component.local import get_all_local_cards
-from src.component.remote import get_all_s3_cards
+from src.component.remote import get_all_s3_cards, total_s3_objects
 
 sys.path.append("./src")
 from config import the_lab_log_file_path, the_lab_log_file_name, local_dir
@@ -18,6 +18,22 @@ socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
 config.sio = sio
 config.socketio_app = socketio_app
 
+global_total_s3_objects = 0
+
+
+async def update_total_s3_objects():
+    retry = 0
+    global global_total_s3_objects
+    while retry < 300:
+        current_total_s3_objects = total_s3_objects()
+        await asyncio.sleep(1)
+        print(f" current_total_s3_objects: {current_total_s3_objects}... Retrying# {retry}")
+        retry += 1
+        if current_total_s3_objects > global_total_s3_objects:
+            await sio.emit("alert", {"new_alert": True})
+            global_total_s3_objects = current_total_s3_objects
+
+
 
 @sio.on("connect")
 async def connect(sid, environ):
@@ -29,6 +45,7 @@ async def connect(sid, environ):
         f"Hello from the FASTAPI W.S. server! | Clients connected: {sio_client_count}",
         room=sid,
     )
+    # asyncio.create_task(update_total_s3_objects())
 
 
 @sio.on("disconnect")
@@ -40,15 +57,15 @@ async def disconnect(sid):
 
 
 @sio.on("cards")
-async def cards(sid, data):
-    print(f"Socket client [{sid}] sent data to cards: {data}")
-    source = data.get("source")
-    filter = data.get("filter")
-    day = int(filter["day"])
-    print(f"Report Source: {source} | Filter: {day}")
+async def cards(sid, filter: dict):
+    print(f"Socket client [{sid}] sent data to cards: {filter}")
+    source = filter.get("source")
+    environment = filter.get("environment")
+    day = int(filter.get("day"))
+    print(f"Report Source: {source} | Filter: {day} | Environment: {environment}")
     cards = []
     if source == "remote":
-        cards = get_all_s3_cards(sio, sid, day)
+        cards = get_all_s3_cards(sio, sid, filter)
     else:
         cards = get_all_local_cards(sio, sid, day)
     await cards
@@ -67,7 +84,7 @@ async def fixme_client(sid, order):
         print("fix_client_app not found on app.state.")
         return
 
-    await fix_client_app.submitOrder(order , {}, {})
+    await fix_client_app.submitOrder(order, {}, {})
 
 
 @sio.on("the-lab")
