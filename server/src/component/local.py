@@ -70,7 +70,7 @@ async def wait_for_local_report_to_be_ready(root_dir):
 
 async def view_a_report_on_local(root_dir):
     try:
-        command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir}"
+        command = f"cd {local_dir}&& npx playwright show-report {test_reports_dir}/{root_dir} --host 0.0.0.0 --port {reporter_port}"
 
         await open_port_on_local(reporter_port)
 
