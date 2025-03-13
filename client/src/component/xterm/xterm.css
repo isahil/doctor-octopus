@@ -7,7 +7,7 @@
   border: solid (--border-thickness) var(--octopus-gray);
   border-radius: var(--border-radius);
   min-height: 300px;
-  padding: 5px 15px 5px 5px;
+  padding: 5px 5px 5px 5px;
   box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.5);
   z-index: 1;
   /* index needs to be lower than the header */
@@ -217,6 +217,6 @@
 @media screen and (min-width: 1800px) {
   .xterm {
     min-height: 650px;
-    padding: 5px 15px 5px 5px;
+    padding: 5px 5px 5px 5px;
   }
 }
