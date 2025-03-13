@@ -5,8 +5,6 @@
   border-radius: var(--border-radius);
   text-align: center;
   padding: 10px;
-  /* min-width: 500px; */
-  /* height: auto; */
   position: relative;
   margin: 0px 70px 0px 30px;
 }
@@ -16,7 +14,7 @@
 }
 
 .fixme-header {
-  margin-bottom: 30px;
+  margin-bottom: 35px;
   height: 55px;
   border-bottom: gray 1px solid;
   padding: 0;

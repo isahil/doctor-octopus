@@ -108,6 +108,28 @@
   transform: rotate(180deg) scale(1.2);
 }
 
+.filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.day-filters-wrapper,
+.env-filters-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  color: var(--octopus-green);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  order: 2; /* Makes the label appear after the filter */
+}
+
 .env-filters-wrapper {
   top: 7px;
   left: 180px;
@@ -117,6 +139,18 @@
 .day-filters-wrapper {
   top: 7px;
   left: 250px;
+  position: absolute;
+}
+
+.env-filters-wrapper {
+  top: 7px;
+  left: 190px;
+  position: absolute;
+}
+
+.day-filters-wrapper {
+  top: 7px;
+  left: 300px;
   position: absolute;
 }
 

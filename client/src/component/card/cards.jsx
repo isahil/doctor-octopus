@@ -89,11 +89,13 @@ const Cards = () => {
           />
         </div>
         <div className="filter-wrapper">
-          <div className="day-filters-wrapper">
-            <Filters filter_conf={day_filter_conf} filter={filter} setFilter={setFilter} />
-          </div>
           <div className="env-filters-wrapper">
             <Filters filter_conf={environment_filter_conf} filter={filter} setFilter={setFilter} />
+            <span className="filter-label">ENV</span>
+          </div>
+          <div className="day-filters-wrapper">
+            <Filters filter_conf={day_filter_conf} filter={filter} setFilter={setFilter} />
+            <span className="filter-label">{filter["day"] == 1 ? "day" : "days"}</span>
           </div>
         </div>
 
