@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
             pass
 
     if server_mode == "fixme":
-        fix_client = FixClient({"environment": "qa", "app": "loan", "fix_side": "client", "sio": sio})
+        fix_client = FixClient({"environment": "uat", "app": "loan", "fix_side": "client", "counter": "1", "sio": sio})
         fix_client_task = asyncio.create_task(fix_client.start_mock_client())
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
