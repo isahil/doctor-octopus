@@ -3,8 +3,8 @@ import datetime
 
 
 class RedisClient:
+    redis_client = None
     def __init__(self):
-        self.ids = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         self.connect()
 
     def connect(self):
@@ -15,6 +15,9 @@ class RedisClient:
 
     def get(self, key):
         return self.redis_client.get(key)
+    
+    def increment_key(self, key, value):
+        return self.redis_client.incr(key, value)
 
     def has_it_been_cached(self, key, value):
         used = self.redis_client.lpos(key, value) is not None

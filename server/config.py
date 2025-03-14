@@ -15,6 +15,8 @@ test_reports_dir: str = os.environ.get(
     "TEST_REPORTS_DIR", "test_reports"
 )  # test reports directory can be changed in the .env file
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
+lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
+max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 
 the_lab_log_file_name: str = "the-lab.log"
 the_lab_log_file_path: str = f"{local_dir}/logs/{the_lab_log_file_name}"
@@ -32,4 +34,6 @@ __all__ = [
     "test_reports_dir",
     "the_lab_log_file_name",
     "the_lab_log_file_path",
+    "lifetime_doctor_clients_count_key",
+    "max_concurrent_clients_key"
 ]  # export the variables

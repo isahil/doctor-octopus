@@ -7,9 +7,16 @@ from src.component.local import get_all_local_cards
 from src.component.remote import get_all_s3_cards, total_s3_objects
 
 sys.path.append("./src")
-from config import the_lab_log_file_path, the_lab_log_file_name, local_dir
+from config import (
+    the_lab_log_file_path,
+    the_lab_log_file_name,
+    local_dir,
+    lifetime_doctor_clients_count_key,
+    max_concurrent_clients_key
+)
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
+from util.redis import RedisClient
 
 sio_client_count = 0
 global_total_s3_objects = 0
@@ -35,7 +42,18 @@ async def update_total_s3_objects():
 async def connect(sid, environ):
     global sio_client_count
     sio_client_count += 1
-    print(f"\tConnected to client... [{sid}] | Clients connected: {sio_client_count}")
+
+    redis = RedisClient()
+    redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+    total_clients = int(redis.redis_client.get(lifetime_doctor_clients_count_key).decode("utf-8"))
+    try:
+        max_concurrent_clients = int(redis.redis_client.get(max_concurrent_clients_key).decode("utf-8"))
+        if sio_client_count > max_concurrent_clients:
+            redis.redis_client.set(max_concurrent_clients_key, sio_client_count)
+    except Exception as _:
+        redis.redis_client.incr(max_concurrent_clients_key, 1)
+
+    print(f"\tConnected to client... [{sid}] | Clients connected: {sio_client_count} | total_clients {total_clients}")
     await sio.emit(
         "message",
         f"Hello from the FASTAPI W.S. server! | Clients connected: {sio_client_count}",
