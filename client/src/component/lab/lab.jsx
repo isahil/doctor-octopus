@@ -14,10 +14,12 @@ const Lab = () => {
   const suite = selectedOptions[3]
 
   if (proto === "fix" && suite) {
+    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m FIXME client Heart Beats interval 30s \r\n`)
+
     // if the selected option is "fix" and the last card has been selected, then enable the websocket listener for the respective fixme session.
     sio.off("fixme") // Remove existing listener to avoid duplicate
     sio.on("fixme", (data) => {
-      terminal.write(`\r\nx1B[1;3;36m ${JSON.stringify(data)} \r\n`)
+      terminal.write(`\r\n ${JSON.stringify(data)} \r\n`)
     })
   }
 

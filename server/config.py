@@ -19,7 +19,9 @@ lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
 max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 
 the_lab_log_file_name: str = "the-lab.log"
+the_doc_log_file_name: str = "the-doc.log"
 the_lab_log_file_path: str = f"{local_dir}/logs/{the_lab_log_file_name}"
+the_doc_log_file_path: str = f"{local_dir}/logs/{the_doc_log_file_name}"
 
 fastapi_app: FastAPI = None
 socketio_app: ASGIApp = None
@@ -34,6 +36,8 @@ __all__ = [
     "test_reports_dir",
     "the_lab_log_file_name",
     "the_lab_log_file_path",
+    "the_doc_log_file_name",
+    "the_doc_log_file_path",
     "lifetime_doctor_clients_count_key",
     "max_concurrent_clients_key"
 ]  # export the variables
