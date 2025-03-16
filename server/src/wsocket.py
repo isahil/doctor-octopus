@@ -3,8 +3,8 @@ import sys
 import asyncio
 import socketio
 import config
-from src.component.local import get_all_local_cards
-from src.component.remote import get_all_s3_cards, total_s3_objects
+from src.component.card.local import get_all_local_cards
+from src.component.card.remote import get_all_s3_cards, total_s3_objects
 
 sys.path.append("./src")
 from config import (
@@ -71,15 +71,21 @@ async def disconnect(sid):
 
 
 @sio.on("cards")
-async def cards(sid, filter: dict):
-    print(f"Socket client [{sid}] sent data to cards: {filter}")
-    source = filter.get("source")
-    environment = filter.get("environment")
-    day = int(filter.get("day"))
+async def cards(sid, expected_filter_data: dict):
+    print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
+    source = expected_filter_data.get("source")
+    # app = filter.get("app")
+    # protocol = filter.get("protocol")
+    environment = expected_filter_data.get("environment")
+    day = int(expected_filter_data.get("day"))
+    expected_filter_data = {
+        "environment": environment,
+        "day": day,
+    }
     print(f"Report Source: {source} | Filter: {day} | Environment: {environment}")
     cards = []
     if source == "remote":
-        cards = get_all_s3_cards(sio, sid, filter)
+        cards = get_all_s3_cards(sio, sid, expected_filter_data)
     else:
         cards = get_all_local_cards(sio, sid, day)
     await cards

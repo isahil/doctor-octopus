@@ -1,8 +1,9 @@
 import json
 import os
-from config import local_dir, test_reports_dir, test_reports_date_format
-from src.util.date import less_or_eqaul_to_date_time
+from config import local_dir, test_reports_dir
+# from src.util.date import less_or_eqaul_to_date_time
 from src.util.s3 import S3
+from src.component.card.validate import validate
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
@@ -16,10 +17,8 @@ def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
-async def get_all_s3_cards(sio, sid, filter: dict) -> list:
+async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
     """Get all report cards object from the S3 bucket"""
-    environment_filter = filter.get("environment")
-    day_filter = int(filter.get("day"))
 
     s3_objects = S3.list_all_s3_objects()
     results = []  # List that will be sent to the client
@@ -27,7 +26,7 @@ async def get_all_s3_cards(sio, sid, filter: dict) -> list:
     # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object", ... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
 
     for obj in s3_objects:
-        object_name = obj["Key"]
+        object_name = obj["Key"] # trading-apps/test_reports/loan/dev/ui/3-2-2025_8-37-30_PM/report.json
         path_parts = object_name.split("/")
 
         if len(path_parts) < 6:
@@ -36,24 +35,31 @@ async def get_all_s3_cards(sio, sid, filter: dict) -> list:
         root_dir_parts = path_parts[:6]
         root_dir_path = "/".join(root_dir_parts)
 
-        report_dir = path_parts[5]  # e.g. '12-31-2025_08-30-00_AM'
+        report_dir_date = path_parts[5]  # e.g. '12-31-2025_08-30-00_AM'
+        protocol = path_parts[4]  # e.g. 'ui'
         environment = path_parts[3]  # e.g. 'dev'
+        app = path_parts[2]  # e.g. 'loan'
         file_name = path_parts[-1]
+        received_filter_data = {
+            "app": app,
+            "environment": environment,
+            "protocol": protocol,
+            "day": report_dir_date,
+        }
 
-        if environment_filter and environment_filter != environment:
-            continue
-        if not less_or_eqaul_to_date_time(report_dir, test_reports_date_format, day_filter):
+        valid = validate(received_filter_data, expected_filter_data)
+        if not valid:
             continue
 
-        if report_dir not in cards:
-            cards[report_dir] = {"json_report": {}, "html_report": "", "root_dir": root_dir_path}
+        if report_dir_date not in cards:
+            cards[report_dir_date] = {"json_report": {}, "html_report": "", "root_dir": root_dir_path}
 
         if file_name.endswith("report.json"):
-            cards[report_dir]["json_report"] = {
+            cards[report_dir_date]["json_report"] = {
                 "object_name": object_name
             }  # Create a new folder in the reports dict to save the contents of the folder later
         if file_name.endswith("index.html"):
-            cards[report_dir]["html_report"] = object_name
+            cards[report_dir_date]["html_report"] = object_name
 
     for _, card in cards.items():
         try:

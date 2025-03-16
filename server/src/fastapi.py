@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
-from src.component.local import get_all_local_cards, view_a_report_on_local
-from src.component.remote import get_all_s3_cards, download_s3_folder
+
+from src.component.card.local import get_all_local_cards, view_a_report_on_local
+from src.component.card.remote import get_all_s3_cards, download_s3_folder
 
 router = APIRouter()
 
