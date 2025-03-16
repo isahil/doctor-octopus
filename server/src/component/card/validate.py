@@ -21,7 +21,14 @@ def build_validation_rules():
 def equal_value(received, expected):
     """Return True if the value is valid, otherwise False"""
     return received == expected
+    
 
+def validate_field(received_value, expected_value, validations):
+        for validation in validations:  # validation = {'is_valid': <function is_valid>}
+            valid = validation["is_valid"] # is_valid = True, False
+            is_valid = valid(received_value, expected_value) # is_valid = True, False
+            if not is_valid:
+                return False
 
 def validate(received_data, expected_data):
     """Validate the received_data based on the filter expected_data value.
