@@ -2,7 +2,6 @@ import json
 import os
 import asyncio
 from config import local_dir, test_reports_dir
-from src.component.card.validation import validate
 from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
 from src.util.date import less_or_eqaul_to_date_time
 
