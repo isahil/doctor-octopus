@@ -1,8 +1,8 @@
 import json
 import os
 import asyncio
-from config import local_dir, test_reports_dir, test_reports_date_format
-from src.component.card.validate import validate
+from config import local_dir, test_reports_dir
+from src.component.card.validation import validate
 from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
 from src.util.date import less_or_eqaul_to_date_time
 
@@ -14,28 +14,28 @@ reports_dir = os.path.join(local_dir, test_reports_dir) # ""../../test-reports"
 async def get_all_local_cards(sio, sid, filter: int) -> list:
     """get all local report cards in the local test reports directory"""
     results = []
-    local_reports_dir = os.listdir(reports_dir)
-    print(f"Total reports found on local: {len(local_reports_dir)}")
+    local_report_directories = os.listdir(reports_dir)
+    print(f"Total reports found on local: {len(local_report_directories)}")
 
-    for report_dir_date in local_reports_dir:
-        report_dir_path = os.path.join(reports_dir, report_dir_date)
+    for local_report_directory in local_report_directories:
+        local_report_dir_path = os.path.join(reports_dir, local_report_directory)
         card = {
             "json_report": {},
             "html_report": "",
-            "root_dir": report_dir_date,
+            "root_dir": local_report_directory,
         }  # initialize report card with 2 properties needed for the frontend
 
-        if os.path.isdir(report_dir_path):
-            if not less_or_eqaul_to_date_time(report_dir_date, filter):
+        if os.path.isdir(local_report_dir_path):
+            if not less_or_eqaul_to_date_time(local_report_directory, filter):
                 continue
-            for file in os.listdir(report_dir_path):
-                file_path = os.path.join(report_dir_path, file)
+            for file in os.listdir(local_report_dir_path):
+                file_path = os.path.join(local_report_dir_path, file)
 
                 if file.endswith(".json"):
                     with open(file_path, encoding="utf-8") as f:
                         card["json_report"] = json.load(f)
                 if file.endswith(".html"):
-                    html_file_path = os.path.join(report_dir_date, file)
+                    html_file_path = os.path.join(local_report_directory, file)
                     card["html_report"] = str(html_file_path)
 
                 # time.sleep(0.1) # simulate slow connection

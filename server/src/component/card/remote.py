@@ -1,9 +1,8 @@
 import json
 import os
 from config import local_dir, test_reports_dir
-# from src.util.date import less_or_eqaul_to_date_time
 from src.util.s3 import S3
-from src.component.card.validate import validate
+from src.component.card.validation import validate
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
@@ -47,8 +46,8 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
             "day": report_dir_date,
         }
 
-        valid = validate(received_filter_data, expected_filter_data)
-        if not valid:
+        error = validate(received_filter_data, expected_filter_data)
+        if error:
             continue
 
         if report_dir_date not in cards:
