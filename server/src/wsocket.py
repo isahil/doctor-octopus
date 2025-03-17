@@ -3,8 +3,8 @@ import sys
 import asyncio
 import socketio
 import config
-from src.component.local import get_all_local_cards
-from src.component.remote import get_all_s3_cards, total_s3_objects
+from src.component.card.local import get_all_local_cards
+from src.component.card.remote import get_all_s3_cards, total_s3_objects
 
 sys.path.append("./src")
 from config import (
@@ -32,20 +32,19 @@ async def update_total_s3_objects():
 
     while True:
         current_total_s3_objects = total_s3_objects()
-        await asyncio.sleep(7)
+        await asyncio.sleep(10)
         if current_total_s3_objects > global_total_s3_objects:
             await sio.emit("alert", {"new_alert": True})
             global_total_s3_objects = current_total_s3_objects
 
 
-@sio.on("connect")
-async def connect(sid, environ):
+def update_redis_cache_client_data():
     global sio_client_count
-    sio_client_count += 1
 
     redis = RedisClient()
     redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
-    total_clients = int(redis.redis_client.get(lifetime_doctor_clients_count_key).decode("utf-8"))
+    # total_clients = int(redis.redis_client.get(lifetime_doctor_clients_count_key).decode("utf-8"))
+    # print(f"Lifetime doctor clients: {total_clients}")
     try:
         max_concurrent_clients = int(redis.redis_client.get(max_concurrent_clients_key).decode("utf-8"))
         if sio_client_count > max_concurrent_clients:
@@ -53,12 +52,20 @@ async def connect(sid, environ):
     except Exception as _:
         redis.redis_client.incr(max_concurrent_clients_key, 1)
 
-    print(f"\tConnected to client... [{sid}] | Clients connected: {sio_client_count} | total_clients {total_clients}")
+
+@sio.on("connect")
+async def connect(sid, environ):
+    global sio_client_count
+    sio_client_count += 1
+
+    print(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
         "message",
-        f"Hello from the FASTAPI W.S. server! | Clients connected: {sio_client_count}",
+        f"FASTAPI W.S. server connected! #{sio_client_count}",
         room=sid,
     )
+
+    update_redis_cache_client_data()
     asyncio.create_task(update_total_s3_objects())
 
 
@@ -71,15 +78,21 @@ async def disconnect(sid):
 
 
 @sio.on("cards")
-async def cards(sid, filter: dict):
-    print(f"Socket client [{sid}] sent data to cards: {filter}")
-    source = filter.get("source")
-    environment = filter.get("environment")
-    day = int(filter.get("day"))
+async def cards(sid, expected_filter_data: dict):
+    print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
+    source = expected_filter_data.get("source")
+    # app = filter.get("app")
+    # protocol = filter.get("protocol")
+    environment = expected_filter_data.get("environment")
+    day = int(expected_filter_data.get("day"))
+    expected_filter_data = {
+        "environment": environment,
+        "day": day,
+    }
     print(f"Report Source: {source} | Filter: {day} | Environment: {environment}")
     cards = []
     if source == "remote":
-        cards = get_all_s3_cards(sio, sid, filter)
+        cards = get_all_s3_cards(sio, sid, expected_filter_data)
     else:
         cards = get_all_local_cards(sio, sid, day)
     await cards

@@ -13,7 +13,6 @@
   { "tag": "54", "name": "Side", "Required": "Y", "values": ["1", "2"] },
   { "tag": "58", "name": "Text", "Required": "N", "values": "" },
   { "tag": "59", "name": "TimeInForce", "Required": "N", "values": ["0"] },
-  { "tag": "60", "name": "TransactTime", "Required": "Y", "values": ["Generated On Submit"] },
   { "tag": "63", "name": "SttlType", "Required": "N", "values": ["7"] },
   { "tag": "111", "name": "MaxFloor", "Required": "N", "values": ["0"] },
   { "tag": "377", "name": "SolicitedFlag", "Required": "N", "values": ["Y"] },
