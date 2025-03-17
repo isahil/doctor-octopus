@@ -21,9 +21,9 @@ class Application:
             timeout -= 1
             await asyncio.sleep(2)
 
-    async def submitOrder(self, order, validation, tradeValidation):
-        print(f"fix app received order: {order}")
-        await self.sio.emit("fixme", {order, validation, tradeValidation})
+    async def submitOrder(self, order, validation, trade_validation):
+        print(f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}")
+        await self.sio.emit("fixme", order)
         return order
 
 
