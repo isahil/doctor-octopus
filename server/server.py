@@ -27,38 +27,24 @@ async def lifespan(app: FastAPI):
         with open(the_lab_log_file_path, "w"):
             pass
 
-    try:
-        print("Starting the server lifespan...")
-        # Initialize your tasks
-        if server_mode == "fixme":
-            fix_client = FixClient(
-                {"environment": "uat", "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
-            )
-            fix_client_task = asyncio.create_task(fix_client.start_mock_client())
-            app.state.fix_client = fix_client
-            app.state.fix_client_task = fix_client_task
+    if server_mode == "fixme":
+        fix_client = FixClient({"environment": "uat", "app": "loan", "fix_side": "client", "counter": "1", "sio": sio})
+        fix_client_task = asyncio.create_task(fix_client.start_mock_client())
+        app.state.fix_client = fix_client
+        app.state.fix_client_task = fix_client_task
+        # fix_dealer = FixClient({"environment": "qa", "app": "loan", "fix_side": "dealer", "fix_mode": "stp": "sio": sio})
+        # fix_dealer_task = asyncio.create_task(fix_dealer.start_mock_client())
+        # app.state.fix_dealer_task = fix_dealer_task
 
-        yield
+    yield
 
-    except asyncio.CancelledError:
-        print("Received shutdown signal, cleaning up...")
-        raise
-
-    finally:
-        print("Shutting down the server lifespan...")
-        if server_mode == "fixme":
-            # Cancel the task and wait for it to complete
-            if hasattr(app.state, "fix_client_task"):
-                fix_client_task = app.state.fix_client_task
-                fix_client_task.cancel()
-                try:
-                    await asyncio.wait_for(fix_client_task, timeout=5.0)
-                except asyncio.TimeoutError:
-                    print("Timeout waiting for fix_client_task to cancel")
-                except asyncio.CancelledError:
-                    print("fix_client_task cancelled successfully")
-                except Exception as e:
-                    print(f"Error during fix_client_task cleanup: {e}")
+    print("Shutting down the server lifespan...")
+    if server_mode == "fixme":
+        fix_client_task.cancel()
+        try:
+            await fix_client_task
+        except asyncio.CancelledError:
+            print("fix_client_app task cancelled")
 
 
 fastapi_app = FastAPI(lifespan=lifespan)
