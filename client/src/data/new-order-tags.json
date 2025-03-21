@@ -17,7 +17,7 @@
   { "tag": "111", "name": "MaxFloor", "Required": "N", "values": ["0"] },
   { "tag": "377", "name": "SolicitedFlag", "Required": "N", "values": ["Y"] },
   { "tag": "447", "name": "PartyIDSource", "Required": "Y", "values": ["D"] },
-  { "tag": "448", "name": "PartyID", "Required": "Y", "values": ["test@sdet.com"] },
+  { "tag": "448", "name": "PartyID", "Required": "Y", "values": ["client1@sdet.com"] },
   { "tag": "452", "name": "PartyRole", "Required": "Y", "values": ["11"] },
   { "tag": "6499", "name": "ApplyBrokerRestriction", "Required": "N", "values": ["Y", "N"] },
   { "tag": "7762", "name": "Restricted", "Required": "N", "values": ["Y"] },

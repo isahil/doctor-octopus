@@ -54,9 +54,7 @@ function Card({ card, index, filter, setAlert }) {
     <div className={`card ${index} ${unexpected === 0 ? "golden" : ""}`}>
       <div className="card-content">
         <div className="card-header">
-          <span className="card-title">
-            {app ? `${app} -` : ""} {environment}{" "}
-          </span>
+        <span className="project-name">{project_name}</span>
         </div>
         <div className="score-board-container ">
           <div className="score-board all">
@@ -86,7 +84,9 @@ function Card({ card, index, filter, setAlert }) {
             View
           </button>
         </div>
-        <span className="project-name">{project_name}</span>
+        <span className="card-title">
+            {app ? `${app} -` : ""} {environment}{" "}
+          </span>
         <div className="card-footer">
           <span className="branch">{git_branch}</span>
           <span className="duration">{Math.ceil(duration / 1000)} sec</span>

@@ -29,14 +29,9 @@
   margin-bottom: 10px;
 }
 
-.card-title {
+.card-title .project-name {
   font-size: 15px;
   font-weight: bold;
-}
-
-.project-name {
-  font-size: 14px;
-  color: white;
 }
 
 button:hover {
