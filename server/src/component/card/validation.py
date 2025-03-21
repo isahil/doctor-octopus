@@ -41,11 +41,8 @@ def validate(received_data, expected_data):
             continue
         received_value = received_data.get(expected_key) # received = "qa", "clo", "api"
         validations = validation_rules[expected_key] # validations = [{'is_valid': <function is_valid>}]
-        for validation in validations:  # validation = {'is_valid': <function is_valid>}
-            valid = validation["is_valid"] # is_valid = True, False
-            is_valid = valid(received_value, expected_value) # is_valid = True, False
-            if not is_valid:
-                error = f"Expected: {expected_value}, Received: {received_value}"
-                return error
+        error = validate_field(received_value, expected_value, validations)
+        if error:
+            return error
     return None
 
