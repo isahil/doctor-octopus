@@ -5,7 +5,7 @@
 }
 
 .cards-body {
-  margin-top: 7px;
+  margin-top: 40px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-evenly;
@@ -78,11 +78,10 @@
 
 .cards-header {
   width: 100%;
-  top: 0;
+  top: 65px;
   padding: 15px 0px 8px 0px;
-  z-index: 999;
   background-color: black;
-  position: sticky;
+  position: fixed;
   border: 1px solid var(--octopus-gray);
   display: flex;
   justify-content: center;

@@ -89,10 +89,16 @@ const Cards = () => {
           />
         </div>
         <div className="filter-wrapper">
-          <div className="env-filters-wrapper">
-            <Filters filter_conf={environment_filter_conf} filter={filters} setFilter={setFilters} />
-            <span className="filter-label">ENV</span>
-          </div>
+          {filters.source != "local" && (
+            <div className="env-filters-wrapper">
+              <Filters
+                filter_conf={environment_filter_conf}
+                filter={filters}
+                setFilter={setFilters}
+              />
+              <span className="filter-label">ENV</span>
+            </div>
+          )}
           <div className="day-filters-wrapper">
             <Filters filter_conf={day_filter_conf} filter={filters} setFilter={setFilters} />
             <span className="filter-label">{filters["day"] == 1 ? "day" : "days"}</span>
