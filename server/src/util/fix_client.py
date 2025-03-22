@@ -15,11 +15,10 @@ class Application:
         timeout = 30
         while timeout > 0:
             message = f"Message : {timeout}"
-            if self.broadcast is True:
-                print(f"Broadcasting: {message}")
-                await self.sio.emit("fixme", message)
+            print(f"Broadcasting: {message}")
+            await self.sio.emit("fixme", message)
             timeout -= 1
-            await asyncio.sleep(2)
+            await asyncio.sleep(5)
 
     async def submitOrder(self, order, validation, trade_validation):
         print(f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}")

@@ -48,7 +48,6 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
 
         error = validate(received_filter_data, expected_filter_data)
         if error:
-            print(f"Object: {object_name}")
             continue
 
         if report_dir_date not in cards:

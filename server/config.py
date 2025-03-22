@@ -5,11 +5,12 @@ from socketio import ASGIApp, AsyncServer
 
 load_dotenv(".env", verbose=False, override=True)
 local_dir: str = os.environ.get("LOCAL_DIRECTORY", "../../")  # path to the local project directory
-environment: str = os.environ.get("ENVIRONMENT", "qa")
+environment: str = os.environ.get("ENVIRONMENT")
 load_dotenv(f"{local_dir}.env", verbose=False)
 load_dotenv(f"{local_dir}.dotenv/.{environment}", verbose=False)
 
-server_mode: str = os.environ.get("VITE_SERVER_MODE", "local")  # [fixme, local]
+node_env: str = os.environ.get("NODE_ENV")  # [dev, prod]
+fixme_mode: str = os.environ.get("FIXME_MODE")  # [true, false]
 
 test_reports_dir: str = os.environ.get(
     "TEST_REPORTS_DIR", "test_reports"
@@ -28,16 +29,17 @@ socketio_app: ASGIApp = None
 sio: AsyncServer = None
 
 __all__ = [
-    "sio",
-    "fastapi_app",
-    "socketio_app",
-    "local_dir",
     "environment",
+    "fastapi_app",
+    "lifetime_doctor_clients_count_key",
+    "local_dir",
+    "max_concurrent_clients_key",
+    "node_env",
+    "sio",
+    "socketio_app",
     "test_reports_dir",
     "the_lab_log_file_name",
     "the_lab_log_file_path",
     "the_doc_log_file_name",
     "the_doc_log_file_path",
-    "lifetime_doctor_clients_count_key",
-    "max_concurrent_clients_key"
 ]  # export the variables

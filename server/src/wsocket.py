@@ -8,11 +8,12 @@ from src.component.card.remote import get_all_s3_cards, total_s3_objects
 
 sys.path.append("./src")
 from config import (
-    the_lab_log_file_path,
-    the_lab_log_file_name,
-    local_dir,
     lifetime_doctor_clients_count_key,
-    max_concurrent_clients_key
+    local_dir,
+    max_concurrent_clients_key,
+    node_env,
+    the_lab_log_file_name,
+    the_lab_log_file_path,
 )
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
@@ -43,8 +44,7 @@ def update_redis_cache_client_data():
 
     redis = RedisClient()
     redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
-    # total_clients = int(redis.redis_client.get(lifetime_doctor_clients_count_key).decode("utf-8"))
-    # print(f"Lifetime doctor clients: {total_clients}")
+
     try:
         max_concurrent_clients = int(redis.redis_client.get(max_concurrent_clients_key).decode("utf-8"))
         if sio_client_count > max_concurrent_clients:
@@ -65,7 +65,8 @@ async def connect(sid, environ):
         room=sid,
     )
 
-    update_redis_cache_client_data()
+    if node_env == "production":
+        update_redis_cache_client_data()
     asyncio.create_task(update_total_s3_objects())
 
 
