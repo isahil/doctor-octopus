@@ -1,23 +1,32 @@
+import os
 import redis
 import datetime
 
+redis_host = os.getenv("SDET_REDIS_HOST")
+redis_port = os.getenv("SDET_REDIS_PORT")
 
 class RedisClient:
     redis_client = None
-    def __init__(self):
-        self.connect()
+    def __init__(self, host=redis_host, port=redis_port):
+        self.connect(host, port)
 
-    def connect(self):
-        self.redis_client = redis.StrictRedis(host="localhost", port=6379, db=0)
+    def connect(self, host, port):
+        self.redis_client = redis.StrictRedis(host, port)
 
-    def set(self, key, value):
-        self.redis_client.set(key, value)
+    async def set(self, key, value):
+        await self.redis_client.set(key, value)
 
-    def get(self, key):
-        return self.redis_client.get(key)
+    async def get(self, key):
+        return await self.redis_client.get(key)
     
-    def increment_key(self, key, value):
-        return self.redis_client.incr(key, value)
+    async def increment_key(self, key):
+        current_value = await self.get(key)
+        print(f"Current value: {current_value}")
+        if not current_value:
+            await self.redis_client.set(key, 1)
+        new_value = int(current_value) + 1
+        await self.set(key, new_value)
+        print(f"New value: {await self.get(key)}")
 
     def has_it_been_cached(self, key, value):
         used = self.redis_client.lpos(key, value) is not None
