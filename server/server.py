@@ -7,7 +7,7 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from config import the_lab_log_file_path, fixme_mode
+from config import the_lab_log_file_path, environment, fixme_mode
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
 from src.util.fix_client import FixClient
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
             pass
     print("FIXME_MODE:", fixme_mode)
     if fixme_mode:
-        fix_client = FixClient({"environment": "dev", "app": "loan", "fix_side": "client", "counter": "1", "sio": sio})
+        fix_client = FixClient({"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio})
         fix_client_task = asyncio.create_task(fix_client.start_mock_client())
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
