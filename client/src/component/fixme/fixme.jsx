@@ -6,6 +6,9 @@ import { useLabOptions, useSocketIO, useTerminal } from "../../hooks"
 
 const FixMe = () => {
   const { terminal } = useTerminal()
+
+  const restriction_tags = ["7762", "9691", "9692"] // tags related to restrictions block
+  const nopartyid_tags = ["447", "448", "452"] // tags related to nopartyid block
   /**
    * create a draft order on page load with default values
    * @returns draft order object with keys and values
@@ -43,9 +46,6 @@ const FixMe = () => {
   const { selectedOptions } = useLabOptions()
   const { sio } = useSocketIO()
 
-  const restriction_tags = ["7762", "9691", "9692"] // tags related to restrictions block
-  const nopartyid_tags = ["447", "448", "452"] // tags related to nopartyid block
-
   /**
    * handle radio button change event for fix tag with an array of values
    * @param {*} event radio button click event
@@ -80,21 +80,24 @@ const FixMe = () => {
     event.preventDefault()
 
     const order = newOrder
-    const restrictions = []
-    const nopartyid = []
+    const nopartyid_block = {}
+    const restrictions_block = {}
 
     Object.keys(order).forEach((key) => {
-      if (restriction_tags.includes(key)) { // ["7762", "9691", "9692"]
-        restrictions.push({ [key]: order[key] })
+      if (nopartyid_tags.includes(key)) {
+        // ["447", "448", "452"]
+        nopartyid_block[key] = order[key]
         delete order[key]
-      } else if (nopartyid_tags.includes(key)) { // ["447", "448", "452"]
-        nopartyid.push({ [key]: order[key] })
+      }
+      if (restriction_tags.includes(key)) {
+        // ["7762", "9691", "9692"]
+        if (order["6499"] === "Y") restrictions_block[key] = order[key]
         delete order[key]
       }
     })
 
-    order["9690"] = restrictions // add the restrictions to the order
-    order["453"] = nopartyid // add the nopartyid to the order
+    order["453"] = [nopartyid_block] // add the required nopartyid block to the order
+    if (order["6499"] === "Y") order["9690"] = [restrictions_block] // add only if restrictions set to "Y"
     terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m submit: ${JSON.stringify(order)}\r\n`)
 
     sio.on("fixme", (data) => {
