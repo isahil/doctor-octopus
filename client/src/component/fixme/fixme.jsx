@@ -84,10 +84,10 @@ const FixMe = () => {
     const nopartyid = []
 
     Object.keys(order).forEach((key) => {
-      if (restriction_tags.includes(key)) {
+      if (restriction_tags.includes(key)) { // ["7762", "9691", "9692"]
         restrictions.push({ [key]: order[key] })
         delete order[key]
-      } else if (nopartyid_tags.includes(key)) {
+      } else if (nopartyid_tags.includes(key)) { // ["447", "448", "452"]
         nopartyid.push({ [key]: order[key] })
         delete order[key]
       }
@@ -95,10 +95,10 @@ const FixMe = () => {
 
     order["9690"] = restrictions // add the restrictions to the order
     order["453"] = nopartyid // add the nopartyid to the order
-    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Submitting: ${JSON.stringify(order)}\r\n`)
+    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m submit: ${JSON.stringify(order)}\r\n`)
 
     sio.on("fixme", (data) => {
-      terminal.write(`\r\n\x1B[1;3;33m Server:\x1B[1;3;36m ${JSON.stringify(data)} \r\n`)
+      terminal.write(`\r\n ${JSON.stringify(data)} \r\n`)
     })
     sio.emit("fixme", order) // send the data to the w.s. server
     // clear the order state after submitting

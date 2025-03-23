@@ -32,8 +32,7 @@ const LabProvider = ({ children }) => {
       console.log("FixMe enabled")
       sio.off("fixme") // Remove existing listener to avoid duplicate
       sio.on("fixme", (data) => {
-        console.log("W.Socket server: ", data)
-        terminal.write(`\r\n\x1B[1;3;33m Server: ${data} \r\n`)
+        terminal.write(`\r\n ${JSON.stringify(data)} \r\n`)
       })
     }
   }
