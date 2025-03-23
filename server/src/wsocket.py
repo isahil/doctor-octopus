@@ -112,7 +112,7 @@ async def fixme_client(sid, order):
         print("fix_client_app not found on app.state.")
         return
 
-    await fix_client_app.submitOrder(order, {}, {})
+    fix_client_app.submitOrder(order, {}, {})
 
 
 @sio.on("the-lab")
