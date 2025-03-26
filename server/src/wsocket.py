@@ -1,8 +1,8 @@
+import asyncio
+import config
 import platform
 import sys
-import asyncio
 import socketio
-import config
 from src.component.card.local import get_all_local_cards
 from src.component.card.remote import get_all_s3_cards, total_s3_objects
 
@@ -61,7 +61,7 @@ async def connect(sid, environ):
     print(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
         "message",
-        f"FASTAPI W.S. server connected! #{sio_client_count}",
+        f"W.S. client connected! #{sio_client_count} | Node Env: {node_env}",
         room=sid,
     )
 
