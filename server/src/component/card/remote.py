@@ -54,7 +54,8 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
             "day": obj["report_dir_date"],
         }
         
-        if validate(received_filter_data, expected_filter_data):
+        error = validate(received_filter_data, expected_filter_data)
+        if error:
             continue
             
         if obj["file_type"]:
