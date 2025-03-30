@@ -58,10 +58,10 @@ def run_sync_command(command: str):
 
 async def run_command_async(command: str):
     """
-    Asynchronous wrapper that calls the synchronous function in a thread pool.
+    Asynchronous wrapper that calls the synchronous function in the default ThreadPoolExecutor.
     """
+    # await asyncio.to_thread(run_sync_command, command, None) # alternative (TODO: test)
     loop = asyncio.get_running_loop()
-    # Run run_sync_command in the default ThreadPoolExecutor
     output = await loop.run_in_executor(None, run_sync_command, command)
     return output
 
