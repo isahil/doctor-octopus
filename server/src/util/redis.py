@@ -21,12 +21,10 @@ class RedisClient:
     
     async def increment_key(self, key):
         current_value = await self.get(key)
-        print(f"Current value: {current_value}")
         if not current_value:
             await self.redis_client.set(key, 1)
         new_value = int(current_value) + 1
         await self.set(key, new_value)
-        print(f"New value: {await self.get(key)}")
 
     def has_it_been_cached(self, key, value):
         used = self.redis_client.lpos(key, value) is not None
