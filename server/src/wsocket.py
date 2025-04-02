@@ -61,7 +61,7 @@ async def connect(sid, environ):
     print(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
         "message",
-        f"W.S. client connected! #{sio_client_count} | Node Env: {node_env}",
+        f"FASTAPI W.S. server connected! #{sio_client_count} | Node Env: {node_env}",
         room=sid,
     )
 
