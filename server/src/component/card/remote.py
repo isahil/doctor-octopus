@@ -47,31 +47,32 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
     # Group objects by report_dir_date
     grouped_objects = {}
     for obj in processed_objects:
+        file_type = obj["file_type"]
+        report_dir_date = obj["report_dir_date"]
         received_filter_data = {
             "app": obj["app"],
             "environment": obj["environment"],
             "protocol": obj["protocol"],
-            "day": obj["report_dir_date"],
+            "day": report_dir_date,
         }
         
         error = validate(received_filter_data, expected_filter_data)
         if error:
             continue
             
-        if obj["file_type"]:
-            if obj["report_dir_date"] not in grouped_objects:
-                grouped_objects[obj["report_dir_date"]] = {
+        if file_type:
+            if report_dir_date not in grouped_objects:
+                grouped_objects[report_dir_date] = {
                     "json_report": {},
                     "html_report": "",
                     "root_dir": obj["root_dir"]
                 }
             
-            if obj["file_type"] == "json":
-                grouped_objects[obj["report_dir_date"]]["json_report"] = {"object_name": obj["object_name"]}
+            if file_type == "json":
+                grouped_objects[report_dir_date]["json_report"] = {"object_name": obj["object_name"]}
             else:
-                grouped_objects[obj["report_dir_date"]]["html_report"] = obj["object_name"]
+                grouped_objects[report_dir_date]["html_report"] = obj["object_name"]
 
-    # Process JSON reports in parallel
     async def process_card(card):
         try:
             object_name = card["json_report"].get("object_name")
@@ -85,13 +86,12 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
         except (KeyError, json.JSONDecodeError):
             return None
 
-    # Process cards concurrently
+    # Process JSON reports concurrently
     results = []
     for card in grouped_objects.values():
         if processed := await process_card(card):
             results.append(processed)
 
-    # Sort results by start time
     sorted_results = sorted(
         results,
         key=lambda x: x["json_report"]["stats"]["startTime"],
@@ -115,7 +115,6 @@ def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
     for obj in s3_objects:
         object_key = obj["Key"]
 
-        # Only process objects that start with root_dir
         if object_key.startswith(root_dir):
             # Construct the local relative path from the object_key
             relative_path_parts = object_key[len(root_dir) :].lstrip("/")

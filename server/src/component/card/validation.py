@@ -34,7 +34,7 @@ def validate_field(received_value, expected_value, validations):
 
 def validate(received_data, expected_data):
     """Validate the received_data based on the filter's expected_data value.
-    Return True if the data matches the filter values, otherwise False"""
+    Return Error if the received_data does not match the expected_data values, otherwise None"""
     validation_rules = build_validation_rules()
     for (expected_key, expected_value) in (expected_data.items()):  # key = "environment", "app", "protocol" | value = [{'is_valid': <function is_valid at 0x7f8b1c1f3d30>}]
         if expected_key == "source":
