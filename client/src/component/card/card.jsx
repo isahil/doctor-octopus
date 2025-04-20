@@ -1,6 +1,5 @@
 import React from "react"
 import "./card.css"
-// import { useTerminal } from "../../hooks"
 
 const { VITE_SERVER_HOST, VITE_SERVER_PORT } = import.meta.env
 
@@ -8,7 +7,7 @@ function Card({ card, index, filter, setAlert }) {
   const { source } = filter
   const { json_report, root_dir } = card
   const { stats } = json_report
-  // const { terminal } = useTerminal()
+
   const {
     expected,
     flaky,
@@ -31,15 +30,16 @@ function Card({ card, index, filter, setAlert }) {
     setAlert((prev) => {
       return { ...prev, opening: true }
     })
-    // terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Report opening in a new tab on host 'http://localhost:9323'\x1B[0m\r\n`)
-    // terminal.write(`\x1B[1;3;31m You\x1B[0m $ `)
-    const response = await fetch(
-      `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}/card?source=${source}&root_dir=${root_dir}`
-    )
-    const url = await response.text()
 
+    const server_url = `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}`
+    const response = await fetch(
+      `${server_url}/card?source=${source}&root_dir=${root_dir}`
+    )
+    const report_path = await response.text()
+    console.log("URL: ", report_path)
+    const fullReportUrl = `${server_url}${report_path}`
     try {
-      const reportWindow = window.open(url, '_blank');
+      const reportWindow = window.open(fullReportUrl, '_blank');
       if (!reportWindow) {
         alert('Popup was blocked. Please allow popups for doctor-octopus website.');
       }
