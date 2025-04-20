@@ -1,6 +1,6 @@
+import os
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
-
 from src.component.card.local import get_all_local_cards, view_a_report_on_local
 from src.component.card.remote import get_all_s3_cards, download_s3_folder
 
@@ -51,5 +51,8 @@ async def get_a_card(
     else:
         test_report_dir = root_dir
 
-    output = await view_a_report_on_local(test_report_dir)
-    return output
+    safe_dir = os.path.basename(test_report_dir)
+    # full_path = os.path.join("./test_reports", safe_dir)
+    mount_path = f"/test_reports/{safe_dir}"
+    
+    return f"{mount_path}/index.html"

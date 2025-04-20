@@ -1,4 +1,5 @@
 # This is the entry point of the server application
+from fastapi.staticfiles import StaticFiles
 import config
 import os
 import sys  # noqa
@@ -60,6 +61,7 @@ fastapi_app.add_middleware(
 
 fastapi_app.include_router(fastapi_router)
 fastapi_app.mount("/ws/socket.io", socketio_app)
+fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
 if __name__ == "__main__":
     uvicorn.run(socketio_app, host="0.0.0.0", port=8000, lifespan="on", reload=True)
