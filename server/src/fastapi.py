@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
-from src.component.card.local import get_all_local_cards, view_a_report_on_local
+from src.component.card.local import get_all_local_cards, local_report_directories
 from src.component.card.remote import get_all_s3_cards, download_s3_folder
 
 router = APIRouter()
@@ -45,14 +45,14 @@ async def get_a_card(
         example="2021-09-01T14:00:00",
     ),
 ):
-    """Start the playwright report view server to see the report content when 'View Report' button is clicked"""
-    if source == "remote":
+    test_report_dir = os.path.basename(root_dir)
+    local_r_directories = local_report_directories()
+
+    if source == "remote" and test_report_dir not in local_r_directories:
+        print(f"Not in local. Downloading report from S3: {test_report_dir}")
         test_report_dir = download_s3_folder(root_dir)
     else:
-        test_report_dir = root_dir
-
-    safe_dir = os.path.basename(test_report_dir)
-    # full_path = os.path.join("./test_reports", safe_dir)
-    mount_path = f"/test_reports/{safe_dir}"
+        print(f"Already in local. No need to download: {test_report_dir}")
+    mount_path = f"/test_reports/{test_report_dir}"
     
     return f"{mount_path}/index.html"

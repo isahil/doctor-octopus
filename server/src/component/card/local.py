@@ -9,14 +9,20 @@ server_host = os.environ.get("VITE_SERVER_HOST", "localhost")
 reporter_port = os.environ.get("VITE_REPORTER_PORT", "9323")  # default port for playwright show-report
 reports_dir = os.path.join(local_dir, test_reports_dir) # ""../../test-reports"
 
-
-async def get_all_local_cards(sio, sid, filter: int) -> list:
-    """get all local report cards in the local test reports directory"""
-    results = []
+def local_report_directories():
+    """get all local report directories"""
     local_report_directories = os.listdir(reports_dir)
     print(f"Total reports found on local: {len(local_report_directories)}")
+    return local_report_directories
 
-    for local_report_directory in local_report_directories:
+
+def get_all_local_cards(expected_filter_data: dict) -> list:
+    """get all local report cards in the local test reports directory"""
+    results = []
+    local_r_directories = local_report_directories()
+    day = int(expected_filter_data.get("day"))
+
+    for local_report_directory in local_r_directories:
         local_report_dir_path = os.path.join(reports_dir, local_report_directory)
         card = {
             "json_report": {},
@@ -25,7 +31,7 @@ async def get_all_local_cards(sio, sid, filter: int) -> list:
         }  # initialize report card with 2 properties needed for the frontend
 
         if os.path.isdir(local_report_dir_path):
-            if not less_or_eqaul_to_date_time(local_report_directory, filter):
+            if not less_or_eqaul_to_date_time(local_report_directory, day):
                 continue
             for file in os.listdir(local_report_dir_path):
                 file_path = os.path.join(local_report_dir_path, file)
@@ -40,10 +46,7 @@ async def get_all_local_cards(sio, sid, filter: int) -> list:
                 # time.sleep(0.1) # simulate slow connection
         results.append(card)
     sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
-    for card in sorted_test_results:
-        await sio.emit("cards", card, room=sid)
-    if len(sorted_test_results) == 0:
-        await sio.emit("cards", False, room=sid)
+
     return sorted_test_results
 
 

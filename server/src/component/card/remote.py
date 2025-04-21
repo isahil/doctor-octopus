@@ -17,8 +17,8 @@ def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
-async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
-    """Get all report cards object from the S3 bucket with improved performance"""
+def get_all_s3_cards(expected_filter_data: dict) -> list:
+    """Get all report cards object from the S3 bucket"""
     
     def process_s3_object(obj):
         object_name = obj["Key"]
@@ -29,7 +29,7 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
             
         return {
             "object_name": object_name,
-            "report_dir_date": path_parts[5],
+            "day": path_parts[5],
             "protocol": path_parts[4],
             "environment": path_parts[3],
             "app": path_parts[2],
@@ -37,7 +37,6 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
             "root_dir": "/".join(path_parts[:6])
         }
 
-    # Get all S3 objects in parallel
     s3_objects = S3.list_all_s3_objects()
     
     # Process objects in parallel using ThreadPoolExecutor
@@ -46,17 +45,11 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
     
     # Group objects by report_dir_date
     grouped_objects = {}
-    for obj in processed_objects:
-        file_type = obj["file_type"]
-        report_dir_date = obj["report_dir_date"]
-        received_filter_data = {
-            "app": obj["app"],
-            "environment": obj["environment"],
-            "protocol": obj["protocol"],
-            "day": report_dir_date,
-        }
+    for received_obj_data in processed_objects:
+        file_type = received_obj_data["file_type"]
+        report_dir_date = received_obj_data["day"]
         
-        error = validate(received_filter_data, expected_filter_data)
+        error = validate(received_obj_data, expected_filter_data)
         if error:
             continue
             
@@ -65,15 +58,15 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
                 grouped_objects[report_dir_date] = {
                     "json_report": {},
                     "html_report": "",
-                    "root_dir": obj["root_dir"]
+                    "root_dir": received_obj_data["root_dir"]
                 }
             
             if file_type == "json":
-                grouped_objects[report_dir_date]["json_report"] = {"object_name": obj["object_name"]}
+                grouped_objects[report_dir_date]["json_report"] = {"object_name": received_obj_data["object_name"]}
             else:
-                grouped_objects[report_dir_date]["html_report"] = obj["object_name"]
+                grouped_objects[report_dir_date]["html_report"] = received_obj_data["object_name"]
 
-    async def process_card(card):
+    def process_card(card):
         try:
             object_name = card["json_report"].get("object_name")
             if not object_name:
@@ -81,7 +74,6 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
             
             j_report = S3.get_a_s3_object(object_name)
             card["json_report"] = json.loads(j_report)
-            await sio.emit("cards", card, room=sid)
             return card
         except (KeyError, json.JSONDecodeError):
             return None
@@ -89,7 +81,7 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
     # Process JSON reports concurrently
     results = []
     for card in grouped_objects.values():
-        if processed := await process_card(card):
+        if processed := process_card(card):
             results.append(processed)
 
     sorted_results = sorted(
@@ -98,9 +90,6 @@ async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
         reverse=True
     )
 
-    if not sorted_results:
-        await sio.emit("cards", False, room=sid)
-    
     return sorted_results
 
 def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:

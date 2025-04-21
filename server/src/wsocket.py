@@ -3,8 +3,7 @@ import config
 import platform
 import sys
 import socketio
-from src.component.card.local import get_all_local_cards
-from src.component.card.remote import get_all_s3_cards, total_s3_objects
+from src.component.card.remote import total_s3_objects
 
 sys.path.append("./src")
 from config import (
@@ -37,6 +36,9 @@ async def update_total_s3_objects():
         if current_total_s3_objects > global_total_s3_objects:
             await sio.emit("alert", {"new_alert": True})
             global_total_s3_objects = current_total_s3_objects
+
+            cards_app = config.fastapi_app.state.cards_app
+            cards_app.set_cards({"environment": "qa", "day": 1}) # update cards in app state
 
 
 def update_redis_cache_client_data():
@@ -81,22 +83,20 @@ async def disconnect(sid):
 @sio.on("cards")
 async def cards(sid, expected_filter_data: dict):
     print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
-    source = expected_filter_data.get("source")
-    # app = filter.get("app")
-    # protocol = filter.get("protocol")
-    environment = expected_filter_data.get("environment")
-    day = int(expected_filter_data.get("day"))
-    expected_filter_data = {
-        "environment": environment,
-        "day": day,
-    }
-    print(f"Report Source: {source} | Filter: {day} | Environment: {environment}")
-    cards = []
-    if source == "remote":
-        cards = get_all_s3_cards(sio, sid, expected_filter_data)
+    cards_app = config.fastapi_app.state.cards_app
+    if cards_app:
+        cards = cards_app.get_cards(expected_filter_data)
+        # print(f"Cards total in app state: {len(cards)}")
+        if len(cards) == 0:
+            print("No cards found in app state.")
+            await sio.emit("cards", False, room=sid)
+            return
+        for card in cards:
+            await sio.emit("cards", card, room=sid)
     else:
-        cards = get_all_local_cards(sio, sid, day)
-    await cards
+        print("Cards class not found in app state.")
+        await sio.emit("cards", False, room=sid)
+        return
 
 
 @sio.on("fixme")
