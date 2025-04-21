@@ -9,6 +9,7 @@ echo "Root app directory set up finished!"
 if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
     echo "Setting up the Server..."
     cd server
+    mkdir test_reports
 
     # Get the OS name to handle OS specific commands
     OS_NAME=$(uname)
