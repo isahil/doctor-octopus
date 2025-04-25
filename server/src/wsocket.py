@@ -38,7 +38,7 @@ async def update_total_s3_objects():
             global_total_s3_objects = current_total_s3_objects
 
             cards_app = config.fastapi_app.state.cards_app
-            cards_app.set_cards({"environment": "qa", "day": 1}) # update cards in app state
+            cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
 def update_redis_cache_client_data():

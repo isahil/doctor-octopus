@@ -1,12 +1,13 @@
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-from config import local_dir, test_reports_dir
+from config import test_reports_dir
 from src.util.s3 import S3
 from src.component.card.validation import validate
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
-reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
+download_dir = "./"
+reports_dir = os.path.join(download_dir, test_reports_dir)  # Full path to the local test reports directory
 
 
 def get_a_s3_card_html_report(html) -> str:

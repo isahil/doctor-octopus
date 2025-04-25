@@ -18,7 +18,7 @@
     "key": "suite",
     "description": "test suite to run for the given protocol",
     "options": {
-      "api": ["sanity", "smoke", "regression"],
+      "api": ["sanity", "smoke", "regression", "perf"],
       "ui": [
         "sanity",
         "smoke",
@@ -31,7 +31,8 @@
         "rfq",
         "runs"
       ],
-      "fix": ["client", "dealer"]
+      "fix": ["client", "dealer"],
+      "perf": ["bilat", "list", "rfq", "runs"]
     }
   }
 ]

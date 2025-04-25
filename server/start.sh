@@ -11,4 +11,4 @@ else
     source $HOME/venv/Scripts/Activate
 fi
 
-uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --reload
+uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --workers 3 --reload
