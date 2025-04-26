@@ -2,6 +2,8 @@ import asyncio
 import platform
 import subprocess
 
+from config import local_dir
+
 
 async def open_port_on_local(port):
     pid = await is_port_open(port)
@@ -72,3 +74,16 @@ async def run_a_command_on_local(command):
         return await run_command_async(command)
     except Exception as e:
         raise e
+    
+def create_command(options):
+    env = options.get("environment")
+    app = options.get("app")
+    proto = options.get("proto")
+    suite = options.get("suite")
+    os = platform.system().lower()
+    if os == "darwin" or os == "linux":
+        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
+    elif os == "windows":
+        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
+    else:
+        raise OSError("Unsupported OS to run command")

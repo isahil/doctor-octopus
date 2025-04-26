@@ -1,6 +1,8 @@
 import os
+import json
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
+from src.util.executor import create_command, run_sync_command
 from src.component.card.local import get_all_local_cards, local_report_directories
 from src.component.card.remote import get_all_s3_cards, download_s3_folder
 
@@ -30,7 +32,7 @@ async def get_all_cards(
         return get_all_local_cards(filter)
 
 
-@router.get("/card/", response_class=PlainTextResponse, status_code=200)
+@router.get("/card", response_class=PlainTextResponse, status_code=200)
 async def get_a_card(
     source: str = Query(
         ...,
@@ -56,3 +58,20 @@ async def get_a_card(
     mount_path = f"/test_reports/{test_report_dir}"
     
     return f"{mount_path}/index.html"
+
+
+@router.get("/execute", response_class=PlainTextResponse, status_code=200)
+async def execute_command(
+    options: object = Query(
+        ...,
+        title="Options",
+        description="Command options to be executed",
+        example='{"environment": "dev", "app": "clo", "proto": "api", "suite": "smoke"}',
+    )
+):
+    """Execute a command on the running server"""
+    options = json.loads(options)
+    print(f"options received: {options} | type: {type(options)}")
+    command = create_command(options)
+    result = run_sync_command(command)
+    return result

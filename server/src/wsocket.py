@@ -1,14 +1,13 @@
 import asyncio
 import config
-import platform
 import sys
 import socketio
+from src.util.executor import create_command
 from src.component.card.remote import total_s3_objects
 
 sys.path.append("./src")
 from config import (
     lifetime_doctor_clients_count_key,
-    local_dir,
     max_concurrent_clients_key,
     node_env,
     the_lab_log_file_name,
@@ -116,23 +115,12 @@ async def fixme_client(sid, order):
 
 
 @sio.on("the-lab")
-async def the_lab(sid, command):
+async def the_lab(sid, options):
     """Run a command using The Lab to execute the playwright test suite"""
-    print(f"SIO received command: {command} | type {type(command)}")
-    lab_options = command
-    env = lab_options.get("environment")
-    app = lab_options.get("app")
-    proto = lab_options.get("proto")
-    suite = lab_options.get("suite")
-    subscription = "the-lab"
+    print(f"SIO received command: {options} | type {type(options)}")
 
-    os = platform.system().lower()
-    if os == "darwin" or os == "linux":
-        command = f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm test {proto}:{suite}"
-    elif os == "windows":
-        command = f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm test {proto}:{suite}"
-    else:
-        raise OSError("Unsupported OS to run command")
+    subscription = "the-lab"
+    command = create_command(options)
     command_task = asyncio.create_task(
         run_a_command_on_local(f"{command} >> logs/{the_lab_log_file_name}")
     )  # start background task to run the command
@@ -140,4 +128,4 @@ async def the_lab(sid, command):
     await start_streaming_log_file(
         sio, sid, subscription, the_lab_log_file_path
     )  # start background task to stream the log file
-    await command_task  # wait for the command task to finish
+    await command_task
