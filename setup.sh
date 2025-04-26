@@ -1,8 +1,12 @@
-MODE=$1 # app, lite, e2e [app: all dependencies for the app, lite: only client/npm dependencies, e2e: all dependencies including playwright]
+MODE=$1 # app, lite, all [app: all dependencies for the app, lite: only client/npm dependencies, all: all dependencies including playwright]
 : "${MODE:=app}" # Default mode is app
 START_TIME=$(date +%s)
 echo "Setting up Doctor Octopus in \""$MODE"\" mode. START TIME: [$(date)]"
 echo "Setting up the Root app directory..."
+mkdir logs
+touch logs/doc.log
+
+echo "Created the logs directory & files..."
 npm install
 echo "Root app directory set up finished!"
 
@@ -47,6 +51,8 @@ fi
 if [ "$MODE" = "all" ]; then
     echo "Setting up the Playwright project..."
     cd playwright
+    mkdir logs
+    touch logs/the-lab.log
     npm install
     echo "Playwright set up finished!"
     cd ..
