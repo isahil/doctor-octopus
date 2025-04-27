@@ -9,9 +9,9 @@
     "lint": "npx eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently \"cd client && npm run dev\" \"cd server && sh start.sh\"",
-    "setup": "sh setup.sh",
-    "setup-lite": "sh setup.sh lite",
-    "setup-all": "sh setup.sh all"
+    "setup": "sh utils/setup.sh",
+    "setup-lite": "sh utils/setup.sh lite",
+    "setup-all": "sh utils/setup.sh all"
   },
   "repository": {
     "type": "git",
