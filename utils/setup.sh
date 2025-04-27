@@ -2,6 +2,11 @@ MODE=$1 # app, lite, all [app: all dependencies for the app, lite: only client/n
 : "${MODE:=app}" # Default mode is app
 START_TIME=$(date +%s)
 echo "Setting up Doctor Octopus in \""$MODE"\" mode. START TIME: [$(date)]"
+
+if [ "$MODE" = "all" ]; then
+    sh utils/server-setup.sh
+fi
+
 echo "Setting up the Root app directory..."
 mkdir logs
 touch logs/doc.log
