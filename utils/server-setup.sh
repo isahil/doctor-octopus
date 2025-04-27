@@ -48,6 +48,7 @@ if ! command_exists node || ! command_exists npm; then
         # For Linux (Using NodeSource repository for Node.js $NODE_VERSION)
         curl -fsSL "https://deb.nodesource.com/setup_$NODE_VERSION.x" | sudo -E bash -
         sudo apt-get install -y nodejs
+        sudo apt-get install -y python3.10-venv
     elif [ "$OS_NAME" = "Darwin" ]; then
         # For macOS
         if command_exists brew; then
