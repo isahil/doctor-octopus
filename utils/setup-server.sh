@@ -48,7 +48,6 @@ if ! command_exists node || ! command_exists npm; then
         # For Linux (Using NodeSource repository for Node.js $NODE_VERSION)
         curl -fsSL "https://deb.nodesource.com/setup_$NODE_VERSION.x" | sudo -E bash -
         sudo apt-get install -y nodejs
-        sudo apt-get install -y python3.10-venv
     elif [ "$OS_NAME" = "Darwin" ]; then
         # For macOS
         if command_exists brew; then
@@ -69,7 +68,26 @@ if ! command_exists node || ! command_exists npm; then
     fi
 fi
 
-git --version
-node --version
-npm --version
-echo "Git and Node.js $NODE_VERSION are installed."
+# Check if venv is available
+if ! python3 -m venv --help &> /dev/null || ! command_exists pip; then
+    echo "Python venv module is not installed!"
+    
+    if [ "$OS_NAME" = "Linux" ]; then
+        echo "Installing python3-venv..."
+        sudo apt-get update
+        sudo apt-get install -y python3-venv
+        sudo apt install python3-pip -y
+    elif [ "$OS_NAME" = "Darwin" ]; then
+        echo "Python on macOS should already have venv. If not, reinstall Python."
+    else
+        echo "Please install the Python venv module manually and run this script again."
+        exit 1
+    fi
+fi
+
+echo "git: $(git --version)"
+echo "node: $(node --version)"
+echo "npm: $(npm --version)"
+echo "pip: $(pip --version)"
+echo "venv: $(python3 -m venv --help | head -n 1)"
+echo "Git, venv and Node.js $NODE_VERSION are installed."

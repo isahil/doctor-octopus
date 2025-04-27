@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "Starting the FASTAPI server"
 
 OS_NAME=$(uname)
