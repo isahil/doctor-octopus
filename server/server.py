@@ -8,7 +8,7 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from config import the_lab_log_file_path, environment, fixme_mode
+from config import the_lab_log_file_path, environment, fixme_mode, node_env
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
 from src.util.fix_client import FixClient
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
         with open(the_lab_log_file_path, "w"):
             pass
     print("FIXME_MODE:", fixme_mode)
-    if fixme_mode:
+    if fixme_mode and node_env == "production":
         fix_client = FixClient(
             {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
         )
@@ -37,13 +37,13 @@ async def lifespan(app: FastAPI):
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
 
-    cards_app = Cards({"environment": "qa", "day": 1})
+    cards_app = Cards({"environment": "qa", "day": 1, "source": "remote"})
     app.state.cards_app = cards_app
 
     yield
 
     print("Shutting down the server lifespan...")
-    if fixme_mode:
+    if fixme_mode and node_env == "production":
         fix_client_task.cancel()
         try:
             await fix_client_task
@@ -67,7 +67,7 @@ fastapi_app.mount("/ws/socket.io", socketio_app)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
 if __name__ == "__main__":
-    uvicorn.run(socketio_app, host="0.0.0.0", port=8000, lifespan="on", reload=True)
+    uvicorn.run(socketio_app, host="0.0.0.0", port=8000, workers=1 if node_env=="dev" else 2, lifespan="on", reload=True if node_env=="dev" else False)
 
 # "author": "Imran Sahil"
 # "github": "https://github.com/isahil/doctor-octopus.git"
