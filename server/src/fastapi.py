@@ -1,8 +1,9 @@
-import os
+import asyncio
 import json
+import os
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
-from src.util.executor import create_command, run_sync_command
+from src.util.executor import create_command, run_a_command_on_local
 from src.component.card.local import get_all_local_cards, local_report_directories
 from src.component.card.remote import get_all_s3_cards, download_s3_folder
 
@@ -71,7 +72,9 @@ async def execute_command(
 ):
     """Execute a command on the running server"""
     options = json.loads(options)
-    print(f"options received: {options} | type: {type(options)}")
     command = create_command(options)
-    result = run_sync_command(command)
-    return result
+    try:
+        return await asyncio.create_task(run_a_command_on_local(command))
+    except Exception as e:
+        print(f"Error executing command: {e}")
+        return JSONResponse(content={f"command: {command} \nerror: {str(e)}"}, status_code=500)
