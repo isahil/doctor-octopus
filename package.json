@@ -8,7 +8,8 @@
     "format": "prettier --write .",
     "lint": "npx eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh\"",
+    "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh production\"",
+    "start-dev": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh dev\"",
     "setup": "sh utils/setup-app.sh",
     "setup-lite": "sh utils/setup-app.sh lite",
     "setup-all": "sh utils/setup-app.sh all"

@@ -12,6 +12,7 @@
     "api:smoke": "npm test api:smoke",
     "api:sanity": "npm test api:sanity",
     "api:regression": "npm test api:regression",
+    "perf:smoke": "echo \"Artillery test started at $(date)\" >> logs/artillery.log",
     "s3:smoke": "npm test s3:smoke",
     "ui:smoke": "npm test ui:smoke",
     "ui:sanity": "npm test ui:sanity",
