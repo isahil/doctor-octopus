@@ -1,13 +1,13 @@
-import asyncio
 import json
 import os
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 from src.util.executor import create_command, run_a_command_on_local
 from src.component.card.local import get_all_local_cards, local_report_directories
 from src.component.card.remote import get_all_s3_cards, download_s3_folder
 
 router = APIRouter()
+
 
 @router.get("/cards/", response_class=JSONResponse, status_code=200, deprecated=True)
 async def get_all_cards(
@@ -57,24 +57,35 @@ async def get_a_card(
     else:
         print(f"Already in local. No need to download: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
-    
     return f"{mount_path}/index.html"
 
 
-@router.get("/execute", response_class=PlainTextResponse, status_code=200)
+@router.get("/execute", response_class=PlainTextResponse, status_code=202)
 async def execute_command(
-    options: object = Query(
+    options: str = Query(
         ...,
         title="Options",
         description="Command options to be executed",
-        example='{"environment": "dev", "app": "clo", "proto": "api", "suite": "smoke"}',
-    )
+        example='{"environment": "dev", "app": "clo", "proto": "perf", "suite": "smoke"}',
+    ),
+    background_tasks: BackgroundTasks = None,
 ):
     """Execute a command on the running server"""
-    options = json.loads(options)
-    command = create_command(options)
     try:
-        return await asyncio.create_task(run_a_command_on_local(command))
+        options = json.loads(options)
+        command = create_command(options)  # Ensure `command` is defined
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON input: {e}")
+        return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
+
+    try:
+        background_tasks.add_task(run_a_command_on_local, command)
+        return JSONResponse(
+            content={
+                "message": "The command has been successfully submitted and is running in the background.",
+                "details": "Please check the server logs or Artillery Cloud for progress updates.",
+            },
+            status_code=202,
+        )
     except Exception as e:
-        print(f"Error executing command: {e}")
-        return JSONResponse(content={f"command: {command} \nerror: {str(e)}"}, status_code=500)
+        return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)

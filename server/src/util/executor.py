@@ -5,7 +5,7 @@ import subprocess
 from config import local_dir
 
 
-async def open_port_on_local(port):
+async def open_port_on_local(port: int) -> None:
     pid = await is_port_open(port)
     if pid:
         await kill_process_on_port(pid)
@@ -13,7 +13,7 @@ async def open_port_on_local(port):
         print(f"Port {port} is open to use")
 
 
-async def is_port_open(port):
+async def is_port_open(port: int) -> str:
     """Check if a port is open on the local machine. Return the PID of the process using the port if open"""
     try:
         os = platform.system().lower()
@@ -34,7 +34,7 @@ async def is_port_open(port):
         return e
 
 
-async def kill_process_on_port(pid):
+async def kill_process_on_port(pid: str):
     try:
         os = platform.system().lower()
         print(f"Killing process for PID {pid} on {os}")
@@ -50,7 +50,7 @@ async def kill_process_on_port(pid):
         return e
 
 
-def run_sync_command(command: str):
+def run_sync_command(command: str) -> str:
     """
     Synchronous function that uses subprocess.run to execute a shell command.
     """
@@ -58,7 +58,7 @@ def run_sync_command(command: str):
     return result.stdout if result.stdout else result.stderr
 
 
-async def run_command_async(command: str):
+async def run_command_async(command: str) -> str:
     """
     Asynchronous wrapper that calls the synchronous function in the default ThreadPoolExecutor.
     """
@@ -68,14 +68,14 @@ async def run_command_async(command: str):
     return output
 
 
-async def run_a_command_on_local(command):
+async def run_a_command_on_local(command: str) -> str:
     try:
         print(f"Executing [{command}] on local machine")
         return await run_command_async(command)
     except Exception as e:
         raise e
     
-def create_command(options):
+def create_command(options: dict) -> str:
     env = options.get("environment")
     app = options.get("app")
     proto = options.get("proto")
