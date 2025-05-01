@@ -2,7 +2,7 @@ import asyncio
 import platform
 import subprocess
 
-from config import local_dir
+from config import local_dir, the_doc_log_file_name
 
 
 async def open_port_on_local(port: int) -> None:
@@ -82,9 +82,11 @@ def create_command(options: dict) -> str:
     suite = options.get("suite")
     record = options.get("record", "false")
     os = platform.system().lower()
+    log_file = the_doc_log_file_name if suite != "perf" else "artillery.log"
+
     if os == "darwin" or os == "linux":
-        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} RECORD={record} npm run {proto}:{suite}"
+        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} RECORD={record} npm run {proto}:{suite} >> logs/{log_file}"
     elif os == "windows":
-        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& set RECORD={record}& npm run {proto}:{suite}"
+        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& set RECORD={record}& npm run {proto}:{suite} >> logs/{log_file}"
     else:
         raise OSError("Unsupported OS to run command")

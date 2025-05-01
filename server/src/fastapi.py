@@ -74,6 +74,7 @@ async def execute_command(
     try:
         options = json.loads(options)
         command = create_command(options)  # Ensure `command` is defined
+        print(f"Command to be executed: {command}")
     except json.JSONDecodeError as e:
         print(f"Invalid JSON input: {e}")
         return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
