@@ -80,10 +80,11 @@ def create_command(options: dict) -> str:
     app = options.get("app")
     proto = options.get("proto")
     suite = options.get("suite")
+    record = options.get("record", "false")
     os = platform.system().lower()
     if os == "darwin" or os == "linux":
-        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} npm run {proto}:{suite}"
+        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} RECORD={record} npm run {proto}:{suite}"
     elif os == "windows":
-        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& npm run {proto}:{suite}"
+        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& set RECORD={record}& npm run {proto}:{suite}"
     else:
         raise OSError("Unsupported OS to run command")
