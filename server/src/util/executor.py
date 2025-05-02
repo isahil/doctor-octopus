@@ -80,13 +80,13 @@ def create_command(options: dict) -> str:
     app = options.get("app")
     proto = options.get("proto")
     suite = options.get("suite")
-    record = options.get("record", "false")
+    record = options.get("record", "false") # used by Artillery perf tests
+    logger = options.get("logger", the_doc_log_file_name)
     os = platform.system().lower()
-    log_file = the_doc_log_file_name if suite != "perf" else "artillery.log"
 
     if os == "darwin" or os == "linux":
-        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} RECORD={record} npm run {proto}:{suite} >> logs/{log_file}"
+        return f"cd {local_dir} && ENVIRONMENT={env} APP={app} RECORD={record} npm run {proto}:{suite} >> logs/{logger}"
     elif os == "windows":
-        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& set RECORD={record}& npm run {proto}:{suite} >> logs/{log_file}"
+        return f"cd {local_dir} && set ENVIRONMENT={env}& set APP={app}& set RECORD={record}& npm run {proto}:{suite} >> logs/{logger}"
     else:
         raise OSError("Unsupported OS to run command")
