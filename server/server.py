@@ -1,4 +1,5 @@
 # This is the entry point of the server application
+from fastapi.staticfiles import StaticFiles
 import config
 import os
 import sys  # noqa
@@ -7,10 +8,11 @@ import uvicorn
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from config import the_lab_log_file_path, environment, fixme_mode
+from config import the_lab_log_file_path, environment, fixme_mode, node_env
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
 from src.util.fix_client import FixClient
+from src.component.card.cards import Cards
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))
 # from fix_client_async import FixClient # type: ignore
 
@@ -27,19 +29,21 @@ async def lifespan(app: FastAPI):
         with open(the_lab_log_file_path, "w"):
             pass
     print("FIXME_MODE:", fixme_mode)
-    if fixme_mode:
-        fix_client = FixClient({"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio})
+    if fixme_mode and node_env == "production":
+        fix_client = FixClient(
+            {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
+        )
         fix_client_task = asyncio.create_task(fix_client.start_mock_client())
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
-        # fix_dealer = FixClient({"environment": "qa", "app": "loan", "fix_side": "dealer", "fix_mode": "stp": "sio": sio})
-        # fix_dealer_task = asyncio.create_task(fix_dealer.start_mock_client())
-        # app.state.fix_dealer_task = fix_dealer_task
+
+    cards_app = Cards({"environment": "qa", "day": 1, "source": "remote"})
+    app.state.cards_app = cards_app
 
     yield
 
     print("Shutting down the server lifespan...")
-    if fixme_mode:
+    if fixme_mode and node_env == "production":
         fix_client_task.cancel()
         try:
             await fix_client_task
@@ -60,9 +64,10 @@ fastapi_app.add_middleware(
 
 fastapi_app.include_router(fastapi_router)
 fastapi_app.mount("/ws/socket.io", socketio_app)
+fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
 if __name__ == "__main__":
-    uvicorn.run(socketio_app, host="0.0.0.0", port=8000, lifespan="on", reload=True)
+    uvicorn.run(socketio_app, host="0.0.0.0", port=8000, workers=1 if node_env=="dev" else 2, lifespan="on", reload=True if node_env=="dev" else False)
 
 # "author": "Imran Sahil"
 # "github": "https://github.com/isahil/doctor-octopus.git"

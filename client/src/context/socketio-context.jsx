@@ -11,19 +11,30 @@ const SocketIOProvider = ({ children, host, port }) => {
     const socket = io(`http://${host}:${port}`, {
       path: "/ws/socket.io",
       transports: ["websocket", "polling", "flashsocket"],
+      reconnection: false,
+      forceNew: true,
+      closeOnBeforeunload: true,
     })
 
     setSio(socket)
 
     socket.on("connect", () => console.log("Connected to the W.Socket server..."))
 
-    socket.on("disconnect", () => console.log("Disconnected from the W.Socket server..."))
+    socket.on("disconnect", () => {
+      console.log("Disconnected from the W.Socket server...")
+      socket.close()
+    })
 
     socket.on("error", (error) => console.log("W.Socket server error: ", error))
 
-    return () => socket.disconnect() // Disconnect the WebSocket connection when the component unmounts
-  }, [])
-
+    return () => {
+      if (socket) {
+        socket.removeAllListeners()
+        socket.close()
+        setSio(null)
+      }
+    }
+  }, [host, port])
   return <SocketIOContext value={{ sio }}>{children}</SocketIOContext>
 }
 

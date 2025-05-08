@@ -1,14 +1,25 @@
-MODE=$1 # app, lite, e2e [app: all dependencies for the app, lite: only client/npm dependencies, e2e: all dependencies including playwright]
+#!/bin/bash
+MODE=$1 # app, lite, all [app: all dependencies for the app, lite: only client/npm dependencies, all: all dependencies including playwright]
 : "${MODE:=app}" # Default mode is app
 START_TIME=$(date +%s)
 echo "Setting up Doctor Octopus in \""$MODE"\" mode. START TIME: [$(date)]"
+
+if [ "$MODE" = "all" ]; then
+    sh utils/setup-server.sh
+fi
+
 echo "Setting up the Root app directory..."
+mkdir logs
+touch logs/doc.log
+
+echo "Created the logs directory & files..."
 npm install
 echo "Root app directory set up finished!"
 
 if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
     echo "Setting up the Server..."
     cd server
+    mkdir test_reports
 
     # Get the OS name to handle OS specific commands
     OS_NAME=$(uname)
@@ -17,7 +28,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
     
     if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
         python3 -m venv $HOME/venv
-        source $HOME/venv/bin/activate
+        . $HOME/venv/bin/activate
     elif [ "$OS_NAME" = "CYGWIN" ] || [ "$OS_NAME" = "MINGW" ] || [ "$OS_NAME" = "MSYS" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-22631" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-19045" ]; then
         python -m venv $HOME/venv
         source $HOME/venv/Scripts/Activate
@@ -27,7 +38,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
     fi
 
     echo "Installing the server python dependencies..."
-    pip install .
+    pip3 install .
     echo "Server set up finished!"
 
     cd ..
@@ -46,6 +57,8 @@ fi
 if [ "$MODE" = "all" ]; then
     echo "Setting up the Playwright project..."
     cd playwright
+    mkdir logs test_reports
+    touch logs/the-lab.log
     npm install
     echo "Playwright set up finished!"
     cd ..

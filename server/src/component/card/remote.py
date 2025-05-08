@@ -1,11 +1,13 @@
 import json
 import os
-from config import local_dir, test_reports_dir
+from concurrent.futures import ThreadPoolExecutor
+from config import test_reports_dir
 from src.util.s3 import S3
 from src.component.card.validation import validate
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
-reports_dir = os.path.join(local_dir, test_reports_dir)  # Full path to the local test reports directory
+download_dir = "./"
+reports_dir = os.path.join(download_dir, test_reports_dir)  # Full path to the local test reports directory
 
 
 def get_a_s3_card_html_report(html) -> str:
@@ -16,67 +18,80 @@ def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
-async def get_all_s3_cards(sio, sid, expected_filter_data: dict) -> list:
+def get_all_s3_cards(expected_filter_data: dict) -> list:
     """Get all report cards object from the S3 bucket"""
-
-    s3_objects = S3.list_all_s3_objects()
-    results = []  # List that will be sent to the client
-    cards = {}  # Temporary dictionary to store the reports
-    # { 2024-12-29-10-33-40: { json_report: { "object_name": "path/to/s3/object", ... }, html_report: "name.html", "root_dir": "trading-apps/test_reports/api/2024-12-29-10-33-40" } }
-
-    for obj in s3_objects:
-        object_name = obj["Key"] # trading-apps/test_reports/loan/dev/ui/3-2-2025_8-37-30_PM/report.json
+    
+    def process_s3_object(obj):
+        object_name = obj["Key"]
         path_parts = object_name.split("/")
-
+        
         if len(path_parts) < 6:
-            continue
-
-        root_dir_parts = path_parts[:6]
-        root_dir_path = "/".join(root_dir_parts)
-
-        report_dir_date = path_parts[5]  # e.g. '12-31-2025_08-30-00_AM'
-        protocol = path_parts[4]  # e.g. 'ui'
-        environment = path_parts[3]  # e.g. 'dev'
-        app = path_parts[2]  # e.g. 'loan'
-        file_name = path_parts[-1]
-        received_filter_data = {
-            "app": app,
-            "environment": environment,
-            "protocol": protocol,
-            "day": report_dir_date,
+            return None
+            
+        return {
+            "object_name": object_name,
+            "day": path_parts[5],
+            "protocol": path_parts[4],
+            "environment": path_parts[3],
+            "app": path_parts[2],
+            "file_type": "json" if object_name.endswith("report.json") else "html" if object_name.endswith("index.html") else None,
+            "root_dir": "/".join(path_parts[:6])
         }
 
-        error = validate(received_filter_data, expected_filter_data)
+    s3_objects = S3.list_all_s3_objects()
+    
+    # Process objects in parallel using ThreadPoolExecutor
+    with ThreadPoolExecutor() as executor:
+        processed_objects = list(filter(None, executor.map(process_s3_object, s3_objects)))
+    
+    # Group objects by report_dir_date
+    grouped_objects = {}
+    for received_obj_data in processed_objects:
+        file_type = received_obj_data["file_type"]
+        report_dir_date = received_obj_data["day"]
+        
+        error = validate(received_obj_data, expected_filter_data)
         if error:
             continue
+            
+        if file_type:
+            if report_dir_date not in grouped_objects:
+                grouped_objects[report_dir_date] = {
+                    "json_report": {},
+                    "html_report": "",
+                    "root_dir": received_obj_data["root_dir"]
+                }
+            
+            if file_type == "json":
+                grouped_objects[report_dir_date]["json_report"] = {"object_name": received_obj_data["object_name"]}
+            else:
+                grouped_objects[report_dir_date]["html_report"] = received_obj_data["object_name"]
 
-        if report_dir_date not in cards:
-            cards[report_dir_date] = {"json_report": {}, "html_report": "", "root_dir": root_dir_path}
-
-        if file_name.endswith("report.json"):
-            cards[report_dir_date]["json_report"] = {
-                "object_name": object_name
-            }  # Create a new folder in the reports dict to save the contents of the folder later
-        if file_name.endswith("index.html"):
-            cards[report_dir_date]["html_report"] = object_name
-
-    for _, card in cards.items():
+    def process_card(card):
         try:
-            object_name = card["json_report"]["object_name"]
-            if object_name is False:
-                print("no valid object")
-        except KeyError:
-            continue
+            object_name = card["json_report"].get("object_name")
+            if not object_name:
+                return None
+            
+            j_report = S3.get_a_s3_object(object_name)
+            card["json_report"] = json.loads(j_report)
+            return card
+        except (KeyError, json.JSONDecodeError):
+            return None
 
-        j_report = S3.get_a_s3_object(object_name)
-        card["json_report"] = json.loads(j_report)  # Load the json report into the dictionary
-        results.append(card)
-        await sio.emit("cards", card, room=sid)
-    sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
-    if len(sorted_test_results) == 0:
-        await sio.emit("cards", False, room=sid)
-    return sorted_test_results
+    # Process JSON reports concurrently
+    results = []
+    for card in grouped_objects.values():
+        if processed := process_card(card):
+            results.append(processed)
 
+    sorted_results = sorted(
+        results,
+        key=lambda x: x["json_report"]["stats"]["startTime"],
+        reverse=True
+    )
+
+    return sorted_results
 
 def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
     """
@@ -90,7 +105,6 @@ def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
     for obj in s3_objects:
         object_key = obj["Key"]
 
-        # Only process objects that start with root_dir
         if object_key.startswith(root_dir):
             # Construct the local relative path from the object_key
             relative_path_parts = object_key[len(root_dir) :].lstrip("/")
