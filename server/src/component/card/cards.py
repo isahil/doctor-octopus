@@ -13,7 +13,7 @@ class Cards:
         environment = expected_filter_data.get("environment")
         day = int(expected_filter_data.get("day"))
 
-        if self.environment != environment or self.day != day:
+        if self.environment != environment or self.day < day:
             print(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
             self.cards = self.get_all_cards(expected_filter_data)
             self.environment = environment

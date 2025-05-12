@@ -43,8 +43,8 @@ async def get_a_card(
     ),
     root_dir: str = Query(
         None,
-        title="Root Directory",
-        description="Root directory of the report to be retrieved",
+        title="S3 Root Directory",
+        description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
         example="2021-09-01T14:00:00",
     ),
 ):

@@ -85,7 +85,7 @@ async def cards(sid, expected_filter_data: dict):
     cards_app = config.fastapi_app.state.cards_app
     if cards_app:
         cards = cards_app.get_cards(expected_filter_data)
-        # print(f"Cards total in app state: {len(cards)}")
+        print(f"Cards total in app state: {len(cards)}")
         if len(cards) == 0:
             print("No cards found in app state.")
             await sio.emit("cards", False, room=sid)

@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
         with open(the_lab_log_file_path, "w"):
             pass
     print("FIXME_MODE:", fixme_mode)
-    if fixme_mode and node_env == "production":
+    if fixme_mode == "true" and node_env == "production":
         fix_client = FixClient(
             {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
         )
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     yield
 
     print("Shutting down the server lifespan...")
-    if fixme_mode and node_env == "production":
+    if fixme_mode == "true" and node_env == "production":
         fix_client_task.cancel()
         try:
             await fix_client_task

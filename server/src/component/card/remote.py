@@ -25,7 +25,7 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
         object_name = obj["Key"]
         path_parts = object_name.split("/")
         
-        if len(path_parts) < 6:
+        if (len(path_parts) < 6) or not object_name.endswith("report.json"):
             return None
             
         return {
@@ -34,7 +34,7 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
             "protocol": path_parts[4],
             "environment": path_parts[3],
             "app": path_parts[2],
-            "file_type": "json" if object_name.endswith("report.json") else "html" if object_name.endswith("index.html") else None,
+            "file_type": "json",
             "root_dir": "/".join(path_parts[:6])
         }
 
@@ -44,8 +44,8 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
     with ThreadPoolExecutor() as executor:
         processed_objects = list(filter(None, executor.map(process_s3_object, s3_objects)))
     
-    # Group objects by report_dir_date
-    grouped_objects = {}
+    # Group objects by report_dir_date. Do we need html_report key since json_report has the value?
+    grouped_objects = {} # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
     for received_obj_data in processed_objects:
         file_type = received_obj_data["file_type"]
         report_dir_date = received_obj_data["day"]
@@ -54,7 +54,7 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
         if error:
             continue
             
-        if file_type:
+        if file_type == "json":
             if report_dir_date not in grouped_objects:
                 grouped_objects[report_dir_date] = {
                     "json_report": {},
@@ -62,10 +62,8 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
                     "root_dir": received_obj_data["root_dir"]
                 }
             
-            if file_type == "json":
                 grouped_objects[report_dir_date]["json_report"] = {"object_name": received_obj_data["object_name"]}
-            else:
-                grouped_objects[report_dir_date]["html_report"] = received_obj_data["object_name"]
+                grouped_objects[report_dir_date]["html_report"] = f"{report_dir_date}/index.html"
 
     def process_card(card):
         try:
@@ -77,12 +75,13 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
             card["json_report"] = json.loads(j_report)
             return card
         except (KeyError, json.JSONDecodeError):
+            print(f"Error processing card: {card}")
             return None
 
-    # Process JSON reports concurrently
     results = []
     for card in grouped_objects.values():
         if processed := process_card(card):
+            # add steps for Redis cache
             results.append(processed)
 
     sorted_results = sorted(
