@@ -72,7 +72,7 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
                 return None
             
             j_report = json.loads(S3.get_a_s3_object(object_name))
-            del j_report["suites"]
+            del j_report["suites"] # remove suites from the report to reduce report size
             card["json_report"] = j_report
             return card
         except (KeyError, json.JSONDecodeError):
