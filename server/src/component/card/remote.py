@@ -71,8 +71,9 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
             if not object_name:
                 return None
             
-            j_report = S3.get_a_s3_object(object_name)
-            card["json_report"] = json.loads(j_report)
+            j_report = json.loads(S3.get_a_s3_object(object_name))
+            del j_report["suites"]
+            card["json_report"] = j_report
             return card
         except (KeyError, json.JSONDecodeError):
             print(f"Error processing card: {card}")
