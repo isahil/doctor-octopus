@@ -10,12 +10,13 @@ from config import (
     lifetime_doctor_clients_count_key,
     max_concurrent_clients_key,
     node_env,
+    redis,
     the_lab_log_file_name,
     the_lab_log_file_path,
 )
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
-from util.redis import RedisClient
+# from util.redis import RedisClient
 
 sio_client_count = 0
 global_total_s3_objects = 0
@@ -37,13 +38,13 @@ async def update_total_s3_objects():
             global_total_s3_objects = current_total_s3_objects
 
             cards_app = config.fastapi_app.state.cards_app
-            cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
+            await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
 def update_redis_cache_client_data():
     global sio_client_count
 
-    redis = RedisClient()
+    # redis = RedisClient()
     redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
 
     try:
@@ -84,7 +85,7 @@ async def cards(sid, expected_filter_data: dict):
     print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
     cards_app = config.fastapi_app.state.cards_app
     if cards_app:
-        cards = cards_app.get_cards(expected_filter_data)
+        cards = await cards_app.get_cards(expected_filter_data)
         print(f"Cards total in app state: {len(cards)}")
         if len(cards) == 0:
             print("No cards found in app state.")

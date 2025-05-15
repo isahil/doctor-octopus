@@ -60,6 +60,12 @@ class RedisClient:
         self.set("unique_id", id)
         print(f"Stored unique id: {self.get('unique_id')}")
 
+    async def create_reports_cache(self, report_cache_key, report_cache_field, report_cache_value) -> None:
+        if not self.redis_client.exists(report_cache_key):
+            self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
+        else:
+            self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
+
 
 if __name__ == "__main__":
     redis_client = RedisClient()

@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from socketio import ASGIApp, AsyncServer
+from src.util.redis import RedisClient
 
 load_dotenv(".env", verbose=False, override=True)
 local_dir: str = os.environ.get(
@@ -27,6 +28,7 @@ the_doc_log_file_path: str = f"{local_dir}logs/{the_doc_log_file_name}"
 fastapi_app: FastAPI = None
 socketio_app: ASGIApp = None
 sio: AsyncServer = None
+redis: RedisClient = RedisClient()
 
 __all__ = [
     "environment",
@@ -35,6 +37,7 @@ __all__ = [
     "local_dir",
     "max_concurrent_clients_key",
     "node_env",
+    "redis",
     "sio",
     "socketio_app",
     "test_reports_dir",

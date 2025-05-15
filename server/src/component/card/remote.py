@@ -1,9 +1,9 @@
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-from config import test_reports_dir
+from config import test_reports_dir, redis
 from src.util.s3 import S3
-from src.component.card.validation import validate
+from src.component.validation import validate
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 download_dir = "./"
@@ -18,7 +18,7 @@ def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
-def get_all_s3_cards(expected_filter_data: dict) -> list:
+async def get_all_s3_cards(expected_filter_data: dict) -> list:
     """Get all report cards object from the S3 bucket"""
     
     def process_s3_object(obj):
@@ -74,15 +74,17 @@ def get_all_s3_cards(expected_filter_data: dict) -> list:
             j_report = json.loads(S3.get_a_s3_object(object_name))
             del j_report["suites"] # remove suites from the report to reduce report size
             card["json_report"] = j_report
+            
             return card
         except (KeyError, json.JSONDecodeError):
             print(f"Error processing card: {card}")
             return None
 
     results = []
-    for card in grouped_objects.values():
-        if processed := process_card(card):
+    for card_date, card_value in grouped_objects.items():
+        if processed := process_card(card_value):
             # add steps for Redis cache
+            await redis.create_reports_cache("trading-apps-reports", card_date, card_value)
             results.append(processed)
 
     sorted_results = sorted(
