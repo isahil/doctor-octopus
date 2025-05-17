@@ -1,3 +1,4 @@
+from datetime import datetime
 from src.component.card.local import get_all_local_cards
 from src.component.card.remote import get_all_s3_cards
 
@@ -6,14 +7,9 @@ class Cards:
     environment: str
     day: int
 
-    # def __init__(self, expected_filter_data: dict = {"day": 1, "environment": "qa"}):
-    #    self.set(expected_filter_data)
-
-    async def get_cards(self, expected_filter_data: dict):
-        _environment = expected_filter_data.get("environment")
-        environment = _environment if _environment is not None else ""
-        _day = expected_filter_data.get("day")
-        day = int(_day) if _day is not None else 0
+    async def get_cards(self, expected_filter_data: dict = { "environment": "qa", "day": 1, "source": "remote" }) -> list[dict]:
+        environment = expected_filter_data.get("environment", "qa")
+        day = int(expected_filter_data.get("day", 1))
 
         if self.environment != environment or self.day < day:
             print(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
@@ -25,7 +21,13 @@ class Cards:
         return self.cards
     
     async def set_cards(self, expected_filter_data: dict):
+        time_start = datetime.now()
+        print(f"Time to get cards started: {time_start}")
         self.cards = await self.get_all_cards(expected_filter_data)
+        time_finish = datetime.now()
+        print(f"Time to get cards finished: {time_finish}")
+        time_diff = time_finish - time_start
+        print(f"Time to get cards: {time_diff.total_seconds()} seconds")
         return self.cards
 
     async def get_all_cards(self, expected_filter_data: dict) -> list[dict]:
@@ -33,10 +35,8 @@ class Cards:
         source = expected_filter_data.get("source")
         # app = filter.get("app")
         # protocol = filter.get("protocol")
-        _environment = expected_filter_data.get("environment")
-        environment = _environment if _environment is not None else ""
-        _day = expected_filter_data.get("day")
-        day = int(_day) if _day is not None else 0
+        environment = expected_filter_data.get("environment", "")
+        day = expected_filter_data.get("day", 0)
         expected_filter_data = {
             "environment": environment,
             "day": day,

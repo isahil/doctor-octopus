@@ -1,12 +1,14 @@
+import asyncio
 import os
 import redis
 import datetime
 
-redis_host = os.getenv("SDET_REDIS_HOST")
-redis_port = os.getenv("SDET_REDIS_PORT")
+redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
+redis_port = os.getenv("SDET_REDIS_PORT", 6379)
 
 class RedisClient:
-    redis_client = None
+    redis_client: redis.StrictRedis
+
     def __init__(self, host=redis_host, port=redis_port):
         self.connect(host, port)
 
@@ -35,15 +37,6 @@ class RedisClient:
         print(f"Marking id {value} as used for {key}")
         self.redis_client.lpush(key, value)
 
-    def get_an_unused_security_id(self):
-        key = "used_security_ids"
-        value = self.ids.pop()
-
-        while self.has_it_been_cached(key, value):
-            value = self.ids.pop()
-        self.it_has_been_cached(key, value)
-        return value
-
     def create_a_unique_order_id(self):
         key = "used_order_ids"
         value = f"sdet-{datetime.datetime.now().strftime('%m%d-%H:%M:%S')}"
@@ -53,14 +46,14 @@ class RedisClient:
         self.it_has_been_cached(key, value)
         return value
 
-    def main(self):
+    async def main(self):
         # id = self.get_an_unused_security_id()
         id = self.create_a_unique_order_id()
         print(f"Got unique id: {id}")
-        self.set("unique_id", id)
+        await self.set("unique_id", id)
         print(f"Stored unique id: {self.get('unique_id')}")
 
-    async def create_reports_cache(self, report_cache_key, report_cache_field, report_cache_value) -> None:
+    async def create_reports_cache(self, report_cache_key: str, report_cache_field: str, report_cache_value: str) -> None:
         if not self.redis_client.exists(report_cache_key):
             self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
         else:
@@ -69,4 +62,4 @@ class RedisClient:
 
 if __name__ == "__main__":
     redis_client = RedisClient()
-    redis_client.main()
+    asyncio.gather(redis_client.main())

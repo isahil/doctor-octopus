@@ -1,3 +1,5 @@
+import asyncio
+from datetime import datetime
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -19,25 +21,26 @@ def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
+def process_s3_object(obj):
+    """ Process only JSON report objects from S3 bucket """
+    object_name = obj["Key"]
+    path_parts = object_name.split("/")
+    
+    if (len(path_parts) < 6) or not object_name.endswith("report.json"):
+        return None
+        
+    return {
+        "object_name": object_name,
+        "day": path_parts[5],
+        "protocol": path_parts[4],
+        "environment": path_parts[3],
+        "app": path_parts[2],
+        "file_type": "json",
+        "root_dir": "/".join(path_parts[:6])
+    }
+
 async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
-    
-    def process_s3_object(obj):
-        object_name = obj["Key"]
-        path_parts = object_name.split("/")
-        
-        if (len(path_parts) < 6) or not object_name.endswith("report.json"):
-            return None
-            
-        return {
-            "object_name": object_name,
-            "day": path_parts[5],
-            "protocol": path_parts[4],
-            "environment": path_parts[3],
-            "app": path_parts[2],
-            "file_type": "json",
-            "root_dir": "/".join(path_parts[:6])
-        }
 
     s3_objects = S3.list_all_s3_objects()
     
@@ -65,31 +68,36 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
             
                 grouped_objects[report_dir_date]["json_report"] = {"object_name": received_obj_data["object_name"]}
                 grouped_objects[report_dir_date]["html_report"] = f"{report_dir_date}/index.html"
-    def process_card(card: dict) -> Union[dict, None]:
+    async def process_card(card_tuple) -> Union[dict, None]:
+        card_date, card_value = card_tuple
         try:
-            object_name = card["json_report"].get("object_name")
-            object_name = card["json_report"].get("object_name")
+            object_name = card_value["json_report"].get("object_name")
             if not object_name:
                 return None
             
             j_report = json.loads(S3.get_a_s3_object(object_name))
             del j_report["suites"] # remove suites from the report to reduce report size
-            card["json_report"] = j_report
-            
-            return card
+            card_value["json_report"] = j_report
+            await redis.create_reports_cache("trading-apps-reports", card_date, str(card_value))
+            return card_value
         except (KeyError, json.JSONDecodeError):
-            print(f"Error processing card: {card}")
+            print(f"Error processing card: {card_date}")
             return None
 
-    results: list[dict] = []
-    for card_date, card_value in grouped_objects.items():
-        if processed := process_card(card_value):
-            # add steps for Redis cache
-            await redis.create_reports_cache("trading-apps-reports", card_date, str(card_value))
-            results.append(processed)
+    time_start = datetime.now()
+    print(f"Time to process S3 cards started: {time_start}")
+    results = await asyncio.gather(
+        *[process_card(card_tuple) for card_tuple in grouped_objects.items()]
+    )
+    time_finish = datetime.now()
+    print(f"Time to process S3 cards finished: {time_finish}")
+    time_diff = time_finish - time_start
+    print(f"Time to get process S3 cards: {time_diff.total_seconds()} seconds")
 
-    sorted_results = sorted(
-        results,
+    filtered_results = [result for result in results if result is not None]
+
+    sorted_results: list[dict]= sorted(
+        filtered_results,
         key=lambda x: x["json_report"]["stats"]["startTime"],
         reverse=True
     )

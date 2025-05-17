@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
         app.state.fix_client_task = fix_client_task
 
     cards_app = Cards()
-    await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"})
+    await cards_app.set_cards({"environment": "qa", "day": 50, "source": "remote"})
     app.state.cards_app = cards_app
 
     yield

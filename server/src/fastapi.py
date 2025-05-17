@@ -2,35 +2,39 @@ import json
 import os
 from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
+import config
 from src.util.executor import create_command, run_a_command_on_local
-from src.component.card.local import get_all_local_cards, local_report_directories
-from src.component.card.remote import get_all_s3_cards, download_s3_folder
+from src.component.card.local import local_report_directories
+from src.component.card.remote import download_s3_folder
 
 router = APIRouter()
 
 
-@router.get("/cards/", response_class=JSONResponse, status_code=200, deprecated=True)
+@router.get("/cards/", response_class=JSONResponse, status_code=200)
 async def get_all_cards(
     source: str = Query(
         ...,
         title="Source",
         description="Retrieve all the HTML & JSON reports from the source",
-        example="local/remote",
+        example="remote",
     ),
-    filter: int = Query(
+    day: int = Query(
         ...,
         title="Filter",
         description="Filter the reports age based on the given string",
         example=7,
     ),
+    environment: str = Query(
+        "qa",
+        title="Environment",
+        description="Environment to filter the reports",
+        example="qa",
+    ),
 ):
     """Get available report cards based on the source requested"""
-    print(f"Report Source: {source}")
-    if source == "remote":
-        s3_cards = await get_all_s3_cards({"day": filter})
-        return s3_cards
-    else:
-        return get_all_local_cards({"day": filter})
+    expected_filter_data = { "environment": environment, "day": day, "source": source }
+    cards_app = config.fastapi_app.state.cards_app
+    await cards_app.set_cards(expected_filter_data)
 
 
 @router.get("/card", response_class=PlainTextResponse, status_code=200)
