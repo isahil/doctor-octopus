@@ -30,7 +30,7 @@ async def get_all_cards(
         s3_cards = await get_all_s3_cards({"day": filter})
         return s3_cards
     else:
-        return get_all_local_cards(filter)
+        return get_all_local_cards({"day": filter})
 
 
 @router.get("/card", response_class=PlainTextResponse, status_code=200)
@@ -62,19 +62,21 @@ async def get_a_card(
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)
 async def execute_command(
+    background_tasks: BackgroundTasks,
     options: str = Query(
         ...,
         title="Options",
         description="Command options to be executed",
         example='{"environment": "dev", "app": "clo", "proto": "perf", "suite": "smoke"}',
-    ),
-    background_tasks: BackgroundTasks = None,
+    )
 ):
     """Execute a command on the running server"""
+    command = "n/a"
     try:
-        options = json.loads(options)
-        command = create_command(options)
-        print(f"Command to be executed: {command}")
+        _options: dict = json.loads(options)
+        _command: str = create_command(_options)
+        if command := _command:
+            print(f"Command to be executed: {command}")
     except json.JSONDecodeError as e:
         print(f"Invalid JSON input: {e}")
         return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)

@@ -1,6 +1,7 @@
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
+from typing import Union
 from config import test_reports_dir, redis
 from src.util.s3 import S3
 from src.component.validation import validate
@@ -10,7 +11,7 @@ download_dir = "./"
 reports_dir = os.path.join(download_dir, test_reports_dir)  # Full path to the local test reports directory
 
 
-def get_a_s3_card_html_report(html) -> str:
+def get_a_s3_card_html_report(html) -> bytes:
     card = S3.get_a_s3_object(html)
     return card
 
@@ -18,7 +19,7 @@ def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
-async def get_all_s3_cards(expected_filter_data: dict) -> list:
+async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
     
     def process_s3_object(obj):
@@ -64,9 +65,9 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list:
             
                 grouped_objects[report_dir_date]["json_report"] = {"object_name": received_obj_data["object_name"]}
                 grouped_objects[report_dir_date]["html_report"] = f"{report_dir_date}/index.html"
-
-    def process_card(card):
+    def process_card(card: dict) -> Union[dict, None]:
         try:
+            object_name = card["json_report"].get("object_name")
             object_name = card["json_report"].get("object_name")
             if not object_name:
                 return None
@@ -80,11 +81,11 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list:
             print(f"Error processing card: {card}")
             return None
 
-    results = []
+    results: list[dict] = []
     for card_date, card_value in grouped_objects.items():
         if processed := process_card(card_value):
             # add steps for Redis cache
-            await redis.create_reports_cache("trading-apps-reports", card_date, card_value)
+            await redis.create_reports_cache("trading-apps-reports", card_date, str(card_value))
             results.append(processed)
 
     sorted_results = sorted(
@@ -102,7 +103,7 @@ def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
     structure as in S3 bucket.
     """
     s3_objects = S3.list_all_s3_objects(bucket_name)
-    test_report_dir = None
+    test_report_dir = ""
 
     for obj in s3_objects:
         object_key = obj["Key"]

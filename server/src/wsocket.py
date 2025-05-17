@@ -1,7 +1,7 @@
 import asyncio
-import config
 import sys
 import socketio
+import config
 from src.util.executor import create_command
 from src.component.card.remote import total_s3_objects
 
@@ -16,12 +16,11 @@ from config import (
 )
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
-# from util.redis import RedisClient
 
 sio_client_count = 0
 global_total_s3_objects = 0
 
-sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
+sio: socketio.AsyncServer = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
 config.sio = sio
 config.socketio_app = socketio_app
@@ -41,21 +40,21 @@ async def update_total_s3_objects():
             await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
-def update_redis_cache_client_data():
+async def update_redis_cache_client_data():
     global sio_client_count
 
-    # redis = RedisClient()
-    redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+    await redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
 
     try:
-        max_concurrent_clients = int(redis.redis_client.get(max_concurrent_clients_key).decode("utf-8"))
+        value = await redis.redis_client.get(max_concurrent_clients_key)
+        max_concurrent_clients = int(value.decode("utf-8"))
         if sio_client_count > max_concurrent_clients:
-            redis.redis_client.set(max_concurrent_clients_key, sio_client_count)
+            await redis.redis_client.set(max_concurrent_clients_key, sio_client_count)
     except Exception as _:
-        redis.redis_client.incr(max_concurrent_clients_key, 1)
+        await redis.redis_client.incr(max_concurrent_clients_key, 1)
 
 
-@sio.on("connect")
+@sio.on("connect") # type: ignore
 async def connect(sid, environ):
     global sio_client_count
     sio_client_count += 1
@@ -66,13 +65,12 @@ async def connect(sid, environ):
         f"FASTAPI W.S. server connected! #{sio_client_count} | Node Env: {node_env}",
         room=sid,
     )
-
     if node_env == "production":
-        update_redis_cache_client_data()
-    asyncio.create_task(update_total_s3_objects())
+        asyncio.create_task(update_redis_cache_client_data())
+        asyncio.create_task(update_total_s3_objects())
 
 
-@sio.on("disconnect")
+@sio.on("disconnect") # type: ignore
 async def disconnect(sid):
     global sio_client_count
     sio_client_count -= 1
@@ -80,7 +78,7 @@ async def disconnect(sid):
     print(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 
 
-@sio.on("cards")
+@sio.on("cards") # type: ignore
 async def cards(sid, expected_filter_data: dict):
     print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
     cards_app = config.fastapi_app.state.cards_app
@@ -99,7 +97,7 @@ async def cards(sid, expected_filter_data: dict):
         return
 
 
-@sio.on("fixme")
+@sio.on("fixme") # type: ignore
 async def fixme_client(sid, order):
     print(f"Socket client [{sid}] sent data to fixme: {order}")
     if not config.fastapi_app:
@@ -115,7 +113,7 @@ async def fixme_client(sid, order):
     fix_client_app.submitOrder(order, {}, {})
 
 
-@sio.on("the-lab")
+@sio.on("the-lab") # type: ignore
 async def the_lab(sid, options):
     """Run a command using The Lab to execute the playwright test suite"""
     print(f"SIO received command: {options} | type {type(options)}")

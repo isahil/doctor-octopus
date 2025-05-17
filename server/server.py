@@ -37,13 +37,15 @@ async def lifespan(app: FastAPI):
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
 
-    cards_app = Cards({"environment": "qa", "day": 1, "source": "remote"})
+    cards_app = Cards()
+    await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"})
     app.state.cards_app = cards_app
 
     yield
 
     print("Shutting down the server lifespan...")
-    if fixme_mode == "true" and node_env == "production":
+    if fixme_mode == "true" and node_env == "production" and hasattr(app.state, "fix_client_task"):
+        fix_client_task = app.state.fix_client_task
         fix_client_task.cancel()
         try:
             await fix_client_task

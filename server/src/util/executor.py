@@ -6,14 +6,15 @@ from config import local_dir, the_doc_log_file_name
 
 
 async def open_port_on_local(port: int) -> None:
-    pid = await is_port_open(port)
+    _pid = await is_port_open(port)
+    pid = _pid if isinstance(_pid, str) else None
     if pid:
         await kill_process_on_port(pid)
     else:
         print(f"Port {port} is open to use")
 
 
-async def is_port_open(port: int) -> str:
+async def is_port_open(port: int):
     """Check if a port is open on the local machine. Return the PID of the process using the port if open"""
     try:
         os = platform.system().lower()
