@@ -45,7 +45,7 @@ const Cards = () => {
           console.log("No cards found") // log a message if no cards are found
           return setCards([]) // clear the existing cards if no cards are found
         }
-        if (card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
+        // if (card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
         setTotalCards((prevTotalCards) => prevTotalCards + 1)
         setCards((prevCards) => [...prevCards, card])
         // console.log(`Total ${filter.source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
