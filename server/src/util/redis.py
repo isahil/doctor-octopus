@@ -1,10 +1,16 @@
 import asyncio
+import json
 import os
 import redis
 import datetime
+from typing import Union
+# from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
 
 redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
 redis_port = os.getenv("SDET_REDIS_PORT", 6379)
+
+lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
+max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 
 class RedisClient:
     redis_client: redis.StrictRedis
@@ -47,17 +53,39 @@ class RedisClient:
         return value
 
     async def main(self):
-        # id = self.get_an_unused_security_id()
         id = self.create_a_unique_order_id()
         print(f"Got unique id: {id}")
-        await self.set("unique_id", id)
-        print(f"Stored unique id: {self.get('unique_id')}")
 
     async def create_reports_cache(self, report_cache_key: str, report_cache_field: str, report_cache_value: str) -> None:
-        if not self.redis_client.exists(report_cache_key):
-            self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
+        self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
+
+    def get_a_cached_card(self, report_cache_key: str, report_cache_field: str) -> Union[dict, None]:
+        if not self.redis_client.hexists(report_cache_key, report_cache_field):
+            return None
         else:
-            self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
+            result = self.redis_client.hget(report_cache_key, report_cache_field)
+            report_cache_value = result.decode('utf-8') if isinstance(result, bytes) else result
+            if report_cache_value:
+                _json = json.loads(str(report_cache_value))
+                return _json
+            return None
+
+    def get_all_cached_cards(self, report_cache_key: str):
+        print(f"Getting all cached cards for: {report_cache_key}")
+
+        result = self.redis_client.hgetall(report_cache_key)
+        return result
+    
+    async def update_redis_cache_client_data(self, sio_client_count):
+        await self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+
+        try:
+            value = await self.redis_client.get(max_concurrent_clients_key)
+            max_concurrent_clients = int(value.decode("utf-8"))
+            if sio_client_count > max_concurrent_clients:
+                await self.redis_client.set(max_concurrent_clients_key, sio_client_count)
+        except Exception as _:
+            await self.redis_client.incr(max_concurrent_clients_key, 1)
 
 
 if __name__ == "__main__":

@@ -37,8 +37,8 @@ async def lifespan(app: FastAPI):
         app.state.fix_client = fix_client
         app.state.fix_client_task = fix_client_task
 
-    cards_app = Cards()
-    await cards_app.set_cards({"environment": "qa", "day": 50, "source": "remote"})
+    cards_app = Cards({"environment": "qa", "day": 0, "source": "remote"})
+    # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"})
     app.state.cards_app = cards_app
 
     yield
@@ -69,7 +69,10 @@ fastapi_app.mount("/ws/socket.io", socketio_app)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
 if __name__ == "__main__":
-    uvicorn.run(socketio_app, host="0.0.0.0", port=8000, workers=1 if node_env=="dev" else 2, lifespan="on", reload=True if node_env=="dev" else False)
+    if node_env == "production":
+        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=2)
+    else:
+        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1, reload=True)
 
 # "author": "Imran Sahil"
 # "github": "https://github.com/isahil/doctor-octopus.git"

@@ -7,8 +7,6 @@ from src.component.card.remote import total_s3_objects
 
 sys.path.append("./src")
 from config import (
-    lifetime_doctor_clients_count_key,
-    max_concurrent_clients_key,
     node_env,
     redis,
     the_lab_log_file_name,
@@ -40,20 +38,6 @@ async def update_total_s3_objects():
             await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
-async def update_redis_cache_client_data():
-    global sio_client_count
-
-    await redis.redis_client.incr(lifetime_doctor_clients_count_key, 1)
-
-    try:
-        value = await redis.redis_client.get(max_concurrent_clients_key)
-        max_concurrent_clients = int(value.decode("utf-8"))
-        if sio_client_count > max_concurrent_clients:
-            await redis.redis_client.set(max_concurrent_clients_key, sio_client_count)
-    except Exception as _:
-        await redis.redis_client.incr(max_concurrent_clients_key, 1)
-
-
 @sio.on("connect") # type: ignore
 async def connect(sid, environ):
     global sio_client_count
@@ -66,7 +50,7 @@ async def connect(sid, environ):
         room=sid,
     )
     if node_env == "production":
-        asyncio.create_task(update_redis_cache_client_data())
+        asyncio.create_task(redis.update_redis_cache_client_data(sio_client_count))
         asyncio.create_task(update_total_s3_objects())
 
 
@@ -83,7 +67,7 @@ async def cards(sid, expected_filter_data: dict):
     print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
     cards_app = config.fastapi_app.state.cards_app
     if cards_app:
-        cards = await cards_app.get_cards(expected_filter_data)
+        cards = await cards_app.get_cards_from_cache(expected_filter_data)
         print(f"Cards total in app state: {len(cards)}")
         if len(cards) == 0:
             print("No cards found in app state.")

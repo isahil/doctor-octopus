@@ -1,12 +1,11 @@
 import asyncio
-from datetime import datetime
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
-from config import test_reports_dir, redis
-from src.util.s3 import S3
+from config import test_reports_dir, redis, test_reports_redis_cache_name
 from src.component.validation import validate
+from src.util.s3 import S3
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 download_dir = "./"
@@ -17,18 +16,20 @@ def get_a_s3_card_html_report(html) -> bytes:
     card = S3.get_a_s3_object(html)
     return card
 
+
 def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
 
-def process_s3_object(obj):
-    """ Process only JSON report objects from S3 bucket """
+
+def format_s3_object_filter_data(obj):
+    """Process only JSON report objects from S3 bucket"""
     object_name = obj["Key"]
     path_parts = object_name.split("/")
-    
+
     if (len(path_parts) < 6) or not object_name.endswith("report.json"):
         return None
-        
+
     return {
         "object_name": object_name,
         "day": path_parts[5],
@@ -36,75 +37,60 @@ def process_s3_object(obj):
         "environment": path_parts[3],
         "app": path_parts[2],
         "file_type": "json",
-        "root_dir": "/".join(path_parts[:6])
+        "s3_root_dir": "/".join(path_parts[:6]),
     }
 
 async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
 
     s3_objects = S3.list_all_s3_objects()
-    
+
     # Process objects in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor() as executor:
-        processed_objects = list(filter(None, executor.map(process_s3_object, s3_objects)))
-    
+        formatted_cards_filter_data = list(filter(None, executor.map(format_s3_object_filter_data, s3_objects)))
+
     # Group objects by report_dir_date. Do we need html_report key since json_report has the value?
-    grouped_objects = {} # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
-    for received_obj_data in processed_objects:
-        file_type = received_obj_data["file_type"]
-        report_dir_date = received_obj_data["day"]
-        
-        error = validate(received_obj_data, expected_filter_data)
+    final_cards_pool = {}  # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
+    for received_card_filter_data in formatted_cards_filter_data:
+        error = validate(received_card_filter_data, expected_filter_data)
         if error:
             continue
-            
+
+        file_type = received_card_filter_data["file_type"]
+        report_dir_date = received_card_filter_data["day"]
         if file_type == "json":
-            if report_dir_date not in grouped_objects:
-                grouped_objects[report_dir_date] = {
+            if report_dir_date not in final_cards_pool:
+                final_cards_pool[report_dir_date] = {
+                    "filter_data": received_card_filter_data,
+                    "html_report": f"{report_dir_date}/index.html",
                     "json_report": {},
-                    "html_report": "",
-                    "root_dir": received_obj_data["root_dir"]
+                    "root_dir": received_card_filter_data["s3_root_dir"],
                 }
-            
-                grouped_objects[report_dir_date]["json_report"] = {"object_name": received_obj_data["object_name"]}
-                grouped_objects[report_dir_date]["html_report"] = f"{report_dir_date}/index.html"
+
     async def process_card(card_tuple) -> Union[dict, None]:
         card_date, card_value = card_tuple
         try:
-            object_name = card_value["json_report"].get("object_name")
+            object_name = card_value["filter_data"].get("object_name")
             if not object_name:
                 return None
-            
+
             j_report = json.loads(S3.get_a_s3_object(object_name))
-            del j_report["suites"] # remove suites from the report to reduce report size
+            del j_report["suites"]  # remove suites from the report to reduce report size
             card_value["json_report"] = j_report
-            await redis.create_reports_cache("trading-apps-reports", card_date, str(card_value))
+            await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
             return card_value
         except (KeyError, json.JSONDecodeError):
             print(f"Error processing card: {card_date}")
             return None
 
-    time_start = datetime.now()
-    print(f"Time to process S3 cards started: {time_start}")
-    results = await asyncio.gather(
-        *[process_card(card_tuple) for card_tuple in grouped_objects.items()]
-    )
-    time_finish = datetime.now()
-    print(f"Time to process S3 cards finished: {time_finish}")
-    time_diff = time_finish - time_start
-    print(f"Time to get process S3 cards: {time_diff.total_seconds()} seconds")
+    results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in final_cards_pool.items()])
 
     filtered_results = [result for result in results if result is not None]
+    # sorted_results: list[dict]= sorted(filtered_results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    return filtered_results
 
-    sorted_results: list[dict]= sorted(
-        filtered_results,
-        key=lambda x: x["json_report"]["stats"]["startTime"],
-        reverse=True
-    )
 
-    return sorted_results
-
-def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
+def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
     """
     Given a root_dir path for a folder in an S3 bucket, download all
     the objects inside root_dir to local, maintaining the same folder
@@ -116,10 +102,10 @@ def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
     for obj in s3_objects:
         object_key = obj["Key"]
 
-        if object_key.startswith(root_dir):
+        if object_key.startswith(s3_root_dir):
             # Construct the local relative path from the object_key
-            relative_path_parts = object_key[len(root_dir) :].lstrip("/")
-            test_report_dir = root_dir.split("/")[-1]  # noqa: E201 Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
+            relative_path_parts = object_key[len(s3_root_dir) :].lstrip("/")
+            test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
             local_root_dir = os.path.join(
                 reports_dir, test_report_dir
             )  # Join root_dir with the local relative path, so local files end up in 'test_reports/root_dir/...' preserving subfolders
@@ -131,5 +117,5 @@ def download_s3_folder(root_dir: str, bucket_name=aws_bucket_name) -> str:
 
             S3.download_file(object_key, local_path, bucket_name)
 
-    print(f"All objects from [{root_dir}] in S3 bucket have been downloaded locally.")
+    print(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir

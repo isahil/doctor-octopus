@@ -19,8 +19,13 @@ else
     source $HOME/venv/Scripts/Activate
 fi
 
-if [ "$MODE" = "dev" ]; then
-    uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --workers 1 --reload
-else
-    uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --workers 2
-fi
+python setup.py
+
+python server.py
+
+# alternative way to run the server
+# if [ "$MODE" = "dev" ]; then
+#     uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --workers 1 --reload
+# else
+#     uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --workers 2
+# fi

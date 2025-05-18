@@ -37,6 +37,7 @@ def validate(received_data, expected_data):
     Return Error if the received_data does not match the expected_data values, otherwise None"""
     validation_rules = build_validation_rules()
     for (expected_key, expected_value) in (expected_data.items()):  # key = "environment", "app", "protocol" | value = [{'is_valid': <function is_valid at 0x7f8b1c1f3d30>}]
+        # print(f"expected_key: {expected_key} | expected_value: {expected_value}")
         if expected_key == "source":
             continue
         received_value = received_data.get(expected_key) # received = "qa", "clo", "api"
