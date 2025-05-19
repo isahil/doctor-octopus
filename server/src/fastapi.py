@@ -34,7 +34,7 @@ async def get_all_cards(
     """Get available report cards based on the source requested"""
     expected_filter_data = { "environment": environment, "day": day, "source": source }
     cards_app = config.fastapi_app.state.cards_app
-    await cards_app.set_cards(expected_filter_data)
+    await cards_app.fetch_cards_from_source_and_cache(expected_filter_data)
 
 
 @router.get("/card", response_class=PlainTextResponse, status_code=200)

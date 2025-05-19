@@ -56,16 +56,14 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
         if error:
             continue
 
-        file_type = received_card_filter_data["file_type"]
         report_dir_date = received_card_filter_data["day"]
-        if file_type == "json":
-            if report_dir_date not in final_cards_pool:
-                final_cards_pool[report_dir_date] = {
-                    "filter_data": received_card_filter_data,
-                    "html_report": f"{report_dir_date}/index.html",
-                    "json_report": {},
-                    "root_dir": received_card_filter_data["s3_root_dir"],
-                }
+        if report_dir_date not in final_cards_pool:
+            final_cards_pool[report_dir_date] = {
+                "filter_data": received_card_filter_data,
+                "html_report": f"{report_dir_date}/index.html",
+                "json_report": {},
+                "root_dir": received_card_filter_data["s3_root_dir"],
+            }
 
     async def process_card(card_tuple) -> Union[dict, None]:
         card_date, card_value = card_tuple

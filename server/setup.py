@@ -19,7 +19,8 @@ async def main():
 
     # subprocess.run(["sh", "./start.sh"])
     cards = Cards()
-    await cards.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})
+    await cards.fetch_cards_from_source_and_cache({"environment": "qa", "day": 15, "source": "remote"})
+    await cards.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})
 
 
 if __name__ == "__main__":

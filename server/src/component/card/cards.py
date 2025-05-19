@@ -1,8 +1,9 @@
 import json
+from typing import Union
 from config import redis, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.component.card.local import get_all_local_cards
-from src.component.card.remote import get_all_s3_cards
+from src.component.card.remote import download_s3_folder, get_all_s3_cards
 from src.util.helper import performance_log
 
 
@@ -16,15 +17,43 @@ class Cards:
         self.set_filter_data(expected_filter_data)
 
     @performance_log
-    async def fetch_cards_from_source_and_cache(self, expected_filter_data) -> list[dict]:
+    async def fetch_cards_from_source_and_cache(self, expected_filter_data: dict) -> Union[list[dict], dict]:
         """Fetch the cards from the source and cache them in Redis"""
         source = expected_filter_data.get("source")
-        cards: list[dict] = []
+        print(f"Fetching cards from source: {source}")
+        cards: Union[list[dict], dict] = []
         if source == "remote":
             cards = await get_all_s3_cards(expected_filter_data)
         else:
-            cards = get_all_local_cards(expected_filter_data)
+            local_cards = get_all_local_cards(expected_filter_data)
+            print(f"Cards from local: {local_cards} | is dict: {isinstance(local_cards, dict)} | is list: {isinstance(local_cards, list)}")
+            if isinstance(local_cards, dict):
+                self.download_missing_cards(local_cards, expected_filter_data)
         return cards
+    
+    def download_missing_cards(self, local_cards: dict, expected_filter_data: dict) -> None:
+        """Download the missing cards from the source and cache them in Redis"""
+        missing_cards_key = []
+        cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
+        # print(f"Cached cards: {cached_cards}")
+        if cached_cards and isinstance(cached_cards, dict):
+            for received_card_date, received_card_value in cached_cards.items():
+                received_card_date = received_card_date.decode("utf-8")
+                received_card_value = json.loads(received_card_value.decode("utf-8"))
+                received_filter_data = received_card_value.get("filter_data")
+                error = validate(received_filter_data, expected_filter_data)
+                if error:
+                    continue
+                print(f"Received card date: {received_card_date} | Received filter data: {received_card_value} \n")
+                if received_card_date not in local_cards:
+                    print(f"Missing card: {received_card_date} \n")
+                    missing_cards_key.append(received_card_date)
+        print(f"Missing cards: {missing_cards_key}")
+        for card_root_dir in missing_cards_key:
+            print(f"Downloading missing card dir from s3: {card_root_dir}")
+            download_s3_folder(card_root_dir)
+        # return missing_cards_key
+
 
     @performance_log
     async def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
