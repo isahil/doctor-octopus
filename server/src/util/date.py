@@ -11,7 +11,7 @@ def less_or_eqaul_to_date_time(received_date, expected_date_range) -> bool:
         date_time = datetime.strptime(received_date, test_reports_date_format)  # e.g. "12-31-2024_08-30-00_AM"
         date_diff = datetime.now() - date_time
         if date_diff > timedelta(days=int(expected_date_range)):
-            # print(f"Date diff: {date_diff} | Filter: {filter} | Date: {date_time}")
+            # logger.info(f"Date diff: {date_diff} | Filter: {filter} | Date: {date_time}")
             return False
     except ValueError:
         try:

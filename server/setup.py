@@ -2,11 +2,11 @@ import asyncio
 import os
 import platform
 from src.component.card.cards import Cards
-
+from src.util.logger import logger
 
 async def main():
     os_name = platform.system()
-    print(os_name)
+    logger.info(os_name)
 
     if os_name == "Windows":
         os.environ["OS_NAME"] = "Windows"
@@ -15,7 +15,7 @@ async def main():
     elif os_name == "Linux":
         os.environ["OS_NAME"] = "Linux"
     else:
-        print("Unknown OS")
+        logger.info("Unknown OS")
 
     # subprocess.run(["sh", "./start.sh"])
     cards = Cards()

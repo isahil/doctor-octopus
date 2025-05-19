@@ -6,6 +6,7 @@ import config
 from src.util.executor import create_command, run_a_command_on_local
 from src.component.card.local import local_report_directories
 from src.component.card.remote import download_s3_folder
+from src.util.logger import logger
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ async def get_all_cards(
     ),
 ):
     """Get available report cards based on the source requested"""
-    expected_filter_data = { "environment": environment, "day": day, "source": source }
+    expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards_app = config.fastapi_app.state.cards_app
     await cards_app.fetch_cards_from_source_and_cache(expected_filter_data)
 
@@ -56,10 +57,10 @@ async def get_a_card(
     local_r_directories = local_report_directories()
 
     if source == "remote" and test_report_dir not in local_r_directories:
-        print(f"Not in local. Downloading report from S3: {test_report_dir}")
+        logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
         test_report_dir = download_s3_folder(root_dir)
     else:
-        print(f"Already in local. No need to download: {test_report_dir}")
+        logger.info(f"Already in local. No need to download: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return f"{mount_path}/index.html"
 
@@ -72,7 +73,7 @@ async def execute_command(
         title="Options",
         description="Command options to be executed",
         example='{"environment": "dev", "app": "clo", "proto": "perf", "suite": "smoke"}',
-    )
+    ),
 ):
     """Execute a command on the running server"""
     command = "n/a"
@@ -80,9 +81,9 @@ async def execute_command(
         _options: dict = json.loads(options)
         _command: str = create_command(_options)
         if command := _command:
-            print(f"Command to be executed: {command}")
+            logger.info(f"Command to be executed: {command}")
     except json.JSONDecodeError as e:
-        print(f"Invalid JSON input: {e}")
+        logger.info(f"Invalid JSON input: {e}")
         return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
 
     try:

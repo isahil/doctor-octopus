@@ -6,6 +6,7 @@ from typing import Union
 from config import test_reports_dir, redis, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.util.s3 import S3
+from src.util.logger import logger
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 download_dir = "./"
@@ -39,6 +40,7 @@ def format_s3_object_filter_data(obj):
         "file_type": "json",
         "s3_root_dir": "/".join(path_parts[:6]),
     }
+
 
 async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
@@ -78,7 +80,7 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
             await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
             return card_value
         except (KeyError, json.JSONDecodeError):
-            print(f"Error processing card: {card_date}")
+            logger.info(f"Error processing card: {card_date}")
             return None
 
     results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in final_cards_pool.items()])
@@ -115,5 +117,5 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
 
             S3.download_file(object_key, local_path, bucket_name)
 
-    print(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
+    logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir

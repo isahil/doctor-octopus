@@ -5,6 +5,7 @@ from src.component.validation import validate
 from src.component.card.local import get_all_local_cards
 from src.component.card.remote import download_s3_folder, get_all_s3_cards
 from src.util.helper import performance_log
+from src.util.logger import logger
 
 
 class Cards:
@@ -20,13 +21,12 @@ class Cards:
     async def fetch_cards_from_source_and_cache(self, expected_filter_data: dict) -> Union[list[dict], dict]:
         """Fetch the cards from the source and cache them in Redis"""
         source = expected_filter_data.get("source")
-        print(f"Fetching cards from source: {source}")
+        logger.info(f"Fetching cards from source: {source}")
         cards: Union[list[dict], dict] = []
         if source == "remote":
             cards = await get_all_s3_cards(expected_filter_data)
         else:
             local_cards = get_all_local_cards(expected_filter_data)
-            print(f"Cards from local: {local_cards} | is dict: {isinstance(local_cards, dict)} | is list: {isinstance(local_cards, list)}")
             if isinstance(local_cards, dict):
                 self.download_missing_cards(local_cards, expected_filter_data)
         return cards
@@ -35,7 +35,7 @@ class Cards:
         """Download the missing cards from the source and cache them in Redis"""
         missing_cards_key = []
         cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
-        # print(f"Cached cards: {cached_cards}")
+        # logger.info(f"Cached cards: {cached_cards}")
         if cached_cards and isinstance(cached_cards, dict):
             for received_card_date, received_card_value in cached_cards.items():
                 received_card_date = received_card_date.decode("utf-8")
@@ -44,13 +44,13 @@ class Cards:
                 error = validate(received_filter_data, expected_filter_data)
                 if error:
                     continue
-                print(f"Received card date: {received_card_date} | Received filter data: {received_card_value} \n")
+                logger.info(f"Received card date: {received_card_date} | Received filter data: {received_card_value} \n")
                 if received_card_date not in local_cards:
-                    print(f"Missing card: {received_card_date} \n")
+                    logger.info(f"Missing card: {received_card_date} \n")
                     missing_cards_key.append(received_card_date)
-        print(f"Missing cards: {missing_cards_key}")
+        logger.info(f"Missing cards: {missing_cards_key}")
         for card_root_dir in missing_cards_key:
-            print(f"Downloading missing card dir from s3: {card_root_dir}")
+            logger.info(f"Downloading missing card dir from s3: {card_root_dir}")
             download_s3_folder(card_root_dir)
         # return missing_cards_key
 
@@ -64,7 +64,7 @@ class Cards:
         filtered_cards: list[dict] = []
 
         if self.environment != environment or self.day < day:
-            print(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
+            logger.info(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
             cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
             if cached_cards and isinstance(cached_cards, dict):
                 for _, received_card_data in cached_cards.items():
@@ -75,7 +75,7 @@ class Cards:
                         continue
                     filtered_cards.append(received_card_data)
         elif self.environment == environment and self.day == day:
-            print(f"Cards in app state matched filters. Environment: {self.environment} | Day: {self.day}")
+            logger.info(f"Cards in app state matched filters. Environment: {self.environment} | Day: {self.day}")
             for received_card_data in self.cards:
                 received_filter_data = received_card_data.get("filter_data")
                 error = validate(received_filter_data, expected_filter_data)

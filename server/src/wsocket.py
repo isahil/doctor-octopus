@@ -4,7 +4,6 @@ import socketio
 import config
 from src.util.executor import create_command
 from src.component.card.remote import total_s3_objects
-
 sys.path.append("./src")
 from config import (
     node_env,
@@ -14,6 +13,8 @@ from config import (
 )
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.executor import run_a_command_on_local
+from util.logger import logger
+
 
 sio_client_count = 0
 global_total_s3_objects = 0
@@ -35,17 +36,21 @@ async def update_total_s3_objects():
             global_total_s3_objects = current_total_s3_objects
 
             cards_app = config.fastapi_app.state.cards_app
-            await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})  # update cards in app state
-            await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})  # update cards in app state
+            await cards_app.fetch_cards_from_source_and_cache(
+                {"environment": "qa", "day": 1, "source": "remote"}
+            )  # update cards in app state
+            await cards_app.fetch_cards_from_source_and_cache(
+                {"environment": "qa", "day": 1, "source": "local"}
+            )  # update cards in app state
             # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
-@sio.on("connect") # type: ignore
+@sio.on("connect")  # type: ignore
 async def connect(sid, environ):
     global sio_client_count
     sio_client_count += 1
 
-    print(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
+    logger.info(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
         "message",
         f"FASTAPI W.S. server connected! #{sio_client_count} | Node Env: {node_env}",
@@ -56,53 +61,53 @@ async def connect(sid, environ):
         asyncio.create_task(update_total_s3_objects())
 
 
-@sio.on("disconnect") # type: ignore
+@sio.on("disconnect")  # type: ignore
 async def disconnect(sid):
     global sio_client_count
     sio_client_count -= 1
     await stop_streaming_log_file(sid)
-    print(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
+    logger.info(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 
 
-@sio.on("cards") # type: ignore
+@sio.on("cards")  # type: ignore
 async def cards(sid, expected_filter_data: dict):
-    print(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
+    logger.info(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
     cards_app = config.fastapi_app.state.cards_app
     if cards_app:
         cards = await cards_app.get_cards_from_cache(expected_filter_data)
-        print(f"Cards total in app state: {len(cards)}")
+        logger.info(f"Cards total in app state: {len(cards)}")
         if len(cards) == 0:
-            print("No cards found in app state.")
+            logger.info("No cards found in app state.")
             await sio.emit("cards", False, room=sid)
             return
         for card in cards:
             await sio.emit("cards", card, room=sid)
     else:
-        print("Cards class not found in app state.")
+        logger.info("Cards class not found in app state.")
         await sio.emit("cards", False, room=sid)
         return
 
 
-@sio.on("fixme") # type: ignore
+@sio.on("fixme")  # type: ignore
 async def fixme_client(sid, order):
-    print(f"Socket client [{sid}] sent data to fixme: {order}")
+    logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
     if not config.fastapi_app:
-        print("FastAPI app not set in config.")
+        logger.info("FastAPI app not set in config.")
         return
 
     # Grab fix_client_app from app.state
     fix_client_app = await config.fastapi_app.state.fix_client_task
     if not fix_client_app:
-        print("fix_client_app not found on app.state.")
+        logger.info("fix_client_app not found on app.state.")
         return
 
     fix_client_app.submitOrder(order, {}, {})
 
 
-@sio.on("the-lab") # type: ignore
+@sio.on("the-lab")  # type: ignore
 async def the_lab(sid, options):
     """Run a command using The Lab to execute the playwright test suite"""
-    print(f"SIO received command: {options} | type {type(options)}")
+    logger.info(f"SIO received command: {options} | type {type(options)}")
 
     subscription = "the-lab"
     command = create_command(options)

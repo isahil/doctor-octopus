@@ -1,12 +1,11 @@
 import time
-import logging
+from src.util.logger import logger
 
 def performance_log(func):
     """
     Decorator to log the performance of a function.
     """
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
+
     func_name = func.__name__
     logger.info(f"Starting performance logging for function: {func_name}")
 

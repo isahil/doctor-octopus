@@ -11,8 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import the_lab_log_file_path, environment, fixme_mode, node_env
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
-from src.util.fix_client import FixClient
 from src.component.card.cards import Cards
+from src.util.fix_client import FixClient
+from src.util.logger import logger
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))
 # from fix_client_async import FixClient # type: ignore
 
@@ -24,11 +25,11 @@ async def lifespan(app: FastAPI):
     Steps before yield gets executed before the server starts.
     Steps after yield gets executed after the server shuts down
     """
-    print("Starting the server lifespan...")
+    logger.info("Starting the server lifespan...")
     if os.path.exists(the_lab_log_file_path):
         with open(the_lab_log_file_path, "w"):
             pass
-    print("FIXME_MODE:", fixme_mode)
+    logger.info(f"FIXME_MODE: {fixme_mode}")
     if fixme_mode == "true" and node_env == "production":
         fix_client = FixClient(
             {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
@@ -43,14 +44,14 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    print("Shutting down the server lifespan...")
+    logger.info("Shutting down the server lifespan...")
     if fixme_mode == "true" and node_env == "production" and hasattr(app.state, "fix_client_task"):
         fix_client_task = app.state.fix_client_task
         fix_client_task.cancel()
         try:
             await fix_client_task
         except asyncio.CancelledError:
-            print("fix_client_app task cancelled")
+            logger.info("fix_client_app task cancelled")
 
 
 fastapi_app = FastAPI(lifespan=lifespan)

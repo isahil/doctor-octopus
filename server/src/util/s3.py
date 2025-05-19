@@ -1,5 +1,6 @@
 import os
 import boto3
+from src.util.logger import logger
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 aws_bucket_region = os.environ.get("AWS_BUCKET_REGION")
@@ -32,7 +33,7 @@ class S3Client:
         response = self.S3.list_objects_v2(Bucket=bucket_name)
         objects = response.get("Contents", [])
         # for obj in objects:
-        #     print(f"Key: {obj['Key']}, Size: {obj['Size']}")
+        #     logger.info(f"Key: {obj['Key']}, Size: {obj['Size']}")
         return objects
 
     def list_all_s3_objects(self, bucket_name=aws_bucket_name) -> list:
@@ -69,10 +70,11 @@ class S3Client:
     def upload_to_s3(self, path: str, content, bucket_name=aws_bucket_name):
         try:
             S3.upload_to_s3(path, content, bucket_name)
-            print(f"Successfully uploaded content to: {path}")
+            logger.info(f"Successfully uploaded content to: {path}")
             return True
         except Exception as e:
-            print(f"Error uploading to S3 path {path}: {str(e)}")
+            logger.info(f"Error uploading to S3 path {path}: {str(e)}")
             return False
+
 
 S3 = S3Client()

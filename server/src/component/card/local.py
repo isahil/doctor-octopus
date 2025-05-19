@@ -5,17 +5,20 @@ from typing import Union
 from config import local_dir, test_reports_dir
 from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
 from src.util.date import less_or_eqaul_to_date_time
+from src.util.logger import logger
 
 server_host = os.environ.get("VITE_SERVER_HOST", "localhost")
 reporter_port = os.environ.get("VITE_REPORTER_PORT", 9323)  # default port for playwright show-report
-reports_dir = os.path.join(local_dir, test_reports_dir) # ""../../test-reports"
+reports_dir = os.path.join(local_dir, test_reports_dir)  # ""../../test-reports"
+
 
 def local_report_directories():
     """get all local report directories"""
     local_report_directories = os.listdir(reports_dir)
-    print(f"Total reports found on local: {len(local_report_directories)}")
-    print(f"Local report directories: {local_report_directories}")
+    logger.info(f"Total reports found on local: {len(local_report_directories)}")
+    logger.info(f"Local report directories: {local_report_directories}")
     return local_report_directories
+
 
 def format_local_dir_filter_data(local_dir):
     """Process only JSON report objects from S3 bucket"""
@@ -39,10 +42,8 @@ def format_local_dir_filter_data(local_dir):
 def get_all_local_cards(expected_filter_data: dict) -> dict:
     """get all local report cards in the local test reports directory"""
     local_report_dirs = local_report_directories()
-    
-    formatted_cards_filter_data = list(
-        filter(None, map(format_local_dir_filter_data, local_report_dirs))
-    )
+
+    formatted_cards_filter_data = list(filter(None, map(format_local_dir_filter_data, local_report_dirs)))
 
     final_cards_pool = {}
     for received_card_filter_data in formatted_cards_filter_data:
@@ -67,26 +68,28 @@ def get_all_local_cards(expected_filter_data: dict) -> dict:
                 return None
 
             local_report_dir_path = os.path.join(reports_dir, card_value["root_dir"])
-            print(f"Local report dir path: {local_report_dir_path}")
+            logger.info(f"Local report dir path: {local_report_dir_path}")
             if os.path.isdir(local_report_dir_path):
-                print(f"ISDIR Local report dir path | {os.listdir(local_report_dir_path)}")
+                logger.info(f"ISDIR Local report dir path | {os.listdir(local_report_dir_path)}")
                 for file in os.listdir(local_report_dir_path):
                     file_path = os.path.join(local_report_dir_path, file)
 
                     if file.endswith(".json"):
                         with open(file_path, encoding="utf-8") as j_report:
                             card_value["json_report"] = json.load(j_report)
-                            del card_value["json_report"] ["suites"]  # remove suites from the report to reduce report size
+                            del card_value["json_report"][
+                                "suites"
+                            ]  # remove suites from the report to reduce report size
                             # await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
                         return card_value
         except (KeyError, json.JSONDecodeError):
-            print(f"Error processing card: {card_date}")
+            logger.info(f"Error processing card: {card_date}")
             return None
 
     # results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in final_cards_pool.items()])
     # filtered_results = [result for result in results if result is not None]
     # sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
-    # print(f"Total reports found on local: {len(filtered_results)}")
+    # logger.info(f"Total reports found on local: {len(filtered_results)}")
     return final_cards_pool
 
 
@@ -105,11 +108,12 @@ async def wait_for_local_report_to_be_ready(root_dir):
         while not os.path.exists(report_dir) and pid:
             await asyncio.sleep(1)
             pid = await is_port_open(9323)
-        await asyncio.sleep(1) # wait for the report to be ready
+        await asyncio.sleep(1)  # wait for the report to be ready
         return report_dir
     except Exception as e:
-        print(f"Error waiting for report to be ready: {e}")
+        logger.info(f"Error waiting for report to be ready: {e}")
         raise e
+
 
 async def view_a_report_on_local(root_dir):
     try:
@@ -119,12 +123,12 @@ async def view_a_report_on_local(root_dir):
 
         wait_for_port_readiness_task = asyncio.create_task(wait_for_local_report_to_be_ready(root_dir))
         asyncio.create_task(run_a_command_on_local(command))
-        
+
         await wait_for_port_readiness_task
 
         message = f"http://{server_host}:{reporter_port}"
-        print(f"Report is ready to be viewed at: {message}")
+        logger.info(f"Report is ready to be viewed at: {message}")
         return message
     except Exception as e:
-        print(f"Error viewing report: {e}")
+        logger.info(f"Error viewing report: {e}")
         raise e

@@ -4,6 +4,7 @@ import os
 import redis
 import datetime
 from typing import Union
+from src.util.logger import logger
 # from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
 
 redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
@@ -11,6 +12,7 @@ redis_port = os.getenv("SDET_REDIS_PORT", 6379)
 
 lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
 max_concurrent_clients_key = "DO_max_concurrent_clients_count"
+
 
 class RedisClient:
     redis_client: redis.StrictRedis
@@ -26,7 +28,7 @@ class RedisClient:
 
     async def get(self, key):
         return await self.redis_client.get(key)
-    
+
     async def increment_key(self, key):
         current_value = await self.get(key)
         if not current_value:
@@ -36,11 +38,11 @@ class RedisClient:
 
     def has_it_been_cached(self, key, value):
         used = self.redis_client.lpos(key, value) is not None
-        print(f"Checking if {key} value: {value} has been used: {used}")
+        logger.info(f"Checking if {key} value: {value} has been used: {used}")
         return used
 
     def it_has_been_cached(self, key, value):
-        print(f"Marking id {value} as used for {key}")
+        logger.info(f"Marking id {value} as used for {key}")
         self.redis_client.lpush(key, value)
 
     def create_a_unique_order_id(self):
@@ -54,9 +56,11 @@ class RedisClient:
 
     async def main(self):
         id = self.create_a_unique_order_id()
-        print(f"Got unique id: {id}")
+        logger.info(f"Got unique id: {id}")
 
-    async def create_reports_cache(self, report_cache_key: str, report_cache_field: str, report_cache_value: str) -> None:
+    async def create_reports_cache(
+        self, report_cache_key: str, report_cache_field: str, report_cache_value: str
+    ) -> None:
         self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
 
     def get_a_cached_card(self, report_cache_key: str, report_cache_field: str) -> Union[dict, None]:
@@ -64,18 +68,18 @@ class RedisClient:
             return None
         else:
             result = self.redis_client.hget(report_cache_key, report_cache_field)
-            report_cache_value = result.decode('utf-8') if isinstance(result, bytes) else result
+            report_cache_value = result.decode("utf-8") if isinstance(result, bytes) else result
             if report_cache_value:
                 _json = json.loads(str(report_cache_value))
                 return _json
             return None
 
     def get_all_cached_cards(self, report_cache_key: str):
-        print(f"Getting all cached cards for: {report_cache_key}")
+        logger.info(f"Getting all cached cards for: {report_cache_key}")
 
         result = self.redis_client.hgetall(report_cache_key)
         return result
-    
+
     async def update_redis_cache_client_data(self, sio_client_count):
         await self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
 
