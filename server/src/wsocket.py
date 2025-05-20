@@ -1,9 +1,9 @@
 import asyncio
 import sys
-import socketio
+from socketio import AsyncServer, ASGIApp
 import config
 from src.util.executor import create_command
-from src.component.card.remote import total_s3_objects
+from src.component.remote import total_s3_objects
 sys.path.append("./src")
 from config import (
     node_env,
@@ -19,8 +19,8 @@ from util.logger import logger
 sio_client_count = 0
 global_total_s3_objects = 0
 
-sio: socketio.AsyncServer = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-socketio_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
+sio: AsyncServer = AsyncServer(cors_allowed_origins="*", async_mode="asgi")
+socketio_app: ASGIApp = ASGIApp(sio, socketio_path="/ws/socket.io")
 config.sio = sio
 config.socketio_app = socketio_app
 

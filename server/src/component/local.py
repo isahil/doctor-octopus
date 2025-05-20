@@ -1,6 +1,7 @@
 import json
 import os
 import asyncio
+import shutil
 from typing import Union
 from config import local_dir, test_reports_dir
 from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
@@ -9,12 +10,12 @@ from src.util.logger import logger
 
 server_host = os.environ.get("VITE_SERVER_HOST", "localhost")
 reporter_port = os.environ.get("VITE_REPORTER_PORT", 9323)  # default port for playwright show-report
-reports_dir = os.path.join(local_dir, test_reports_dir)  # ""../../test-reports"
+test_reports_path = os.path.join(local_dir, test_reports_dir)  # "../../test-reports"
 
 
 def local_report_directories():
     """get all local report directories"""
-    local_report_directories = os.listdir(reports_dir)
+    local_report_directories = os.listdir(test_reports_path)
     logger.info(f"Total reports found on local: {len(local_report_directories)}")
     logger.info(f"Local report directories: {local_report_directories}")
     return local_report_directories
@@ -60,32 +61,6 @@ def get_all_local_cards(expected_filter_data: dict) -> dict:
                 "root_dir": received_card_filter_data["local_root_dir"],
             }
 
-    async def process_card(card_tuple) -> Union[dict, None]:
-        card_date, card_value = card_tuple
-        try:
-            object_name = card_value["filter_data"].get("object_name")
-            if not object_name:
-                return None
-
-            local_report_dir_path = os.path.join(reports_dir, card_value["root_dir"])
-            logger.info(f"Local report dir path: {local_report_dir_path}")
-            if os.path.isdir(local_report_dir_path):
-                logger.info(f"ISDIR Local report dir path | {os.listdir(local_report_dir_path)}")
-                for file in os.listdir(local_report_dir_path):
-                    file_path = os.path.join(local_report_dir_path, file)
-
-                    if file.endswith(".json"):
-                        with open(file_path, encoding="utf-8") as j_report:
-                            card_value["json_report"] = json.load(j_report)
-                            del card_value["json_report"][
-                                "suites"
-                            ]  # remove suites from the report to reduce report size
-                            # await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
-                        return card_value
-        except (KeyError, json.JSONDecodeError):
-            logger.info(f"Error processing card: {card_date}")
-            return None
-
     # results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in final_cards_pool.items()])
     # filtered_results = [result for result in results if result is not None]
     # sorted_test_results = sorted(results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
@@ -93,9 +68,36 @@ def get_all_local_cards(expected_filter_data: dict) -> dict:
     return final_cards_pool
 
 
+async def process_card(card_tuple) -> Union[dict, None]:
+    card_date, card_value = card_tuple
+    try:
+        object_name = card_value["filter_data"].get("object_name")
+        if not object_name:
+            return None
+
+        local_report_dir_path = os.path.join(test_reports_path, card_value["root_dir"])
+        logger.info(f"Local report dir path: {local_report_dir_path}")
+        if os.path.isdir(local_report_dir_path):
+            logger.info(f"ISDIR Local report dir path | {os.listdir(local_report_dir_path)}")
+            for file in os.listdir(local_report_dir_path):
+                file_path = os.path.join(local_report_dir_path, file)
+
+                if file.endswith(".json"):
+                    with open(file_path, encoding="utf-8") as j_report:
+                        card_value["json_report"] = json.load(j_report)
+                        del card_value["json_report"][
+                            "suites"
+                        ]  # remove suites from the report to reduce report size
+                        # await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
+                    return card_value
+    except (KeyError, json.JSONDecodeError):
+        logger.info(f"Error processing card: {card_date}")
+        return None
+
+
 def get_a_local_card_html_report(html) -> str:
     """get a local html report card based on the path requested"""
-    html_file_path = os.path.join(reports_dir, html)
+    html_file_path = os.path.join(test_reports_path, html)
     with open(html_file_path, "r") as f:
         html_file_content = f.read()
         return html_file_content
@@ -103,7 +105,7 @@ def get_a_local_card_html_report(html) -> str:
 
 async def wait_for_local_report_to_be_ready(root_dir):
     try:
-        report_dir = os.path.join(reports_dir, root_dir)
+        report_dir = os.path.join(test_reports_path, root_dir)
         pid = await is_port_open(9323)
         while not os.path.exists(report_dir) and pid:
             await asyncio.sleep(1)
@@ -132,3 +134,44 @@ async def view_a_report_on_local(root_dir):
     except Exception as e:
         logger.info(f"Error viewing report: {e}")
         raise e
+
+
+def cleanup_old_test_report_directories(max_dirs=10):
+    """
+    Remove older test report directories, keeping only the most recent ones.
+    Args:
+        max_dirs (int): Maximum number of directories to keep
+    """
+    try:
+        if not os.path.exists(test_reports_path):
+            logger.warning(f"Test reports directory {test_reports_path} not found")
+            return False
+
+        dirs = []
+        for item in os.listdir(test_reports_path):
+            item_path = os.path.join(test_reports_path, item)
+            if os.path.isdir(item_path):
+                # Get directory creation time or modification time
+                timestamp = os.path.getctime(item_path)
+                dirs.append((item_path, timestamp))
+
+        if len(dirs) > max_dirs:
+            dirs.sort(key=lambda x: x[1], reverse=True) # Sort by timestamp (newest first)
+            dirs_to_remove = dirs[max_dirs:] # Keep track of removed directories
+            removed_count = 0
+
+            for dir_path, _ in dirs_to_remove:
+                try:
+                    shutil.rmtree(dir_path)
+                    removed_count += 1
+                    logger.info(f"Removed old test report directory: {os.path.basename(dir_path)}")
+                except Exception as e:
+                    logger.error(f"Failed to remove directory {dir_path}: {str(e)}")
+            
+            logger.info(f"Cleanup complete. Removed {removed_count} old test report directories.")
+        else:
+            logger.info(f"No cleanup needed. Only {len(dirs)} directories exist (max: {max_dirs}).")
+    except Exception as e:
+        logger.error(f"Error during cleanup of test report directories: {str(e)}")
+        return False
+    return True

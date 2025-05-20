@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import the_lab_log_file_path, environment, fixme_mode, node_env
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
-from src.component.card.cards import Cards
+from src.component.cards import Cards
 from src.util.fix_client import FixClient
 from src.util.logger import logger
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))

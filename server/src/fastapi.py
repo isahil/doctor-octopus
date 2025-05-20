@@ -4,8 +4,8 @@ from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 import config
 from src.util.executor import create_command, run_a_command_on_local
-from src.component.card.local import local_report_directories
-from src.component.card.remote import download_s3_folder
+from src.component.local import local_report_directories
+from src.component.remote import download_s3_folder
 from src.util.logger import logger
 
 router = APIRouter()
@@ -60,7 +60,7 @@ async def get_a_card(
         logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
         test_report_dir = download_s3_folder(root_dir)
     else:
-        logger.info(f"Already in local. No need to download: {test_report_dir}")
+        logger.info(f"Card already in local. Download not needed for: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return f"{mount_path}/index.html"
 

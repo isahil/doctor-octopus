@@ -1,7 +1,7 @@
 import asyncio
 import os
 import platform
-from src.component.card.cards import Cards
+from src.component.cards import Cards
 from src.util.logger import logger
 
 async def main():

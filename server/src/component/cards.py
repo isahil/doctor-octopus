@@ -1,9 +1,9 @@
 import json
 from typing import Union
-from config import redis, test_reports_redis_cache_name
+from config import max_local_dirs, redis, test_reports_redis_cache_name
 from src.component.validation import validate
-from src.component.card.local import get_all_local_cards
-from src.component.card.remote import download_s3_folder, get_all_s3_cards
+from src.component.local import get_all_local_cards, cleanup_old_test_report_directories
+from src.component.remote import download_s3_folder, get_all_s3_cards
 from src.util.helper import performance_log
 from src.util.logger import logger
 
@@ -14,8 +14,10 @@ class Cards:
     environment: str
     source: str
 
+
     def __init__(self, expected_filter_data: dict = {"environment": "qa", "day": 1, "source": "remote"}):
         self.set_filter_data(expected_filter_data)
+
 
     @performance_log
     async def fetch_cards_from_source_and_cache(self, expected_filter_data: dict) -> Union[list[dict], dict]:
@@ -29,8 +31,10 @@ class Cards:
             local_cards = get_all_local_cards(expected_filter_data)
             if isinstance(local_cards, dict):
                 self.download_missing_cards(local_cards, expected_filter_data)
+                cleanup_old_test_report_directories(max_local_dirs)
         return cards
-    
+
+
     def download_missing_cards(self, local_cards: dict, expected_filter_data: dict) -> None:
         """Download the missing cards from the source and cache them in Redis"""
         missing_cards_key = []
@@ -44,7 +48,6 @@ class Cards:
                 error = validate(received_filter_data, expected_filter_data)
                 if error:
                     continue
-                logger.info(f"Received card date: {received_card_date} | Received filter data: {received_card_value} \n")
                 if received_card_date not in local_cards:
                     logger.info(f"Missing card: {received_card_date} \n")
                     missing_cards_key.append(received_card_date)
@@ -84,11 +87,13 @@ class Cards:
                 filtered_cards.append(received_card_data)
         return filtered_cards
 
+
     async def set_cards(self, expected_filter_data: dict):
         """Force update the cards in Cards app memory state. Warning: memory intensive"""
         self.cards = await self.get_cards_from_cache(expected_filter_data)
         self.set_filter_data(expected_filter_data)
         return self.cards
+
 
     def set_filter_data(self, expected_filter_data: dict) -> dict:
         """Set the filter data to the app state"""

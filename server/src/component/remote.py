@@ -9,9 +9,6 @@ from src.util.s3 import S3
 from src.util.logger import logger
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
-download_dir = "./"
-reports_dir = os.path.join(download_dir, test_reports_dir)  # Full path to the local test reports directory
-
 
 def get_a_s3_card_html_report(html) -> bytes:
     card = S3.get_a_s3_object(html)
@@ -67,27 +64,27 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
                 "root_dir": received_card_filter_data["s3_root_dir"],
             }
 
-    async def process_card(card_tuple) -> Union[dict, None]:
-        card_date, card_value = card_tuple
-        try:
-            object_name = card_value["filter_data"].get("object_name")
-            if not object_name:
-                return None
+    results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in final_cards_pool.items()])
+    filtered_results = [result for result in results if result is not None]
+    sorted_results: list[dict]= sorted(filtered_results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    return sorted_results
 
-            j_report = json.loads(S3.get_a_s3_object(object_name))
-            del j_report["suites"]  # remove suites from the report to reduce report size
-            card_value["json_report"] = j_report
-            await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
-            return card_value
-        except (KeyError, json.JSONDecodeError):
-            logger.info(f"Error processing card: {card_date}")
+
+async def process_card(card_tuple) -> Union[dict, None]:
+    card_date, card_value = card_tuple
+    try:
+        object_name = card_value["filter_data"].get("object_name")
+        if not object_name:
             return None
 
-    results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in final_cards_pool.items()])
-
-    filtered_results = [result for result in results if result is not None]
-    # sorted_results: list[dict]= sorted(filtered_results, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
-    return filtered_results
+        j_report = json.loads(S3.get_a_s3_object(object_name))
+        del j_report["suites"]  # remove suites from the report to reduce report size
+        card_value["json_report"] = j_report
+        await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
+        return card_value
+    except (KeyError, json.JSONDecodeError):
+        logger.info(f"Error processing card: {card_date}")
+        return None
 
 
 def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
@@ -106,16 +103,19 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
             # Construct the local relative path from the object_key
             relative_path_parts = object_key[len(s3_root_dir) :].lstrip("/")
             test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
-            local_root_dir = os.path.join(
-                reports_dir, test_report_dir
+
+            local_dir_path: str = os.environ.get("LOCAL_DIRECTORY", "../../")
+            reports_dir_path = os.path.join(local_dir_path, test_reports_dir) 
+            local_reports_dir_path = os.path.join(
+                reports_dir_path, test_report_dir
             )  # Join root_dir with the local relative path, so local files end up in 'test_reports/root_dir/...' preserving subfolders
-            local_path = os.path.join(local_root_dir, relative_path_parts)
+            local_reports_dir_card_rel_path = os.path.join(local_reports_dir_path, relative_path_parts)
 
-            local_dir = os.path.dirname(local_path)
-            if not os.path.exists(local_dir):
-                os.makedirs(local_dir)
+            local_dir_path = os.path.dirname(local_reports_dir_card_rel_path)
+            if not os.path.exists(local_dir_path):
+                os.makedirs(local_dir_path)
 
-            S3.download_file(object_key, local_path, bucket_name)
+            S3.download_file(object_key, local_reports_dir_card_rel_path, bucket_name)
 
     logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir
