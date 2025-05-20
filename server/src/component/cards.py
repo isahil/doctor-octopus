@@ -28,10 +28,10 @@ class Cards:
         if source == "remote":
             cards = await get_all_s3_cards(expected_filter_data)
         else:
-            local_cards = get_all_local_cards(expected_filter_data)
-            if isinstance(local_cards, dict):
-                self.download_missing_cards(local_cards, expected_filter_data)
-                cleanup_old_test_report_directories(max_local_dirs)
+            local_cards = get_all_local_cards(expected_filter_data) or {}
+            # if isinstance(local_cards, dict):
+            self.download_missing_cards(local_cards, expected_filter_data)
+            cleanup_old_test_report_directories(max_local_dirs)
         return cards
 
 
@@ -49,11 +49,11 @@ class Cards:
                 if error:
                     continue
                 if received_card_date not in local_cards:
-                    logger.info(f"Missing card: {received_card_date} \n")
+                    logger.info(f"Missing card: {received_card_date} in cache\n")
                     missing_cards_key.append(received_card_date)
         logger.info(f"Missing cards: {missing_cards_key}")
         for card_root_dir in missing_cards_key:
-            logger.info(f"Downloading missing card dir from s3: {card_root_dir}")
+            logger.info(f"Caching/Downloading missing card dir from s3: {card_root_dir}")
             download_s3_folder(card_root_dir)
         # return missing_cards_key
 

@@ -80,6 +80,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
         j_report = json.loads(S3.get_a_s3_object(object_name))
         del j_report["suites"]  # remove suites from the report to reduce report size
         card_value["json_report"] = j_report
+        logger.info(f"Caching card: {card_date}")
         await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
         return card_value
     except (KeyError, json.JSONDecodeError):

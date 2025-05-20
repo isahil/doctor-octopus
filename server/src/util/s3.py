@@ -61,7 +61,7 @@ class S3Client:
         all_objects.sort(key=lambda obj: obj["LastModified"], reverse=True)
         return all_objects
 
-    def download_file(self, object_key, local_path, bucket_name=aws_bucket_name) -> None:
+    def download_file(self, object_key: str, local_path: str, bucket_name=aws_bucket_name) -> None:
         """
         # Call S3 client to download a file
         """

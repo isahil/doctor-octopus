@@ -1,4 +1,4 @@
 import logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("\tDO")
+logger = logging.getLogger("\t")
