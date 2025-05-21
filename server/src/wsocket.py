@@ -4,6 +4,7 @@ from socketio import AsyncServer, ASGIApp
 import config
 from src.util.executor import create_command
 from src.component.remote import total_s3_objects
+
 sys.path.append("./src")
 from config import (
     node_env,
@@ -36,12 +37,8 @@ async def update_total_s3_objects():
             global_total_s3_objects = current_total_s3_objects
 
             cards_app = config.fastapi_app.state.cards_app
-            await cards_app.fetch_cards_from_source_and_cache(
-                {"environment": "qa", "day": 1, "source": "remote"}
-            )  # update cards in app state
-            await cards_app.fetch_cards_from_source_and_cache(
-                {"environment": "qa", "day": 1, "source": "local"}
-            )  # update cards in app state
+            await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})
+            await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})
             # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
@@ -114,7 +111,5 @@ async def the_lab(sid, options):
         run_a_command_on_local(f"{command} >> logs/{the_lab_log_file_name}")
     )  # start background task to run the command
 
-    await start_streaming_log_file(
-        sio, sid, subscription, the_lab_log_file_path
-    )
+    await start_streaming_log_file(sio, sid, subscription, the_lab_log_file_path)
     await command_task

@@ -77,11 +77,15 @@ async def process_card(card_tuple) -> Union[dict, None]:
         if not object_name:
             return None
 
-        j_report = json.loads(S3.get_a_s3_object(object_name))
-        del j_report["suites"]  # remove suites from the report to reduce report size
-        card_value["json_report"] = j_report
-        await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
-        return card_value
+        if not redis.redis_client.hexists(test_reports_redis_cache_name, card_date):
+            j_report = json.loads(S3.get_a_s3_object(object_name))
+            del j_report["suites"]  # remove suites from the report to reduce report size
+            card_value["json_report"] = j_report
+            await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
+            return card_value
+        else:
+            # logger.info(f"Card found in Redis cache: {card_date}")
+            return None
     except (KeyError, json.JSONDecodeError):
         logger.info(f"Error processing card: {card_date}")
         return None
