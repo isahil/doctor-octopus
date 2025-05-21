@@ -10,7 +10,7 @@ from src.util.logger import logger
 
 server_host = os.environ.get("VITE_SERVER_HOST", "localhost")
 reporter_port = os.environ.get("VITE_REPORTER_PORT", 9323)  # default port for playwright show-report
-test_reports_path = os.path.join(local_dir, test_reports_dir)  # "../../test-reports"
+test_reports_path = os.path.join("./", test_reports_dir)  # "./test-reports"
 
 
 def local_report_directories():

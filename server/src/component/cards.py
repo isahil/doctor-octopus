@@ -29,7 +29,6 @@ class Cards:
             cards = await get_all_s3_cards(expected_filter_data)
         else:
             local_cards = get_all_local_cards(expected_filter_data) or {}
-            # if isinstance(local_cards, dict):
             self.download_missing_cards(local_cards, expected_filter_data)
             cleanup_old_test_report_directories(max_local_dirs)
         return cards
@@ -39,7 +38,6 @@ class Cards:
         """Download the missing cards from the source and cache them in Redis"""
         missing_cards_key = []
         cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
-        # logger.info(f"Cached cards: {cached_cards}")
         if cached_cards and isinstance(cached_cards, dict):
             for received_card_date, received_card_value in cached_cards.items():
                 received_card_date = received_card_date.decode("utf-8")
@@ -49,12 +47,11 @@ class Cards:
                 if error:
                     continue
                 if received_card_date not in local_cards:
-                    logger.info(f"Missing card: {received_card_date} in cache\n")
                     missing_cards_key.append(received_card_date)
-        logger.info(f"Missing cards: {missing_cards_key}")
-        for card_root_dir in missing_cards_key:
-            logger.info(f"Caching/Downloading missing card dir from s3: {card_root_dir}")
-            download_s3_folder(card_root_dir)
+        logger.info(f"Missing cards on the server: {missing_cards_key}")
+        # for card_root_dir in missing_cards_key:
+            # logger.info(f"Caching/Downloading missing card dir from s3: {card_root_dir}")
+            # download_s3_folder(card_root_dir)
         # return missing_cards_key
 
 
@@ -85,7 +82,8 @@ class Cards:
                 if error:
                     continue
                 filtered_cards.append(received_card_data)
-        return filtered_cards
+        sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+        return sorted_cards
 
 
     async def set_cards(self, expected_filter_data: dict):

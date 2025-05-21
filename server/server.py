@@ -12,7 +12,7 @@ from config import the_lab_log_file_path, environment, fixme_mode, node_env
 from src.wsocket import sio, socketio_app
 from src.fastapi import router as fastapi_router
 from src.component.cards import Cards
-from src.util.fix_client import FixClient
+from src.util.fix import FixClient
 from src.util.logger import logger
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))
 # from fix_client_async import FixClient # type: ignore
@@ -71,7 +71,7 @@ fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name
 
 if __name__ == "__main__":
     if node_env == "production":
-        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=2)
+        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1)
     else:
         uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1, reload=True)
 

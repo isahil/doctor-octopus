@@ -19,7 +19,9 @@ else
     source $HOME/venv/Scripts/Activate
 fi
 
+echo "Started setting up the app environment"
 python setup.py
+echo "Finished setting up the app environment"
 
 python server.py
 

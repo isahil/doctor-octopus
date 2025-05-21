@@ -75,17 +75,16 @@ async def cards(sid, expected_filter_data: dict):
     cards_app = config.fastapi_app.state.cards_app
     if cards_app:
         cards = await cards_app.get_cards_from_cache(expected_filter_data)
-        logger.info(f"Cards total in app state: {len(cards)}")
         if len(cards) == 0:
-            logger.info("No cards found in app state.")
+            logger.info(f"No cards found in cache. length: {len(cards)}")
             await sio.emit("cards", False, room=sid)
             return
+
         for card in cards:
             await sio.emit("cards", card, room=sid)
     else:
         logger.info("Cards class not found in app state.")
         await sio.emit("cards", False, room=sid)
-        return
 
 
 @sio.on("fixme")  # type: ignore
@@ -117,5 +116,5 @@ async def the_lab(sid, options):
 
     await start_streaming_log_file(
         sio, sid, subscription, the_lab_log_file_path
-    )  # start background task to stream the log file
+    )
     await command_task

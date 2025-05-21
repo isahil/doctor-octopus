@@ -61,7 +61,9 @@ class RedisClient:
     async def create_reports_cache(
         self, report_cache_key: str, report_cache_field: str, report_cache_value: str
     ) -> None:
-        self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
+        if not self.redis_client.hexists(report_cache_key, report_cache_field):
+            logger.info(f"Creating a new cache for: {report_cache_field}")
+            self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
 
     def get_a_cached_card(self, report_cache_key: str, report_cache_field: str) -> Union[dict, None]:
         if not self.redis_client.hexists(report_cache_key, report_cache_field):
@@ -81,7 +83,7 @@ class RedisClient:
         return result
 
     async def update_redis_cache_client_data(self, sio_client_count):
-        await self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+        self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
 
         try:
             value = await self.redis_client.get(max_concurrent_clients_key)
@@ -89,7 +91,7 @@ class RedisClient:
             if sio_client_count > max_concurrent_clients:
                 await self.redis_client.set(max_concurrent_clients_key, sio_client_count)
         except Exception as _:
-            await self.redis_client.incr(max_concurrent_clients_key, 1)
+            self.redis_client.incr(max_concurrent_clients_key, 1)
 
 
 if __name__ == "__main__":
