@@ -35,6 +35,61 @@ async def get_all_cards(
     """Get available report cards based on the source requested"""
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards_app = config.fastapi_app.state.cards_app
+    if cards_app:
+        cards = await cards_app.get_cards_from_cache(expected_filter_data)
+        if len(cards) == 0:
+            logger.info("No cards found in redis cache.")
+            return JSONResponse(
+                content={
+                    "error": "No cards found in redis cache.",
+                    "cards": [],
+                },
+                status_code=200,
+            )            
+
+        return JSONResponse(
+            content={
+                "message": "Cards retrieved successfully",
+                "cards": cards,
+            },
+            status_code=200,
+        )
+    else:
+        logger.info("Cards class not found in app state.")
+        return JSONResponse(
+            content={
+                "message": "Cards class instance not found in app state.",
+                "cards": [],
+            },
+            status_code=500,
+        )
+
+
+
+@router.get("/reload-cache/", response_class=JSONResponse, status_code=200)
+async def reload_cards_cache(
+    source: str = Query(
+        ...,
+        title="Source",
+        description="Retrieve all the HTML & JSON reports from the source",
+        example="remote",
+    ),
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        example=7,
+    ),
+    environment: str = Query(
+        "qa",
+        title="Environment",
+        description="Environment to filter the reports",
+        example="qa",
+    ),
+):
+    """Get available report cards based on the source requested"""
+    expected_filter_data = {"environment": environment, "day": day, "source": source}
+    cards_app = config.fastapi_app.state.cards_app
     await cards_app.fetch_cards_from_source_and_cache(expected_filter_data)
 
 
