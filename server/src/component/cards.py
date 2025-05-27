@@ -23,7 +23,7 @@ class Cards:
     async def fetch_cards_from_source_and_cache(self, expected_filter_data: dict) -> Union[list[dict], dict]:
         """Fetch the cards from the source and cache them in Redis"""
         source = expected_filter_data.get("source")
-        logger.info(f"Fetching cards from source: {source}")
+        logger.info(f"Fetch cards expected filter data: {expected_filter_data}")
         cards: Union[list[dict], dict] = []
         if source == "remote":
             cards = await get_all_s3_cards(expected_filter_data)
@@ -34,7 +34,7 @@ class Cards:
         return cards
 
 
-    def download_missing_cards(self, local_cards: dict, expected_filter_data: dict) -> None:
+    def download_missing_cards(self, local_cards: dict, expected_filter_data: dict) -> list[str]:
         """Download the missing cards from the source and cache them in Redis"""
         missing_cards_key = []
         cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
@@ -49,10 +49,10 @@ class Cards:
                 if received_card_date not in local_cards:
                     missing_cards_key.append(received_card_date)
         logger.info(f"Missing cards on the server: {missing_cards_key}")
-        # for card_root_dir in missing_cards_key:
-            # logger.info(f"Caching/Downloading missing card dir from s3: {card_root_dir}")
-            # download_s3_folder(card_root_dir)
-        # return missing_cards_key
+        for card_root_dir in missing_cards_key:
+            logger.info(f"Caching/Downloading missing card dir from s3: {card_root_dir}")
+            download_s3_folder(card_root_dir)
+        return missing_cards_key
 
 
     @performance_log
