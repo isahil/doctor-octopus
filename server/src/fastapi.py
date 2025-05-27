@@ -34,6 +34,7 @@ async def get_all_cards(
 ):
     """Get available report cards based on the source requested"""
     expected_filter_data = {"environment": environment, "day": day, "source": source}
+    logger.info(f"Getting all cards with filter data: {expected_filter_data}")
     cards_app = config.fastapi_app.state.cards_app
     if cards_app:
         cards = await cards_app.get_cards_from_cache(expected_filter_data)
