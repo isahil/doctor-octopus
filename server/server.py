@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
         app.state.fix_app = fix_app
         app.state.fix_app_task = fix_app_task
 
-    cards_app = Cards({"environment": "qa", "day": 0, "source": "remote"})
+    cards_app = Cards()
     app.state.cards_app = cards_app
 
     notification_task = asyncio.create_task(update_alert_total_s3_objects())

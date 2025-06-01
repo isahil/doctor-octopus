@@ -66,6 +66,32 @@ async def get_all_cards(
         )
 
 
+@router.get("/card", response_class=PlainTextResponse, status_code=200)
+async def get_a_card(
+    source: str = Query(
+        ...,
+        title="Source",
+        description="Source of the html report file to be retrieved",
+        example="local/remote",
+    ),
+    root_dir: str = Query(
+        None,
+        title="S3 Root Directory",
+        description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
+        example="2021-09-01T14:00:00",
+    ),
+):
+    test_report_dir = os.path.basename(root_dir)
+    local_r_directories = local_report_directories()
+
+    if source == "remote" and test_report_dir not in local_r_directories:
+        logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
+        test_report_dir = download_s3_folder(root_dir)
+    else:
+        logger.info(f"Card already in local. Download not needed for: {test_report_dir}")
+    mount_path = f"/test_reports/{test_report_dir}"
+    return f"{mount_path}/index.html"
+
 
 @router.get("/reload-cache/", response_class=JSONResponse, status_code=200)
 async def reload_cards_cache(
@@ -92,33 +118,6 @@ async def reload_cards_cache(
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards_app = config.fastapi_app.state.cards_app
     await cards_app.fetch_cards_from_source_and_cache(expected_filter_data)
-
-
-@router.get("/card", response_class=PlainTextResponse, status_code=200)
-async def get_a_card(
-    source: str = Query(
-        ...,
-        title="Source",
-        description="Source of the html report file to be retrieved",
-        example="local/remote",
-    ),
-    root_dir: str = Query(
-        None,
-        title="S3 Root Directory",
-        description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
-        example="2021-09-01T14:00:00",
-    ),
-):
-    test_report_dir = os.path.basename(root_dir)
-    local_r_directories = local_report_directories()
-
-    if source == "remote" and test_report_dir not in local_r_directories:
-        logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
-        test_report_dir = download_s3_folder(root_dir)
-    else:
-        logger.info(f"Card already in local. Download not needed for: {test_report_dir}")
-    mount_path = f"/test_reports/{test_report_dir}"
-    return f"{mount_path}/index.html"
 
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)

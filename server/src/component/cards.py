@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 import json
-# from typing import Union
 from config import max_local_dirs, redis, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.component.local import get_all_local_cards, cleanup_old_test_report_directories
@@ -10,14 +9,14 @@ from src.util.logger import logger
 
 
 class Cards:
-    cards: list[dict]
-    day: int
-    environment: str
-    source: str
+    cards: list[dict] = []
+    day: int = 0
+    environment: str = ""
+    source: str = ""
 
 
-    def __init__(self, expected_filter_data: dict = {"environment": "qa", "day": 1, "source": "remote"}):
-        self.set_filter_data(expected_filter_data)
+    # def __init__(self, expected_filter_data: dict = {"environment": "qa", "day": 0, "source": "remote"}):
+    #     self.set_filter_data(expected_filter_data)
 
 
     @performance_log
