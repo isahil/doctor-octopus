@@ -28,7 +28,7 @@ const Cards = () => {
       const { source, day, environment } = filters
       const server_url = `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}`
       const url = `${server_url}/cards/?source=${source}&day=${day}&environment=${environment}`
-      console.log("Fetching cards data from URL:", url)
+      // console.log("Fetching cards data from URL:", url)
       const request = await fetch(url)
       const response = await request.json()
       console.log("Cards data length:", response.cards.length)

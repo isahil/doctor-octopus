@@ -109,10 +109,10 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
             test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
 
             download_dir_root_path: str = "./"
-            reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir) 
+            reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir) # "./test_reports"
             local_reports_dir_path = os.path.join(
                 reports_dir_path, test_report_dir
-            )  # Join root_dir with the local relative path, so local files end up in 'test_reports/root_dir/...' preserving subfolders
+            )  # "./test_reports/4-28-2025_10-01-41_AM"
             local_reports_dir_card_rel_path = os.path.join(local_reports_dir_path, relative_path_parts)
 
             local_dir_path = os.path.dirname(local_reports_dir_card_rel_path)

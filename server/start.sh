@@ -1,12 +1,13 @@
 #!/bin/bash
-echo "Starting the FASTAPI server"
+START_TIME=$(date +%s)
+echo "Starting the FASTAPI server [$(date)]"
 
 MODE=$1
 if [ -z "$MODE" ]; then
     echo "No mode specified. Defaulting to 'dev'."
     MODE="dev"
 fi
-echo "Running DO app in $MODE mode"
+echo "Running DO app in $MODE mode [$(date)]"
 
 OS_NAME=$(uname)
 echo "OS: $OS_NAME"
@@ -19,9 +20,9 @@ else
     source $HOME/venv/Scripts/Activate
 fi
 
-echo "Started setting up the app environment"
+echo "Started setting up the app environment [$(date)]"
 python setup.py
-echo "Finished setting up the app environment"
+echo "Finished setting up the app environment [$(date)]"
 
 python server.py
 

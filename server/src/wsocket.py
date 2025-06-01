@@ -39,7 +39,7 @@ async def update_total_s3_objects():
             cards_app = config.fastapi_app.state.cards_app
             await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})
             await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})
-            # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
+            await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
 @sio.on("connect")  # type: ignore
