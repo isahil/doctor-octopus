@@ -14,8 +14,10 @@ from src.fastapi import router as fastapi_router
 from src.component.cards import Cards
 from src.util.fix import FixClient
 from src.util.logger import logger
+from src.util.cancel import cancel_app_task
+from src.component.remote import update_alert_total_s3_objects
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))
-# from fix_client_async import FixClient # type: ignore
+# from fix_app_async import FixClient # type: ignore
 
 
 @asynccontextmanager
@@ -31,27 +33,24 @@ async def lifespan(app: FastAPI):
             pass
     logger.info(f"FIXME_MODE: {fixme_mode}")
     if fixme_mode == "true" and node_env == "production":
-        fix_client = FixClient(
+        fix_app = FixClient(
             {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
         )
-        fix_client_task = asyncio.create_task(fix_client.start_mock_client())
-        app.state.fix_client = fix_client
-        app.state.fix_client_task = fix_client_task
+        fix_app_task = asyncio.create_task(fix_app.start_mock_client())
+        app.state.fix_app = fix_app
+        app.state.fix_app_task = fix_app_task
 
     cards_app = Cards({"environment": "qa", "day": 0, "source": "remote"})
-    # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"})
     app.state.cards_app = cards_app
+
+    notification_task = asyncio.create_task(update_alert_total_s3_objects())
+    app.state.notification_task = notification_task
 
     yield
 
     logger.info("Shutting down the server lifespan...")
-    if fixme_mode == "true" and node_env == "production" and hasattr(app.state, "fix_client_task"):
-        fix_client_task = app.state.fix_client_task
-        fix_client_task.cancel()
-        try:
-            await fix_client_task
-        except asyncio.CancelledError:
-            logger.info("fix_client_app task cancelled")
+    await cancel_app_task("fix_app_task", app)
+    await cancel_app_task("notification_task", app)
 
 
 fastapi_app = FastAPI(lifespan=lifespan)
@@ -66,14 +65,14 @@ fastapi_app.add_middleware(
 )
 
 fastapi_app.include_router(fastapi_router)
-fastapi_app.mount("/ws/socket.io", socketio_app)
+fastapi_app.mount("/ws/socket.io", socketio_app)  # type: ignore
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
 if __name__ == "__main__":
     if node_env == "production":
         uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1)
     else:
-        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1, reload=True)
+        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1, reload=False)
 
 # "author": "Imran Sahil"
 # "github": "https://github.com/isahil/doctor-octopus.git"

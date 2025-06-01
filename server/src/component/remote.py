@@ -3,6 +3,7 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
+import config
 from config import test_reports_dir, redis, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.util.s3 import S3
@@ -18,6 +19,25 @@ def get_a_s3_card_html_report(html) -> bytes:
 def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
+
+async def update_alert_total_s3_objects():
+    '''Update the total number of S3 objects and emit an alert if the count increases'''
+    global_total_s3_objects = total_s3_objects()
+    logger.info(f"S3 TOTAL: {global_total_s3_objects}")
+    app = config.fastapi_app
+    sio = config.sio
+    while True:
+        current_total_s3_objects = total_s3_objects()
+        await asyncio.sleep(10)
+        # subprocess.run(["sh", "./echo.sh"])
+        if current_total_s3_objects > global_total_s3_objects:
+            logger.info(f"alert: {current_total_s3_objects}")
+            await sio.emit("alert", {"new_alert": True})
+            global_total_s3_objects = current_total_s3_objects
+
+            await app.state.cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})
+            await app.state.cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})
+            # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
 def format_s3_object_filter_data(obj):

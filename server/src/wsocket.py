@@ -3,7 +3,6 @@ import sys
 from socketio import AsyncServer, ASGIApp
 import config
 from src.util.executor import create_command
-from src.component.remote import total_s3_objects
 
 sys.path.append("./src")
 from config import (
@@ -26,22 +25,6 @@ config.sio = sio
 config.socketio_app = socketio_app
 
 
-async def update_total_s3_objects():
-    global global_total_s3_objects
-
-    while True:
-        current_total_s3_objects = total_s3_objects()
-        await asyncio.sleep(10)
-        if current_total_s3_objects > global_total_s3_objects:
-            await sio.emit("alert", {"new_alert": True})
-            global_total_s3_objects = current_total_s3_objects
-
-            cards_app = config.fastapi_app.state.cards_app
-            await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})
-            await cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})
-            await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
-
-
 @sio.on("connect")  # type: ignore
 async def connect(sid, environ):
     global sio_client_count
@@ -55,7 +38,6 @@ async def connect(sid, environ):
     )
     if node_env == "production":
         asyncio.create_task(redis.update_redis_cache_client_data(sio_client_count))
-        asyncio.create_task(update_total_s3_objects())
 
 
 @sio.on("disconnect")  # type: ignore
@@ -87,17 +69,11 @@ async def cards(sid, expected_filter_data: dict):
 @sio.on("fixme")  # type: ignore
 async def fixme_client(sid, order):
     logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
-    if not config.fastapi_app:
-        logger.info("FastAPI app not set in config.")
+    fix_app = await config.fastapi_app.state.fix_app_task
+    if not fix_app:
+        logger.info("fix_app_app not found on app.state.")
         return
-
-    # Grab fix_client_app from app.state
-    fix_client_app = await config.fastapi_app.state.fix_client_task
-    if not fix_client_app:
-        logger.info("fix_client_app not found on app.state.")
-        return
-
-    fix_client_app.submitOrder(order, {}, {})
+    fix_app.submitOrder(order, {}, {})
 
 
 @sio.on("the-lab")  # type: ignore
