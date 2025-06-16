@@ -1,23 +1,24 @@
 import asyncio
 import platform
 import subprocess
-
 from config import local_dir, the_doc_log_file_name
+from src.util.logger import logger
 
 
 async def open_port_on_local(port: int) -> None:
-    pid = await is_port_open(port)
+    _pid = await is_port_open(port)
+    pid = _pid if isinstance(_pid, str) else None
     if pid:
         await kill_process_on_port(pid)
     else:
-        print(f"Port {port} is open to use")
+        logger.info(f"Port {port} is open to use")
 
 
-async def is_port_open(port: int) -> str:
+async def is_port_open(port: int):
     """Check if a port is open on the local machine. Return the PID of the process using the port if open"""
     try:
         os = platform.system().lower()
-        print(f"Checking if port {port} is open on {os} machine")
+        logger.info(f"Checking if port {port} is open on {os} machine")
 
         if os == "darwin" or os == "linux":
             command = f"lsof -ti :{port}"
@@ -28,7 +29,7 @@ async def is_port_open(port: int) -> str:
         else:
             raise OSError("Unsupported OS to check port")
         pid = result.split()[-1] if result else result
-        print(f"PID: {pid}")
+        logger.info(f"PID: {pid}")
         return pid
     except OSError as e:
         return e
@@ -37,7 +38,7 @@ async def is_port_open(port: int) -> str:
 async def kill_process_on_port(pid: str):
     try:
         os = platform.system().lower()
-        print(f"Killing process for PID {pid} on {os}")
+        logger.info(f"Killing process for PID {pid} on {os}")
         if os == "darwin" or os == "linux":
             command = f"kill -9 {pid}"
         elif os == "windows":
@@ -70,17 +71,18 @@ async def run_command_async(command: str) -> str:
 
 async def run_a_command_on_local(command: str) -> str:
     try:
-        print(f"Executing [{command}] on local machine")
+        logger.info(f"Executing [{command}] on local machine")
         return await run_command_async(command)
     except Exception as e:
         raise e
-    
+
+
 def create_command(options: dict) -> str:
     env = options.get("environment")
     app = options.get("app")
     proto = options.get("proto")
     suite = options.get("suite")
-    record = options.get("record", "false") # used by Artillery perf tests
+    record = options.get("record", "false")  # used by Artillery perf tests
     logger = options.get("logger", the_doc_log_file_name)
     os = platform.system().lower()
 

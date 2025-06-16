@@ -2,35 +2,68 @@ import json
 import os
 from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
+import config
 from src.util.executor import create_command, run_a_command_on_local
-from src.component.card.local import get_all_local_cards, local_report_directories
-from src.component.card.remote import get_all_s3_cards, download_s3_folder
+from src.component.local import local_report_directories
+from src.component.remote import download_s3_folder
+from src.util.logger import logger
 
 router = APIRouter()
 
 
-@router.get("/cards/", response_class=JSONResponse, status_code=200, deprecated=True)
+@router.get("/cards/", response_class=JSONResponse, status_code=200)
 async def get_all_cards(
     source: str = Query(
         ...,
         title="Source",
         description="Retrieve all the HTML & JSON reports from the source",
-        example="local/remote",
+        example="remote",
     ),
-    filter: int = Query(
+    day: int = Query(
         ...,
         title="Filter",
         description="Filter the reports age based on the given string",
         example=7,
     ),
+    environment: str = Query(
+        "qa",
+        title="Environment",
+        description="Environment to filter the reports",
+        example="qa",
+    ),
 ):
     """Get available report cards based on the source requested"""
-    print(f"Report Source: {source}")
-    if source == "remote":
-        s3_cards = get_all_s3_cards({"day": filter})
-        return s3_cards
+    expected_filter_data = {"environment": environment, "day": day, "source": source}
+    logger.info(f"Getting all cards with filter data: {expected_filter_data}")
+    cards_app = config.fastapi_app.state.cards_app
+    if cards_app:
+        cards = await cards_app.get_cards_from_cache(expected_filter_data)
+        if len(cards) == 0:
+            logger.info("No cards found in redis cache.")
+            return JSONResponse(
+                content={
+                    "error": "No cards found in redis cache.",
+                    "cards": [],
+                },
+                status_code=200,
+            )            
+
+        return JSONResponse(
+            content={
+                "message": "Cards retrieved successfully",
+                "cards": cards,
+            },
+            status_code=200,
+        )
     else:
-        return get_all_local_cards(filter)
+        logger.info("Cards class not found in app state.")
+        return JSONResponse(
+            content={
+                "message": "Cards class instance not found in app state.",
+                "cards": [],
+            },
+            status_code=500,
+        )
 
 
 @router.get("/card", response_class=PlainTextResponse, status_code=200)
@@ -43,8 +76,8 @@ async def get_a_card(
     ),
     root_dir: str = Query(
         None,
-        title="Root Directory",
-        description="Root directory of the report to be retrieved",
+        title="S3 Root Directory",
+        description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
         example="2021-09-01T14:00:00",
     ),
 ):
@@ -52,31 +85,60 @@ async def get_a_card(
     local_r_directories = local_report_directories()
 
     if source == "remote" and test_report_dir not in local_r_directories:
-        print(f"Not in local. Downloading report from S3: {test_report_dir}")
+        logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
         test_report_dir = download_s3_folder(root_dir)
     else:
-        print(f"Already in local. No need to download: {test_report_dir}")
+        logger.info(f"Card already in local. Download not needed for: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return f"{mount_path}/index.html"
 
 
+@router.get("/reload-cache/", response_class=JSONResponse, status_code=200)
+async def reload_cards_cache(
+    source: str = Query(
+        ...,
+        title="Source",
+        description="Retrieve all the HTML & JSON reports from the source",
+        example="remote",
+    ),
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        example=7,
+    ),
+    environment: str = Query(
+        "qa",
+        title="Environment",
+        description="Environment to filter the reports",
+        example="qa",
+    ),
+):
+    """Get available report cards based on the source requested"""
+    expected_filter_data = {"environment": environment, "day": day, "source": source}
+    cards_app = config.fastapi_app.state.cards_app
+    await cards_app.fetch_cards_from_source_and_cache(expected_filter_data)
+
+
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)
 async def execute_command(
+    background_tasks: BackgroundTasks,
     options: str = Query(
         ...,
         title="Options",
         description="Command options to be executed",
         example='{"environment": "dev", "app": "clo", "proto": "perf", "suite": "smoke"}',
     ),
-    background_tasks: BackgroundTasks = None,
 ):
     """Execute a command on the running server"""
+    command = "n/a"
     try:
-        options = json.loads(options)
-        command = create_command(options)
-        print(f"Command to be executed: {command}")
+        _options: dict = json.loads(options)
+        _command: str = create_command(_options)
+        if command := _command:
+            logger.info(f"Command to be executed: {command}")
     except json.JSONDecodeError as e:
-        print(f"Invalid JSON input: {e}")
+        logger.info(f"Invalid JSON input: {e}")
         return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
 
     try:

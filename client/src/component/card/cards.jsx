@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import Card from "./card"
 import "./cards.css"
 import { useSocketIO } from "../../hooks"
 import Filters from "./filter"
 import config from "../../config.json"
 const { day_filter_conf, environment_filter_conf } = config
+const { VITE_SERVER_HOST, VITE_SERVER_PORT } = import.meta.env
 
 const Cards = () => {
   const { sio } = useSocketIO()
@@ -22,11 +23,27 @@ const Cards = () => {
       return { ...current_filter, source: updated_source }
     })
   }
-  /**
-   * fetch cards data from the FASTAPI server. TODO: Implement the WebSocket subscription logic
-   */
+
+  const get_cards_from_api = async () => {
+      const { source, day, environment } = filters
+      const server_url = `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}`
+      const url = `${server_url}/cards/?source=${source}&day=${day}&environment=${environment}`
+      // console.log("Fetching cards data from URL:", url)
+      const request = await fetch(url)
+      const response = await request.json()
+      console.log("Cards data length:", response.cards.length)
+      if (!request.ok) {
+        console.error("Error fetching cards data:", response.error)
+        return
+      }
+      setIsLoading(false)
+      setCards(response.cards)
+      setTotalCards(response.cards.length)
+  }
+
   const get_cards = async () => {
     // clear the existing states before fetching new cards data
+    console.log("Fetching cards data...")
     setIsLoading(true)
     setCards([])
     setTotalCards(0)
@@ -37,21 +54,20 @@ const Cards = () => {
         return
       }
       sio.off("alert") // Remove existing listeners before adding a new one
-      sio.off("cards")
-
-      sio.on("cards", (card) => {
-        setIsLoading(false)
-        if (!card) {
-          console.log("No cards found") // log a message if no cards are found
-          return setCards([]) // clear the existing cards if no cards are found
-        }
-        if (card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
-        setTotalCards((prevTotalCards) => prevTotalCards + 1)
-        setCards((prevCards) => [...prevCards, card])
-        // console.log(`Total ${filter.source} cards: ${totalCards} | card test_suite: ${card.json_report.stats.test_suite}`)
-      })
-
-      sio.emit("cards", filters) // emit a message to the server to fetch cards data
+      await get_cards_from_api() // fetch cards data from the REST API
+      
+      // sio.off("cards")
+      // sio.on("cards", (card) => {
+      //   setIsLoading(false)
+      //   if (!card) {
+      //     console.log("No cards found") // log a message if no cards are found
+      //     return setCards([]) // clear the existing cards if no cards are found
+      //   }
+      //   // if (card.json_report.suites.length <= 0) return // filter out cards that did not run any test suites
+      //   setTotalCards((prevTotalCards) => prevTotalCards + 1)
+      //   setCards((prevCards) => [...prevCards, card])
+      // })
+      // sio.emit("cards", filters) // emit a message to the server to fetch cards data over WebSocket
 
       sio.on("alert", (data) => {
         const { new_alert } = data
