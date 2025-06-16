@@ -12,7 +12,7 @@ const Cards = () => {
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [filters, setFilters] = useState({ source: "remote", day: 150, environment: "qa" })
+  const [filters, setFilters] = useState({ source: "remote", day: 1, environment: "qa" })
   const [alert, setAlert] = useState({ new: false, opening: false })
 
   const toggle_source = () => {
