@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     if os.path.exists(the_lab_log_file_path):
         with open(the_lab_log_file_path, "w"):
             pass
-    logger.info(f"FIXME_MODE: {fixme_mode}")
+    logger.info(f"FIXME_MODE: {fixme_mode} | NODE_ENV: {node_env}")
     if fixme_mode == "true" and node_env == "production":
         fix_app = FixClient(
             {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
@@ -43,8 +43,9 @@ async def lifespan(app: FastAPI):
     cards_app = Cards()
     app.state.cards_app = cards_app
 
-    notification_task = asyncio.create_task(update_alert_total_s3_objects())
-    app.state.notification_task = notification_task
+    if node_env == "production":
+        notification_task = asyncio.create_task(update_alert_total_s3_objects())
+        app.state.notification_task = notification_task
 
     yield
 
