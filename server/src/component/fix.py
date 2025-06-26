@@ -33,4 +33,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logger.info("Running Fix Client initialization task...")
     asyncio.run(main())

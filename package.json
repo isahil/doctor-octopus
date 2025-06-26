@@ -5,14 +5,16 @@
   "main": "setup.sh",
   "type": "module",
   "scripts": {
+    "fix": "cd server && python src/component/fix.py",
     "format": "prettier --write .",
     "lint": "npx eslint .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "notification": "cd server && python src/component/notification.py",
     "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh production\"",
     "start-dev": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh dev\"",
     "setup": "sh utils/setup-app.sh",
     "setup-lite": "sh utils/setup-app.sh lite",
-    "setup-all": "sh utils/setup-app.sh all"
+    "setup-all": "sh utils/setup-app.sh all",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
