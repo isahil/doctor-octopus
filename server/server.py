@@ -1,62 +1,15 @@
 # This is the entry point of the server application
-from fastapi.staticfiles import StaticFiles
-import config
-import os
-import sys  # noqa
 import asyncio
+from fastapi.staticfiles import StaticFiles
+import os
 import uvicorn
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from config import the_lab_log_file_path, environment, fixme_mode, node_env
-from src.wsocket import sio, socketio_app
+import instances # Must be imported first to ensure the app state is initialized.
 from src.fastapi import router as fastapi_router
-from src.component.cards import Cards
-from src.util.fix import FixClient
+from src.util.fix_client import init_app as init_fix_client_app
 from src.util.logger import logger
-from src.util.cancel import cancel_app_task
-from src.component.remote import update_alert_total_s3_objects
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fix/')))
-# from fix_app_async import FixClient # type: ignore
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Lifespan event handler for the FastAPI server.
-    Steps before yield gets executed before the server starts.
-    Steps after yield gets executed after the server shuts down
-    """
-    logger.info("Starting the server lifespan...")
-    if os.path.exists(the_lab_log_file_path):
-        with open(the_lab_log_file_path, "w"):
-            pass
-    logger.info(f"FIXME_MODE: {fixme_mode} | NODE_ENV: {node_env}")
-    if fixme_mode == "true" and node_env == "production":
-        fix_app = FixClient(
-            {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
-        )
-        fix_app_task = asyncio.create_task(fix_app.start_mock_client())
-        app.state.fix_app = fix_app
-        app.state.fix_app_task = fix_app_task
-
-    cards_app = Cards()
-    app.state.cards_app = cards_app
-
-    if node_env == "production":
-        notification_task = asyncio.create_task(update_alert_total_s3_objects())
-        app.state.notification_task = notification_task
-
-    yield
-
-    logger.info("Shutting down the server lifespan...")
-    await cancel_app_task("fix_app_task", app)
-    await cancel_app_task("notification_task", app)
-
-
-fastapi_app = FastAPI(lifespan=lifespan)
-config.fastapi_app = fastapi_app
-
+fastapi_app = instances.fastapi_app
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins="*",
@@ -64,12 +17,21 @@ fastapi_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 fastapi_app.include_router(fastapi_router)
-fastapi_app.mount("/ws/socket.io", socketio_app)  # type: ignore
+fastapi_app.mount("/ws/socket.io", instances.socketio_app)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
+if instances.fixme_mode == "true" and instances.node_env == "production":
+    loop = asyncio.get_event_loop()
+    if loop.is_running():
+        logger.info("Event loop is already running. Scheduling FIX initialization task.")
+        asyncio.create_task(init_fix_client_app())
+    else:
+        logger.info("Event loop is not running. Running initialization task.")
+        loop.run_until_complete(asyncio.sleep(0))  # Start the loop without significant work
+
 if __name__ == "__main__":
+    node_env = os.environ.get("NODE_ENV", "")
     if node_env == "production":
         uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1)
     else:

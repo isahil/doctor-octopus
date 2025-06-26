@@ -1,34 +1,20 @@
 import asyncio
 import sys
-from socketio import AsyncServer, ASGIApp
-import config
-from src.util.executor import create_command
-
+import instances
 sys.path.append("./src")
 from config import (
     node_env,
-    redis,
     the_lab_log_file_name,
     the_lab_log_file_path,
 )
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
-from util.executor import run_a_command_on_local
 from util.logger import logger
-
-
-sio_client_count = 0
-global_total_s3_objects = 0
-
-sio: AsyncServer = AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-socketio_app: ASGIApp = ASGIApp(sio, socketio_path="/ws/socket.io")
-config.sio = sio
-config.socketio_app = socketio_app
-
+from src.util.executor import create_command, run_a_command_on_local
+sio = instances.sio
 
 @sio.on("connect")  # type: ignore
 async def connect(sid, environ):
-    global sio_client_count
-    sio_client_count += 1
+    sio_client_count = await instances.redis.redis_client.get("sio_client_count")
 
     logger.info(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
@@ -37,13 +23,19 @@ async def connect(sid, environ):
         room=sid,
     )
     if node_env == "production":
-        asyncio.create_task(redis.update_redis_cache_client_data(sio_client_count))
+        count = await instances.redis.update_redis_cache_client_data()
+        logger.info(f"Redis cache updated with client data. Total clients: {count}")
+        await sio.emit(
+            "message",
+            f"Total clients: {count} #{sio_client_count} | Node Env: {node_env}",
+            room=sid,
+        )
 
 
 @sio.on("disconnect")  # type: ignore
 async def disconnect(sid):
     global sio_client_count
-    sio_client_count -= 1
+    sio_client_count = instances.redis.redis_client.decr("sio_client_count")
     await stop_streaming_log_file(sid)
     logger.info(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 
@@ -51,9 +43,9 @@ async def disconnect(sid):
 @sio.on("cards")  # type: ignore
 async def cards(sid, expected_filter_data: dict):
     logger.info(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
-    cards_app = config.fastapi_app.state.cards_app
-    if cards_app:
-        cards = await cards_app.get_cards_from_cache(expected_filter_data)
+    cards = instances.fastapi_app.state.cards
+    if cards:
+        cards = await cards.get_cards_from_cache(expected_filter_data)
         if len(cards) == 0:
             logger.info(f"No cards found in cache. length: {len(cards)}")
             await sio.emit("cards", False, room=sid)
@@ -69,7 +61,7 @@ async def cards(sid, expected_filter_data: dict):
 @sio.on("fixme")  # type: ignore
 async def fixme_client(sid, order):
     logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
-    fix_app = await config.fastapi_app.state.fix_app_task
+    fix_app = await instances.fastapi_app.state.fix_app
     if not fix_app:
         logger.info("fix_app_app not found on app.state.")
         return

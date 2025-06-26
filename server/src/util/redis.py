@@ -1,17 +1,16 @@
-import asyncio
 import json
 import os
 import redis
 import datetime
 from typing import Union
 from src.util.logger import logger
-# from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
+from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
 
 redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
 redis_port = os.getenv("SDET_REDIS_PORT", 6379)
 
-lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
-max_concurrent_clients_key = "DO_max_concurrent_clients_count"
+# lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
+# max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 
 
 class RedisClient:
@@ -26,8 +25,12 @@ class RedisClient:
     async def set(self, key, value):
         await self.redis_client.set(key, value)
 
-    async def get(self, key):
-        return await self.redis_client.get(key)
+    # async def get(self, key):
+    #     value = await self.redis_client.get(key)
+    #     return value.decode("utf-8") if isinstance(value, bytes)  else value
+    def get(self, key):
+        value = self.redis_client.get(key)
+        return value
 
     async def increment_key(self, key):
         current_value = await self.get(key)
@@ -54,10 +57,6 @@ class RedisClient:
         self.it_has_been_cached(key, value)
         return value
 
-    async def main(self):
-        id = self.create_a_unique_order_id()
-        logger.info(f"Got unique id: {id}")
-
     async def create_reports_cache(
         self, report_cache_key: str, report_cache_field: str, report_cache_value: str
     ) -> None:
@@ -82,18 +81,12 @@ class RedisClient:
         result = self.redis_client.hgetall(report_cache_key)
         return result
 
-    async def update_redis_cache_client_data(self, sio_client_count):
-        self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+    async def update_redis_cache_client_data(self):
+        sio_client_count = await self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
 
-        try:
-            value = await self.redis_client.get(max_concurrent_clients_key)
-            max_concurrent_clients = int(value.decode("utf-8"))
-            if sio_client_count > max_concurrent_clients:
-                await self.redis_client.set(max_concurrent_clients_key, sio_client_count)
-        except Exception as _:
-            self.redis_client.incr(max_concurrent_clients_key, 1)
+        max_concurrent_clients = await self.redis_client.get(max_concurrent_clients_key)
+        max_clients_value = int(max_concurrent_clients.decode("utf-8"))
+        if sio_client_count > max_clients_value:
+            await self.redis_client.set(max_concurrent_clients_key, sio_client_count)
+        return sio_client_count
 
-
-if __name__ == "__main__":
-    redis_client = RedisClient()
-    asyncio.gather(redis_client.main())

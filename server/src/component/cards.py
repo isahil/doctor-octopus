@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import json
-from config import max_local_dirs, redis, test_reports_redis_cache_name
+import instances
+from config import max_local_dirs, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.component.local import get_all_local_cards, cleanup_old_test_report_directories
 from src.component.remote import download_s3_folder, get_all_s3_cards
@@ -14,13 +15,11 @@ class Cards:
     environment: str = ""
     source: str = ""
 
-
     # def __init__(self, expected_filter_data: dict = {"environment": "qa", "day": 0, "source": "remote"}):
     #     self.set_filter_data(expected_filter_data)
 
-
     @performance_log
-    async def fetch_cards_from_source_and_cache(self, expected_filter_data: dict) -> None:
+    async def fetch_cards_and_cache(self, expected_filter_data: dict) -> None:
         """Fetch the cards from the source and cache them in Redis"""
         source = expected_filter_data.get("source")
         logger.info(f"Fetch cards expected filter data: {expected_filter_data}")
@@ -33,10 +32,9 @@ class Cards:
             logger.error(f"Unknown source: {source}. Expected 'remote' or 'local'.")
             return
 
-
     def download_missing_cards(self, expected_filter_data: dict) -> None:
         """Download the missing cards from S3 to cache them on the server"""
-        logger.info(f"Redis connection test [cards]: {redis.redis_client.ping()}")
+        redis = instances.redis
         local_cards_dates = get_all_local_cards(expected_filter_data) or {}
         missing_cards_dates = []
         cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
@@ -58,7 +56,6 @@ class Cards:
             executor.map(download_s3_folder, missing_cards_dates)
         logger.info(f"Missing cards downloaded on the server: {missing_cards_dates}")
 
-
     @performance_log
     async def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
@@ -69,6 +66,7 @@ class Cards:
 
         if self.environment != environment or self.day < day:
             logger.info(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
+            redis = instances.redis
             cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
             if cached_cards and isinstance(cached_cards, dict):
                 for _, received_card_data in cached_cards.items():
@@ -89,13 +87,11 @@ class Cards:
         sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
         return sorted_cards
 
-
     async def set_cards(self, expected_filter_data: dict):
         """Force update the cards in Cards app memory state. Warning: memory intensive"""
         self.cards = await self.get_cards_from_cache(expected_filter_data)
         self.set_filter_data(expected_filter_data)
         return self.cards
-
 
     def set_filter_data(self, expected_filter_data: dict) -> dict:
         """Set the filter data to the app state"""

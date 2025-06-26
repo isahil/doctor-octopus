@@ -1,8 +1,8 @@
 import json
 import os
 from fastapi import APIRouter, BackgroundTasks, Query
-from fastapi.responses import JSONResponse, PlainTextResponse
-import config
+from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
+import instances
 from src.util.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
 from src.component.remote import download_s3_folder
@@ -35,9 +35,9 @@ async def get_all_cards(
     """Get available report cards based on the source requested"""
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     logger.info(f"Getting all cards with filter data: {expected_filter_data}")
-    cards_app = config.fastapi_app.state.cards_app
-    if cards_app:
-        cards = await cards_app.get_cards_from_cache(expected_filter_data)
+    cards = instances.fastapi_app.state.cards
+    if cards:
+        cards = await cards.get_cards_from_cache(expected_filter_data)
         if len(cards) == 0:
             logger.info("No cards found in redis cache.")
             return JSONResponse(
@@ -116,8 +116,8 @@ async def reload_cards_cache(
 ):
     """Get available report cards based on the source requested"""
     expected_filter_data = {"environment": environment, "day": day, "source": source}
-    cards_app = config.fastapi_app.state.cards_app
-    await cards_app.fetch_cards_from_source_and_cache(expected_filter_data)
+    cards = instances.fastapi_app.state.cards
+    await cards.fetch_cards_and_cache(expected_filter_data)
 
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)

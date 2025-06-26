@@ -3,13 +3,14 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
-import config
-from config import test_reports_dir, redis, test_reports_redis_cache_name
+import instances
+from config import test_reports_dir, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.util.s3 import S3
 from src.util.logger import logger
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
+
 
 def get_a_s3_card_html_report(html) -> bytes:
     card = S3.get_a_s3_object(html)
@@ -19,25 +20,6 @@ def get_a_s3_card_html_report(html) -> bytes:
 def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
     return len(total)
-
-async def update_alert_total_s3_objects():
-    '''Update the total number of S3 objects and emit an alert if the count increases'''
-    global_total_s3_objects = total_s3_objects()
-    logger.info(f"S3 TOTAL: {global_total_s3_objects}")
-    app = config.fastapi_app
-    sio = config.sio
-    while True:
-        current_total_s3_objects = total_s3_objects()
-        await asyncio.sleep(10)
-        # subprocess.run(["sh", "./echo.sh"])
-        if current_total_s3_objects > global_total_s3_objects:
-            logger.info(f"alert: {current_total_s3_objects}")
-            await sio.emit("alert", {"new_alert": True})
-            global_total_s3_objects = current_total_s3_objects
-
-            await app.state.cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "remote"})
-            await app.state.cards_app.fetch_cards_from_source_and_cache({"environment": "qa", "day": 1, "source": "local"})
-            # await cards_app.set_cards({"environment": "qa", "day": 1, "source": "remote"}) # update cards in app state
 
 
 def format_s3_object_filter_data(obj):
@@ -91,6 +73,7 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
+    redis = instances.redis
     card_date, card_value = card_tuple
     try:
         object_name = card_value["filter_data"].get("object_name")
@@ -129,7 +112,7 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
             test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
 
             download_dir_root_path: str = "./"
-            reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir) # "./test_reports"
+            reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
             local_reports_dir_path = os.path.join(
                 reports_dir_path, test_report_dir
             )  # "./test_reports/4-28-2025_10-01-41_AM"
