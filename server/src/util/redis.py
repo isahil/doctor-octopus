@@ -3,14 +3,13 @@ import os
 import redis
 import datetime
 from typing import Union
+import config
 from src.util.logger import logger
-from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
+# from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
 
 redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
 redis_port = os.getenv("SDET_REDIS_PORT", 6379)
 
-# lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
-# max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 
 
 class RedisClient:
@@ -25,12 +24,12 @@ class RedisClient:
     async def set(self, key, value):
         await self.redis_client.set(key, value)
 
-    # async def get(self, key):
-    #     value = await self.redis_client.get(key)
-    #     return value.decode("utf-8") if isinstance(value, bytes)  else value
-    def get(self, key):
-        value = self.redis_client.get(key)
-        return value
+    async def get(self, key):
+        value = await self.redis_client.get(key)
+        return value.decode("utf-8") if isinstance(value, bytes)  else value
+    # def get(self, key):
+    #     value = self.redis_client.get(key)
+    #     return value
 
     async def increment_key(self, key):
         current_value = await self.get(key)
@@ -82,11 +81,15 @@ class RedisClient:
         return result
 
     async def update_redis_cache_client_data(self):
-        sio_client_count = await self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+        lifetime_doctor_clients_count_key = config.lifetime_doctor_clients_count_key
+        max_concurrent_clients_key = config.max_concurrent_clients_key
+        lifetime_sio_client_count = await self.redis_client.incr(lifetime_doctor_clients_count_key, 1)
+        logger.info(f"Lifetime SIO client count: {lifetime_sio_client_count}")
+        current_sio_client_count = await self.redis_client.get("sio_client_count")
 
         max_concurrent_clients = await self.redis_client.get(max_concurrent_clients_key)
         max_clients_value = int(max_concurrent_clients.decode("utf-8"))
-        if sio_client_count > max_clients_value:
-            await self.redis_client.set(max_concurrent_clients_key, sio_client_count)
-        return sio_client_count
+        if current_sio_client_count > max_clients_value:
+            await self.redis_client.set(max_concurrent_clients_key, current_sio_client_count)
+        return current_sio_client_count
 

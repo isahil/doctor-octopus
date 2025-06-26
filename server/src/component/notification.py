@@ -4,8 +4,9 @@ from config import notification_frequency_time
 from src.component.remote import total_s3_objects
 from src.util.logger import logger
 
+
 async def update_alert_total_s3_objects():
-    '''Update the total number of S3 objects and emit an alert if the count increases'''
+    """Update the total number of S3 objects and emit an alert if the count increases"""
     sio = instances.sio
     cards = instances.fastapi_app.state.cards
     global_total_s3_objects = total_s3_objects()

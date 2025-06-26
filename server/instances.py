@@ -1,7 +1,6 @@
 import os
 from fastapi import FastAPI
 from socketio import ASGIApp, AsyncServer
-from src.component.cards import Cards
 from src.util.lifespan import lifespan
 from src.util.redis import RedisClient
 
@@ -15,4 +14,3 @@ sio: AsyncServer = AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 socketio_app: ASGIApp = ASGIApp(sio, socketio_path="/ws/socket.io")
 
 redis: RedisClient = RedisClient()
-cards = Cards()

@@ -5,6 +5,7 @@ from config import the_lab_log_file_path
 from src.component import cards as cards_module
 from src.util.logger import logger
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """

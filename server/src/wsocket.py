@@ -6,6 +6,7 @@ from config import (
     node_env,
     the_lab_log_file_name,
     the_lab_log_file_path,
+    current_doctor_clients_count_key
 )
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.logger import logger
@@ -14,7 +15,7 @@ sio = instances.sio
 
 @sio.on("connect")  # type: ignore
 async def connect(sid, environ):
-    sio_client_count = await instances.redis.redis_client.get("sio_client_count")
+    sio_client_count = await instances.redis.redis_client.get(current_doctor_clients_count_key)
 
     logger.info(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
@@ -58,14 +59,10 @@ async def cards(sid, expected_filter_data: dict):
         await sio.emit("cards", False, room=sid)
 
 
-@sio.on("fixme")  # type: ignore
-async def fixme_client(sid, order):
-    logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
-    fix_app = await instances.fastapi_app.state.fix_app
-    if not fix_app:
-        logger.info("fix_app_app not found on app.state.")
-        return
-    fix_app.submitOrder(order, {}, {})
+# @sio.on("fixme")  # type: ignore
+# async def fixme_client(sid, order):
+#     logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
+#     self.submitOrder(order, {}, {})
 
 
 @sio.on("the-lab")  # type: ignore

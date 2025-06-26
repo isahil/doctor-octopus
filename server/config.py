@@ -15,6 +15,7 @@ fixme_mode: str = os.environ.get("FIXME_MODE", "")  # [true, false]
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
 test_reports_redis_cache_name = "trading-apps-reports"
+current_doctor_clients_count_key = "DO_current_clients_count"
 lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
 max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 
@@ -30,6 +31,7 @@ __all__ = [
     "environment",
     "lifetime_doctor_clients_count_key",
     "local_dir",
+    "current_doctor_clients_count_key",
     "max_concurrent_clients_key",
     "max_local_dirs",
     "node_env",
