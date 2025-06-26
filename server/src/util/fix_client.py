@@ -1,36 +1,73 @@
 import asyncio
-import os  # noqa
-import sys  # noqa
-import instances
-from instances import redis, sio, node_env, environment, fixme_mode
-from src.util.fix import FixClient
+
+from socketio import AsyncServer
 from src.util.logger import logger
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../fix/')))
-# from fix_app_async import FixClient # type: ignore
-# from concurrent.futures import ThreadPoolExecutor
+
+class Application:
+    sio: AsyncServer
+    timeout = 30
+
+    def __init__(self, **kwargs):
+        self.sio = kwargs.get("sio", "")
+        self.timeout = kwargs.get("timeout", 30)
+
+    async def connect(self):
+        timeout = 30
+        while timeout > 0:
+            message = f"Message : {timeout}"
+            logger.info(f"Broadcasting: {message}")
+            await self.sio.emit("fixme", message)
+            timeout -= 1
+            await asyncio.sleep(5)
+
+    def broadcast(self, message):
+        if hasattr(self, "sio"):
+
+            async def async_emit(message):
+                await self.sio.emit("fixme", message)
+
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError as e:
+                if str(e).startswith("There is no current event loop in thread"):
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                else:
+                    raise
+            if loop.is_running():
+                asyncio.create_task(async_emit(message))
+            else:
+                loop.run_until_complete(async_emit(message))
+
+    def submitOrder(self, order, validation, trade_validation):
+        logger.info(f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}")
+        self.broadcast(order)
+        return order
 
 
-async def main():
-    logger.info(f"FIXME_MODE: {fixme_mode} | NODE_ENV: {node_env}")
-    if instances.fixme_mode == "true" and instances.node_env == "production":
-        # loop = asyncio.get_event_loop()
-        # executor = ThreadPoolExecutor(1)
-        # fix_instance = await loop.run_in_executor(executor, lambda: redis.redis_client.get("fix_client_initialized"))
-        fix_instance = await redis.get("fix_client_initialized")
-        if isinstance(fix_instance, bytes):
-            fix_instance = fix_instance.decode("utf-8")
-        logger.info(f"Fix Client Initialized? {fix_instance} | type: {type(fix_instance)}")
-        if fix_instance == "false" or fix_instance is None:
-            logger.info("Initializing Fix Client...")
-            fix_client = FixClient(
-                {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
-            )
-            asyncio.create_task(fix_client.start_mock_client())
-            # await loop.run_in_executor(executor, lambda: redis.redis_client.set("fix_client_initialized", "true"))
-            await redis.set("fix_client_initialized", "true")
-        else:
-            logger.info("Fix Client already initialized, skipping initialization.")
+class FixClient:
+    env = None
+    app = None
+    fix_side = None
+    sio = None
+
+    def __init__(self, settings):
+        self.env = settings.get("env", "prod")
+        self.app = settings.get("app", "fix")
+        self.fix_side = settings.get("fix_side", "buy")
+        self.sio = settings.get("sio", None)
+
+    async def start_mock_client(self):
+        env = self.env
+        app = self.app
+        fix_side = self.fix_side
+
+        logger.info(f"Connecting to {env} env | {app} app | {fix_side} fix_side")
+        app = Application(sio=self.sio)
+        asyncio.create_task(
+            app.connect()
+        )  # Start the client. NOTE: not needed in real FIX Application as it is already running when initialized.
+        return app
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# __name__ == "__main__" and FixClient(env="dev", app="fix", fix_side="dealer", timeout=10)
