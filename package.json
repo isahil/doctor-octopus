@@ -5,19 +5,19 @@
   "main": "setup.sh",
   "type": "module",
   "scripts": {
-    "fix": "cd server && python src/component/fix.py",
     "format": "prettier --write .",
     "lint": "npx eslint .",
     "fixme": "cd server && FIXME_MODE=true bash start.sh util",
     "notification": "cd server && bash start.sh util",
-    "server": "cd server && bash start.sh main",
+    "server-main": "cd server && bash start.sh main",
     "client": "cd client && npm run dev",
     "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main\"",
-    "start-prod": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main\"",
+    "start-prod": "bash start.sh",
     "setup": "sh utils/setup-app.sh",
     "setup-lite": "sh utils/setup-app.sh lite",
     "setup-all": "sh utils/setup-app.sh all",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stop": "bash stop.sh"
   },
   "repository": {
     "type": "git",

@@ -14,7 +14,7 @@ async def update_alert_total_s3_objects():
         aioredis: AioRedis = instances.fastapi_app.state.aioredis
         cards = instances.fastapi_app.state.cards if hasattr(instances.fastapi_app, "state") else None
         initial_total_s3_objects = remote_module.total_s3_objects()
-        logger.info(f"S3 TOTAL: {initial_total_s3_objects}")
+        logger.info(f"S3 total current: {initial_total_s3_objects}")
 
         # First notification to clients connecting after server started
         notification = {
@@ -64,13 +64,13 @@ async def notification_stream(request: Request, client_id: str):
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
     
-    logger.info(f"Client {client_id} connected to SSE stream")
+    logger.info(f"Client [{client_id}] connected to SSE stream")
     # Send initial connection message
     yield "event: connected\ndata: {\"status\": \"connected\", \"client_id\": \"" + client_id + "\"}\n\n"
     try:
         while True:
             if await request.is_disconnected():
-                logger.info(f"Client {client_id} disconnected from SSE stream")
+                logger.info(f"Client [{client_id}] disconnected from SSE stream")
                 break
                 
             message = await pubsub.get_message(ignore_subscribe_messages=True)
@@ -82,7 +82,7 @@ async def notification_stream(request: Request, client_id: str):
             await asyncio.sleep(0.1)
             
     except asyncio.CancelledError:
-        logger.info("SSE connection cancelled")
+        logger.info(f"Client [{client_id}] SSE stream cancelled")
     finally:
         await pubsub.unsubscribe("notifications")
 
