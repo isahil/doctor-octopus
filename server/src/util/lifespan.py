@@ -61,7 +61,9 @@ async def lifespan(app: FastAPI):
     await cancel_app_task("fix", app)
     await cancel_app_task("notification", app)
     if hasattr(app.state, "redis"):
-        await app.state.redis.close()
+        redis = app.state.redis
+        await redis.close()
     if hasattr(app.state, "aioredis"):
         aioredis_instance: aioredis_module.AioRedis = app.state.aioredis
         aioredis_client: _aioredis.Redis = app.state.aioredis_client
+        await aioredis_instance.close()

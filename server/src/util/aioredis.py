@@ -15,15 +15,17 @@ class AioRedis:
     async def get_client(self) -> aioredis.Redis:
         if self.aioredis_client:
             return self.aioredis_client
-        redis_client = await aioredis.from_url(self.redis_url)
-        self.aioredis_client = redis_client
+        aioredis_client = await aioredis.from_url(self.redis_url)
+        await aioredis_client.incr("aioredis_connected_clients_count", 1)
+        self.aioredis_client = aioredis_client
         connected_client = await self.aioredis_client.incr("aioredis_connected_clients_count", 1)
         self.logger.info(f"Connected to AioRedis at {self.redis_url}. Connected clients count: {connected_client}")
-        return redis_client
+        return aioredis_client
 
     async def close(self) -> None:
         if self.aioredis_client:
             await self.aioredis_client.close()
+            await self.aioredis_client.decr("aioredis_connected_clients_count")
             self.aioredis_client = None
 
     async def publish(self, channel, message: Union[str, dict]) -> int:

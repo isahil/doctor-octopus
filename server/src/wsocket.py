@@ -61,10 +61,14 @@ async def cards(sid, expected_filter_data: dict):
         await sio.emit("cards", False, room=sid)
 
 
-# @sio.on("fixme")  # type: ignore
-# async def fixme_client(sid, order):
-#     logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
-#     self.submitOrder(order, {}, {})
+@sio.on("fixme")  # type: ignore
+async def fixme_client(sid, order):
+    logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
+    fix = await instances.fastapi_app.state.fix
+    if not fix:
+        logger.info("fix instance not found in fastapi_app.state")
+        return
+    fix.submitOrder(order, {}, {})
 
 
 @sio.on("the-lab")  # type: ignore

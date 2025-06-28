@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 import redis
@@ -30,12 +29,13 @@ class RedisClient:
         #     if isinstance(current_value, bytes):
         #         current_value = int(current_value.decode('utf-8')) + 1
         # self.logger.info(f"Current connected clients count: {current_value}")
-        connected_client = self.redis_client.incr("redis_connected_clients_count")
+        connected_client = self.redis_client.incr("redis_connected_clients_count", 1)
         self.logger.info(f"Connected to Redis at {host}:{port}. Clients count: {connected_client}")
 
     async def close(self) -> None:
         if self.redis_client:
             self.redis_client.close()
+            self.redis_client.decr("redis_connected_clients_count")
 
     async def set(self, key, value):
         await self.redis_client.set(key, value)
