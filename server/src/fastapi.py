@@ -1,12 +1,13 @@
 import json
 import os
-from fastapi import APIRouter, BackgroundTasks, Query
+from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.util.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
-from src.component.remote import download_s3_folder
 from src.util.logger import logger
+import src.component.remote as remote
+import src.component.notification as notification
 
 router = APIRouter()
 
@@ -86,7 +87,7 @@ async def get_a_card(
 
     if source == "remote" and test_report_dir not in local_r_directories:
         logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
-        test_report_dir = download_s3_folder(root_dir)
+        test_report_dir = remote.download_s3_folder(root_dir)
     else:
         logger.info(f"Card already in local. Download not needed for: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
@@ -152,3 +153,16 @@ async def execute_command(
         )
     except Exception as e:
         return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
+
+@router.get("/notifications/{client_id}", response_class=StreamingResponse)
+async def notifications_sse(client_id: str, request: Request):
+    """Server-Sent Events (SSE) endpoint to stream push notifications"""
+    return StreamingResponse(
+        notification.notification_stream(request, client_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )

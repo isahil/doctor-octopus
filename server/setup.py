@@ -28,3 +28,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    import instances
+    asyncio.run(instances.redis.close())

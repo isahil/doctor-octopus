@@ -3,11 +3,13 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
-import instances
+import redis as _redis
 from config import test_reports_dir, test_reports_redis_cache_name
 from src.component.validation import validate
 from src.util.s3 import S3
 from src.util.logger import logger
+import src.util.redis as redis_module
+import instances
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 
@@ -73,14 +75,16 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
-    redis = instances.redis
+    redis: redis_module.RedisClient = instances.fastapi_app.state.redis
+    redis_client: _redis.StrictRedis = instances.fastapi_app.state.redis_client
+
     card_date, card_value = card_tuple
     try:
         object_name = card_value["filter_data"].get("object_name")
         if not object_name:
             return None
 
-        if not redis.redis_client.hexists(test_reports_redis_cache_name, card_date):
+        if not redis_client.hexists(test_reports_redis_cache_name, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
             del j_report["suites"]  # remove suites from the report to reduce report size
             card_value["json_report"] = j_report

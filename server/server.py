@@ -3,8 +3,12 @@ from fastapi.staticfiles import StaticFiles
 import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+
+os.environ["SERVER_MODE"] = "main"
 import instances  # Must be imported first to ensure the app state is initialized.
 from src.fastapi import router as fastapi_router
+
+main_server_port = int(os.environ.get("MAIN_SERVER_PORT", ""))
 
 fastapi_app = instances.fastapi_app
 fastapi_app.add_middleware(
@@ -20,10 +24,15 @@ fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name
 
 if __name__ == "__main__":
     node_env = os.environ.get("NODE_ENV", "")
-    if node_env == "production":
-        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1)
-    else:
-        uvicorn.run("server:fastapi_app", host="0.0.0.0", port=8000, lifespan="on", workers=1, reload=True)
+    workers = 1 if node_env == "production" else 1
+    uvicorn.run(
+        "server:fastapi_app",
+        host="0.0.0.0",
+        port=main_server_port,
+        lifespan="on",
+        workers=workers,
+        reload=(node_env != "production"),
+    )
 
 # "author": "Imran Sahil"
 # "github": "https://github.com/isahil/doctor-octopus.git"

@@ -1,5 +1,7 @@
 import asyncio
 import sys
+from socketio import AsyncServer
+
 import instances
 sys.path.append("./src")
 from config import (
@@ -11,11 +13,12 @@ from config import (
 from util.streamer import start_streaming_log_file, stop_streaming_log_file
 from util.logger import logger
 from src.util.executor import create_command, run_a_command_on_local
-sio = instances.sio
+sio: AsyncServer = instances.sio
+logger.info(f"sio initialized: {sio is not None} | type: {type(sio)}")
 
 @sio.on("connect")  # type: ignore
-async def connect(sid, environ):
-    sio_client_count = await instances.redis.redis_client.get(current_doctor_clients_count_key)
+async def connect(sid, _):
+    sio_client_count = await instances.fastapi_app.state.redis_client.get(current_doctor_clients_count_key)
 
     logger.info(f"\tConnected to W.S. client... [{sid}] | Connection #{sio_client_count}")
     await sio.emit(
@@ -24,7 +27,7 @@ async def connect(sid, environ):
         room=sid,
     )
     if node_env == "production":
-        count = await instances.redis.update_redis_cache_client_data()
+        count = await instances.fastapi_app.state.redis.update_redis_cache_client_data()
         logger.info(f"Redis cache updated with client data. Total clients: {count}")
         await sio.emit(
             "message",
@@ -35,8 +38,7 @@ async def connect(sid, environ):
 
 @sio.on("disconnect")  # type: ignore
 async def disconnect(sid):
-    global sio_client_count
-    sio_client_count = instances.redis.redis_client.decr("sio_client_count")
+    sio_client_count = await instances.fastapi_app.state.redis.decrement_key(current_doctor_clients_count_key)
     await stop_streaming_log_file(sid)
     logger.info(f"\tDisconnected from socket client... [{sid}] | Clients connected: {sio_client_count}")
 

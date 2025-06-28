@@ -62,7 +62,7 @@ class FixClient:
         app = self.app
         fix_side = self.fix_side
 
-        logger.info(f"Connecting to {env} env | {app} app | {fix_side} fix_side")
+        logger.info(f"FixMe env: {env} | app: {app}  | fix_side: {fix_side}")
         app = Application(sio=self.sio)
         asyncio.create_task(
             app.connect()
