@@ -10,6 +10,8 @@
     "lint": "npx eslint .",
     "fixme": "cd server && FIXME_MODE=true bash start.sh util",
     "notification": "cd server && bash start.sh util",
+    "server": "cd server && bash start.sh main",
+    "client": "cd client && npm run dev",
     "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main\"",
     "start-prod": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main\"",
     "setup": "sh utils/setup-app.sh",
