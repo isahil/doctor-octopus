@@ -12,6 +12,8 @@ const Cards = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState({ source: "remote", day: 1, environment: "qa" })
   const [alert, setAlert] = useState({ new: false, opening: false })
+  const [eventSource, setEventSource] = useState(null)
+
   const server_url = `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}`
 
   const toggle_source = () => {
@@ -24,9 +26,14 @@ const Cards = () => {
   }
 
   const start_notification_stream = () => {
+    if (eventSource) {
+      console.warn("EventSource already initialized, closing the previous connection.")
+      eventSource.close()
+    }
     // Generate a client ID using current timestamp + random string. TODO: Use a more robust method for production.
     const client_id = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`
     const event_source = new EventSource(`${server_url}/notifications/${client_id}`)
+    setEventSource(event_source)
 
     event_source.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -37,6 +44,16 @@ const Cards = () => {
         // get_cards_from_api() // Refresh Cards
       }
     }
+
+    event_source.onerror = (error) => {
+      console.error("SSE connection error:", error)
+      event_source.close()
+
+      setTimeout(() => {
+        // Browser will automatically attempt to reconnect after a delay.
+      }, 5000)
+    }
+    return event_source
   }
 
   /**
@@ -65,7 +82,11 @@ const Cards = () => {
 
   useEffect(() => {
     get_cards_from_api()
-    start_notification_stream()
+    const new_event_source = start_notification_stream()
+
+    return () => {
+      new_event_source.close()
+    }
   }, [filters]) // fetch cards data when the source changes
 
   if (isLoading) {

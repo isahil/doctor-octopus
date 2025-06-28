@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import "./lab.css"
 import lab_cards from "./lab.json"
 import { useLabOptions, useOptionsUpdate, useSocketIO, useTerminal } from "../../hooks"
@@ -22,6 +23,13 @@ const Lab = () => {
       terminal.write(`\r\n ${JSON.stringify(data)} \r\n`)
     })
   }
+
+  useEffect(() => {
+    if (!sio) {
+      console.warn("Socket connection not initialized yet...")
+      return
+    }
+  }, [sio])
 
   return (
     <div
