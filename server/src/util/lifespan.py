@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
     if os.path.exists(the_lab_log_file_path):
         with open(the_lab_log_file_path, "w"):
             pass
-    logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env}")
+    logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | FIXME_MODE: {fixme_mode} | ENVIRONMENT: {environment} ")
 
     cards = cards_module.Cards()
     app.state.cards = cards

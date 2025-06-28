@@ -21,14 +21,6 @@ class RedisClient:
 
     def connect(self, host, port):
         self.redis_client = redis.StrictRedis(host, port)
-        # current_value = self.redis_client.get("redis_connected_clients_count")
-        # if not current_value:
-        #     self.logger.info("No connected clients found, initializing to 1.")
-        #     current_value = 1
-        # else:
-        #     if isinstance(current_value, bytes):
-        #         current_value = int(current_value.decode('utf-8')) + 1
-        # self.logger.info(f"Current connected clients count: {current_value}")
         connected_client = self.redis_client.incr("redis_connected_clients_count", 1)
         self.logger.info(f"Connected to Redis at {host}:{port}. Clients count: {connected_client}")
 

@@ -7,7 +7,6 @@ from src.util.lifespan import lifespan
 server_mode = os.getenv("SERVER_MODE", "")
 node_env: str = os.environ.get("NODE_ENV", "")  # Application environment [dev, production]
 environment: str = os.environ.get("ENVIRONMENT", "")  # Testing environment for tests ["dev", "qa"]
-fixme_mode: str = os.environ.get("FIXME_MODE", "")  # Enable/Disable FixMe feature [true, false]
 sdet_redis_host = os.environ.get("SDET_REDIS_HOST", "")
 
 redis_url = f"redis://{sdet_redis_host}:6379/0"
