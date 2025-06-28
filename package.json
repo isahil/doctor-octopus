@@ -11,6 +11,7 @@
     "notification": "cd server && bash start.sh util",
     "server-main": "cd server && bash start.sh main",
     "client": "cd client && npm run dev",
+    "server": "cd server && bash start.sh main",
     "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main\"",
     "start-prod": "bash start.sh",
     "setup": "sh utils/setup-app.sh",

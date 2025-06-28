@@ -1,34 +1,34 @@
 #!/bin/bash
 START_TIME=$(date +%s)
-echo "Starting the FASTAPI server [$(date)]"
+echo "[$(date)] Starting the FASTAPI server"
 
 SERVER_MODE=$1
 
 if [ -z "$SERVER_MODE" ]; then
-    echo "No server mode specified. Defaulting to 'main'."
+    echo "[$(date)] No server mode specified. Defaulting to 'main'."
     SERVER_MODE="main"
 fi
 
 OS_NAME=$(uname)
-echo "OS: $OS_NAME"
+echo "[$(date)] OS: $OS_NAME"
 
 if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
-    echo "Linux .venv activation"
+    echo "[$(date)] Linux .venv activation"
     source $HOME/venv/bin/activate
 else
-    echo "Windows .venv activation"
+    echo "[$(date)] Windows .venv activation"
     source $HOME/venv/Scripts/Activate
 fi
 
 if [ "$SERVER_MODE" = "main" ]; then
-    echo "Started setting up the app environment [$(date)]"
+    echo "[$(date)] Started setting up the app environment"
     python setup.py
-    echo "Finished setting up the app environment [$(date)]"
+    echo "[$(date)] Finished setting up the app environment"
 
-    echo "Running main server [$(date)]"
+    echo "[$(date)] Running main server"
     python server.py
 else
-    echo "Running util server"
+    echo "[$(date)] Running util server"
     python server-util.py
 fi
 

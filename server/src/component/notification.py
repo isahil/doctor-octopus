@@ -23,7 +23,7 @@ async def update_alert_total_s3_objects():
             "timestamp": asyncio.get_event_loop().time()
         }
         await aioredis.publish("notifications", notification)
-        time = 0
+        # time = 0
         while True:
             current_total_s3_objects = remote_module.total_s3_objects()
             if current_total_s3_objects > initial_total_s3_objects:
@@ -50,7 +50,7 @@ async def update_alert_total_s3_objects():
             #     "timestamp": asyncio.get_event_loop().time()
             # }
             # await aioredis.publish("notifications", notification)
-            # logger.info(f"Redis pub | wait: {(time := time + notification_frequency_time)}")
+            # logger.info(f"Redis pub | wait: {(time := time + 10)}")
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
         logger.info("Notification process cancelled")

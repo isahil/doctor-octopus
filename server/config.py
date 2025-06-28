@@ -25,7 +25,7 @@ the_lab_log_file_path: str = f"{local_dir}logs/{the_lab_log_file_name}"
 the_doc_log_file_path: str = f"{local_dir}logs/{the_doc_log_file_name}"
 
 max_local_dirs = 25  # max number of downloaded test report directories to keep
-notification_frequency_time: int = 3  # frequency of notifications update in seconds
+notification_frequency_time: int = 10  # frequency of notifications update in seconds
 
 __all__ = [
     "environment",

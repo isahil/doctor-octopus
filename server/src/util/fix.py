@@ -1,24 +1,24 @@
 import asyncio
-
 from socketio import AsyncServer
 from src.util.logger import logger
 
+
 class Application:
     sio: AsyncServer
-    timeout = 30
+    timeout: int
 
     def __init__(self, **kwargs):
         self.sio = kwargs.get("sio", "")
         self.timeout = kwargs.get("timeout", 30)
 
     async def connect(self):
-        timeout = 30
-        while timeout > 0:
-            message = f"Message : {timeout}"
-            logger.info(f"Broadcasting: {message}")
+        timeout = 0
+        while True:
+            message = f"FixMe: {timeout}"
+            logger.info(f"Broadcast: {message}")
             await self.sio.emit("fixme", message)
-            timeout -= 1
-            await asyncio.sleep(5)
+            timeout += 10
+            await asyncio.sleep(10)
 
     def broadcast(self, message):
         if hasattr(self, "sio"):
