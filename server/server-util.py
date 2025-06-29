@@ -3,7 +3,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 os.environ["SERVER_MODE"] = "util"
-import instances
+from instances import fastapi_app, socketio_app
 from src.fastapi import router as fastapi_router
 
 fixme = os.environ.get("FIXME_MODE", "")
@@ -11,7 +11,6 @@ fixme_server_port = int(os.environ.get("FIXME_SERVER_PORT", ""))
 notification_server_port = int(os.environ.get("NOTIFICATION_SERVER_PORT", ""))
 util_server_port = fixme_server_port if fixme == "true" else notification_server_port
 
-fastapi_app = instances.fastapi_app
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins="*",
@@ -20,6 +19,8 @@ fastapi_app.add_middleware(
     allow_headers=["*"],
 )
 fastapi_app.include_router(fastapi_router)
+if fixme == "true":
+    fastapi_app.mount("/ws/socket.io", socketio_app)
 
 if __name__ == "__main__":
     uvicorn.run(

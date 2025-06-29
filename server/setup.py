@@ -6,6 +6,7 @@ from src.util.logger import logger
 
 
 async def main():
+    os.environ["SERVER_MODE"] = "setup"
     os_name = platform.system()
     logger.info(os_name)
 

@@ -38,7 +38,10 @@ async def lifespan(app: FastAPI):
 
 
     sio = instances.sio
-    WebSocketServer(sio, app)
+    if not sio:
+        logger.error("Socket.IO not initialized properly!")
+    else:
+        WebSocketServer(sio, app)
 
     app.state.sio = sio
     redis = instances.redis
