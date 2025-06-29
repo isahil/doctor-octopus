@@ -36,14 +36,6 @@ async def lifespan(app: FastAPI):
     cards = Cards()
     app.state.cards = cards
 
-
-    sio = instances.sio
-    if not sio:
-        logger.error("Socket.IO not initialized properly!")
-    else:
-        WebSocketServer(sio, app)
-
-    app.state.sio = sio
     redis = instances.redis
     app.state.redis = redis
     app.state.redis_client = redis.get_client()
@@ -54,6 +46,13 @@ async def lifespan(app: FastAPI):
     if server_mode == "util" and node_env == "production":
         if fixme_mode == "true":
             logger.info("Starting FixMe client task...")
+            sio = instances.sio
+            if not sio:
+                logger.error("Socket.IO not initialized properly!")
+            else:
+                WebSocketServer(sio, app)
+            app.state.sio = sio
+
             fix_client = FixClient(
                 {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
             )
@@ -70,12 +69,12 @@ async def lifespan(app: FastAPI):
     await cancel_app_task("fix", app)
     await cancel_app_task("notification", app)
 
-    if hasattr(app.state, "sio") and sio:
+    if hasattr(app.state, "sio") and instances.sio:
         logger.info("Closing Socket.IO connections...")
         try:
-            if hasattr(sio, "emit"):
-                await sio.emit("shutdown", {"message": "Server shutting down"})
-                await sio.shutdown()
+            if hasattr(instances.sio, "emit"):
+                await instances.sio.emit("shutdown", {"message": "Server shutting down"})
+                await instances.sio.shutdown()
             logger.info("Socket.IO connections closed successfully")
         except Exception as e:
             logger.error(f"Error closing Socket.IO connections: {str(e)}")
