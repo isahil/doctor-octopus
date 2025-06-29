@@ -33,7 +33,6 @@ const FixMe = () => {
         })
       }
     })
-    // console.log(`the draft order ::: ${JSON.stringify(_draft)}`);
 
     return { draft_order: _draft, draft_checked: _checked }
   }

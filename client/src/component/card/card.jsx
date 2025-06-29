@@ -1,7 +1,7 @@
 import React from "react"
 import "./card.css"
 
-const { VITE_SERVER_HOST, VITE_SERVER_PORT } = import.meta.env
+const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
   const { source } = filter
@@ -31,12 +31,11 @@ function Card({ card, index, filter, setAlert }) {
       return { ...prev, opening: true }
     })
 
-    const server_url = `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}`
+    const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
     const response = await fetch(
       `${server_url}/card?source=${source}&root_dir=${root_dir}`
     )
     const report_path = await response.text()
-    console.log("URL: ", report_path)
     const fullReportUrl = `${server_url}${report_path}`
     try {
       const reportWindow = window.open(fullReportUrl, '_blank');

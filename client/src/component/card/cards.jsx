@@ -4,7 +4,7 @@ import "./cards.css"
 import Filters from "./filter"
 import config from "../../config.json"
 const { day_filter_conf, environment_filter_conf } = config
-const { VITE_SERVER_HOST, VITE_SERVER_PORT } = import.meta.env
+const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 const Cards = () => {
   const [cards, setCards] = useState([])
@@ -14,7 +14,7 @@ const Cards = () => {
   const [alert, setAlert] = useState({ new: false, opening: false })
   const [eventSource, setEventSource] = useState(null)
 
-  const server_url = `http://${VITE_SERVER_HOST}:${VITE_SERVER_PORT}`
+  const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
 
   const toggle_source = () => {
     setFilters((current_filter) => {
