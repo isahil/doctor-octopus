@@ -18,6 +18,8 @@ test_reports_redis_cache_name = "trading-apps-reports"
 current_doctor_clients_count_key = "DO_current_clients_count"
 lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
 max_concurrent_clients_key = "DO_max_concurrent_clients_count"
+redis_instance_key: str = "DO_redis_instance"
+aioredis_instance_key: str = "DO_aioredis_instance"
 
 the_lab_log_file_name: str = "lab.log"
 the_doc_log_file_name: str = "doc.log"

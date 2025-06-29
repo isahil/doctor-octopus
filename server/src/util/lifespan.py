@@ -18,11 +18,10 @@ async def lifespan(app: FastAPI):
     1: Initialize the resources. 2: Yield control to the server. 3: Clean up steps.
     """
     import asyncio
-    import redis.asyncio as _aioredis
     import instances
     from config import the_lab_log_file_path
-    from src.component import cards as cards_module
-    import src.util.aioredis as aioredis_module
+    from src.wsocket import WebSocketServer
+    from src.component.cards import Cards
     from src.util.cancel import cancel_app_task
     from src.util.fix import FixClient
     import src.component.notification as notification_module
@@ -34,19 +33,26 @@ async def lifespan(app: FastAPI):
             pass
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | FIXME_MODE: {fixme_mode} | ENVIRONMENT: {environment} ")
 
-    cards = cards_module.Cards()
+    cards = Cards()
     app.state.cards = cards
-    app.state.redis = instances.redis
-    aioredis_instance: aioredis_module.AioRedis = aioredis_module.AioRedis(instances.redis_url)
-    aioredis_client: _aioredis.Redis = await aioredis_instance.get_client()
-    app.state.aioredis = aioredis_instance
-    app.state.aioredis_client = aioredis_client
+
+
+    sio = instances.sio
+    WebSocketServer(sio, app)
+
+    app.state.sio = sio
+    redis = instances.redis
+    app.state.redis = redis
+    app.state.redis_client = redis.get_client()
+    aioredis = instances.aioredis
+    app.state.aioredis = aioredis
+    app.state.aioredis_client = await aioredis.get_client()
 
     if server_mode == "util" and node_env == "production":
         if fixme_mode == "true":
             logger.info("Starting FixMe client task...")
             fix_client = FixClient(
-                {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": instances.sio}
+                {"environment": environment, "app": "loan", "fix_side": "client", "counter": "1", "sio": sio}
             )
             fix_task = asyncio.create_task(fix_client.start_mock_client())
             app.state.fix = fix_task
@@ -57,13 +63,21 @@ async def lifespan(app: FastAPI):
 
     yield  # Yield control to the FastAPI application
 
-    logger.info("Shutting down the server lifespan...")
+    logger.info("Shutting down the server lifespan & performing clean up steps...")
     await cancel_app_task("fix", app)
     await cancel_app_task("notification", app)
+
+    if hasattr(app.state, "sio") and sio:
+        logger.info("Closing Socket.IO connections...")
+        try:
+            if hasattr(sio, "emit"):
+                await sio.emit("shutdown", {"message": "Server shutting down"})
+                await sio.shutdown()
+            logger.info("Socket.IO connections closed successfully")
+        except Exception as e:
+            logger.error(f"Error closing Socket.IO connections: {str(e)}")
+
     if hasattr(app.state, "redis"):
-        redis = app.state.redis
-        await redis.close()
+        redis.close()
     if hasattr(app.state, "aioredis"):
-        aioredis_instance: aioredis_module.AioRedis = app.state.aioredis
-        aioredis_client: _aioredis.Redis = app.state.aioredis_client
-        await aioredis_instance.close()
+        await aioredis.close()

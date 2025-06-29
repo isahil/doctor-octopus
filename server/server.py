@@ -5,12 +5,11 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 os.environ["SERVER_MODE"] = "main"
-import instances  # Must be imported first to ensure the app state is initialized.
+from instances import fastapi_app, socketio_app
 from src.fastapi import router as fastapi_router
 
 main_server_port = int(os.environ.get("MAIN_SERVER_PORT", ""))
 
-fastapi_app = instances.fastapi_app
 fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins="*",
@@ -19,7 +18,7 @@ fastapi_app.add_middleware(
     allow_headers=["*"],
 )
 fastapi_app.include_router(fastapi_router)
-fastapi_app.mount("/ws/socket.io", instances.socketio_app)
+fastapi_app.mount("/ws/socket.io", socketio_app)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
 
 if __name__ == "__main__":

@@ -21,37 +21,37 @@ class RedisClient:
 
     def connect(self, host, port):
         self.redis_client = redis.StrictRedis(host, port)
-        connected_client = self.redis_client.incr("redis_connected_clients_count", 1)
+        connected_client = self.redis_client.incr(self.config.redis_instance_key, 1)
         self.logger.info(f"Connected to Redis at {host}:{port}. Clients count: {connected_client}")
 
-    async def close(self) -> None:
+    def get_client(self):
+        if not self.redis_client:
+            self.logger.error("Redis client not initialized")
+            raise ValueError("Redis client is not initialized. Call connect() first.")
+        return self.redis_client
+
+    def close(self) -> None:
         if self.redis_client:
+            self.redis_client.decr(self.config.redis_instance_key, 1)
             self.redis_client.close()
-            self.redis_client.decr("redis_connected_clients_count")
 
-    async def set(self, key, value):
-        await self.redis_client.set(key, value)
+    def set(self, key, value):
+        self.redis_client.set(key, value)
 
-    async def get(self, key):
-        value = await self.redis_client.get(key)
+    def get(self, key):
+        value = self.redis_client.get(key)
         return value.decode("utf-8") if isinstance(value, bytes) else value
 
-    async def increment_key(self, key):
-        current_value = await self.get(key)
-        if not current_value:
-            await self.redis_client.set(key, 1)
-            return 1
-        new_value = int(current_value) + 1
-        await self.set(key, new_value)
+    def increment_key(self, key):
+        new_value = self.redis_client.incr(key, 1)
         return new_value
     
-    async def decrement_key(self, key: str) -> int:
-        current_value = await self.get(key)
+    def decrement_key(self, key: str):
+        current_value = self.get(key)
         if not current_value:
-            await self.redis_client.set(key, 0)
+            self.set(key, 0)
             return 0
-        new_value = max(0, int(current_value) - 1)  # Ensure we don't go below 0
-        await self.set(key, new_value)
+        new_value = self.redis_client.decr(key, 1)
         return new_value
 
     def has_it_been_cached(self, key, value):
@@ -101,12 +101,12 @@ class RedisClient:
         self.logger.info(f"Updating Redis cache with client data for key: {lifetime_doctor_clients_count_key}")
         max_concurrent_clients_key = self.config.max_concurrent_clients_key
         self.logger.info(f"Max concurrent clients key: {max_concurrent_clients_key}")
-        lifetime_sio_client_count = await self.increment_key(lifetime_doctor_clients_count_key)
+        lifetime_sio_client_count = self.increment_key(lifetime_doctor_clients_count_key)
         self.logger.info(f"Lifetime SIO client count: {lifetime_sio_client_count}")
-        current_sio_client_count = await self.redis_client.get("sio_client_count")
+        current_sio_client_count = self.get(self.config.current_doctor_clients_count_key)
 
-        max_concurrent_clients = await self.redis_client.get(max_concurrent_clients_key)
-        max_clients_value = int(max_concurrent_clients.decode("utf-8"))
-        if current_sio_client_count > max_clients_value:
-            await self.redis_client.set(max_concurrent_clients_key, current_sio_client_count)
+        # max_concurrent_clients = self.get(max_concurrent_clients_key)
+        # max_clients_value = max_concurrent_clients
+        # if current_sio_client_count > max_clients_value:
+        #     self.set(max_concurrent_clients_key, current_sio_client_count)
         return current_sio_client_count

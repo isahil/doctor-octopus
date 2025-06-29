@@ -11,7 +11,7 @@ import instances
 async def update_alert_total_s3_objects():
     """Update the total number of S3 objects and emit an alert if the count increases"""
     try:
-        aioredis: AioRedis = instances.fastapi_app.state.aioredis
+        aioredis: AioRedis = instances.aioredis
         cards = instances.fastapi_app.state.cards if hasattr(instances.fastapi_app, "state") else None
         initial_total_s3_objects = remote_module.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
@@ -60,7 +60,7 @@ async def update_alert_total_s3_objects():
 
 async def notification_stream(request: Request, client_id: str):
     """Generate SSE notification stream from Redis pubsub"""
-    aioredis: AioRedis = instances.fastapi_app.state.aioredis
+    aioredis: AioRedis = instances.aioredis
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
     

@@ -24,9 +24,10 @@ async def main():
     await cards.fetch_cards_and_cache({"environment": "qa", "day": 1, "source": "local"})
     logger.info("Caching steps completed.")
     logger.info("Server setup completed. Ready to run.")
+    
+    import instances
+    instances.redis.close()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-    import instances
-    asyncio.run(instances.redis.close())
