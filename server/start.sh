@@ -22,7 +22,7 @@ fi
 
 if [ "$SERVER_MODE" = "main" ]; then
     echo "[$(date)] Started setting up the app environment"
-    python setup.py
+    python first.py
     echo "[$(date)] Finished setting up the app environment"
 
     echo "[$(date)] Running main server"
