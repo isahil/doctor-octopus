@@ -34,15 +34,16 @@ async def update_alert_total_s3_objects():
                     "previous": initial_total_s3_objects,
                     "timestamp": asyncio.get_event_loop().time()
                 }
-                await aioredis.publish("notifications", notification)
-                # if instances.sio:
-                #     await instances.sio.emit("alert", {"new_alert": True})
+
                 initial_total_s3_objects = current_total_s3_objects
 
                 if cards:
                     await cards.fetch_cards_and_cache({"environment": "qa", "day": 1, "source": "remote"})
                     await cards.fetch_cards_and_cache({"environment": "qa", "day": 1, "source": "local"})
-            
+                
+                await aioredis.publish("notifications", notification)
+                # if instances.sio:
+                #     await instances.sio.emit("alert", {"new_alert": True})
             # notification = {
             #     "type": "new_s3_objects",
             #     "count": current_total_s3_objects + 1,
