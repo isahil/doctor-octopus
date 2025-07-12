@@ -96,7 +96,7 @@ class RedisClient:
         result = self.redis_client.hgetall(report_cache_key)
         return result
 
-    async def update_redis_cache_client_data(self):
+    def update_redis_cache_client_data(self):
         lifetime_doctor_clients_count_key = self.config.lifetime_doctor_clients_count_key
         self.logger.info(f"Updating Redis cache with client data for key: {lifetime_doctor_clients_count_key}")
         max_concurrent_clients_key = self.config.max_concurrent_clients_key

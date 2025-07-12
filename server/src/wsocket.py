@@ -39,7 +39,7 @@ class WebSocketServer:
             room=sid,
         )
         if node_env == "production":
-            count = await self.fastapi_app.state.redis.update_redis_cache_client_data()
+            count = self.fastapi_app.state.redis.update_redis_cache_client_data()
             logger.info(f"Redis cache updated with client data. Total clients: {count}")
             await self.sio.emit(
                 "message",
