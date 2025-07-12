@@ -13,14 +13,14 @@ const root = ReactDOM.createRoot(document.getElementById("root"))
 
 root.render(
   // <React.StrictMode> // This is causing the terminal to render twice
-    <div className="body">
-      <SocketIOProvider host={VITE_FIXME_SERVER_HOST} port={VITE_FIXME_SERVER_PORT}>
-        <TerminalProvider>
-          <LabProvider>
-            <App />
-          </LabProvider>
-        </TerminalProvider>
-      </SocketIOProvider>
-    </div>
+  <div className="body">
+    <SocketIOProvider host={VITE_FIXME_SERVER_HOST} port={VITE_FIXME_SERVER_PORT}>
+      <TerminalProvider>
+        <LabProvider>
+          <App />
+        </LabProvider>
+      </TerminalProvider>
+    </SocketIOProvider>
+  </div>
   // </React.StrictMode>
 )

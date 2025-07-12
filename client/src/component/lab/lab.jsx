@@ -10,7 +10,7 @@ const Lab = () => {
   const { update_options_handler, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
 
   const last_cards_index = lab_cards.length - 1 // index of the last card is used to enable the "Run" button
-  const run_button_enabled =  selectedOptions[2] !== "fix" && selectedOptions[last_cards_index] // enable the run button if the last card has been selected
+  const run_button_enabled = selectedOptions[2] !== "fix" && selectedOptions[last_cards_index] // enable the run button if the last card has been selected
   const proto = selectedOptions[2]
   const suite = selectedOptions[3]
 

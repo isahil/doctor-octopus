@@ -1,133 +1,133 @@
 .options-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3em;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
 }
 
 .options-wrapper:hover .option-wrapper {
-    display: block;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
+  display: block;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
 }
 
 .options-wrapper:hover .option-wrapper:has(input[type="radio"]:checked) {
-    opacity: 1;
+  opacity: 1;
 }
 
 @keyframes slideDown {
-    from {
-        transform: translateY(-10px);
-        opacity: 0;
-    }
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
 
-    to {
-        transform: translateY(0);
-        opacity: 0.7;
-    }
+  to {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
 }
 
 .options-wrapper:hover .option-wrapper:not(:has(input[type="radio"]:checked)) {
-    animation: slideDown 0.25s ease forwards;
+  animation: slideDown 0.25s ease forwards;
 }
 
 .options-wrapper:hover {
-    z-index: 10;
+  z-index: 10;
 }
 
 .options-wrapper input[type="radio"]:focus {
-    outline: 0;
-    box-shadow: 0 0 0 4px #b5c9fc;
+  outline: 0;
+  box-shadow: 0 0 0 4px #b5c9fc;
 }
 
 .option-wrapper {
-    display: none;
+  display: none;
 }
 
-.option-wrapper input[type="radio"]:checked~.option {
-    display: flex;
+.option-wrapper input[type="radio"]:checked ~ .option {
+  display: flex;
 }
 
 .option-wrapper:has(input[type="radio"]:checked) {
-    display: block;
+  display: block;
 }
 
 .options-wrapper input[type="radio"] {
-    clip: rect(0 0 0 0);
-    clip-path: inset(100%);
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
 }
 
-.options-wrapper input[type="radio"]:hover+span {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0.08em white;
+.options-wrapper input[type="radio"]:hover + span {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0.08em white;
 }
 
-.options-wrapper input[type="radio"]+span {
-    width: 47px;
+.options-wrapper input[type="radio"] + span {
+  width: 47px;
 }
 
-.options-wrapper input[type="radio"]:checked+.option span {
-    box-shadow: 0 0 0 0.05em cyan;
-    z-index: 1;
-    color: cyan;
+.options-wrapper input[type="radio"]:checked + .option span {
+  box-shadow: 0 0 0 0.05em cyan;
+  z-index: 1;
+  color: cyan;
 }
 
-.options-wrapper input[type="radio"]:checked+.option .filter {
-    color: cyan;
-    box-shadow: 0 0 0 0.05em cyan;
-    border: solid 0.05em white;
-    border-radius: 0.1em;
+.options-wrapper input[type="radio"]:checked + .option .filter {
+  color: cyan;
+  box-shadow: 0 0 0 0.05em cyan;
+  border: solid 0.05em white;
+  border-radius: 0.1em;
 }
 
 .options-wrapper label span {
-    display: block;
-    cursor: pointer;
-    background-color: black;
-    padding: 0.1em 0.75em;
-    position: relative;
-    margin-left: 0.3em;
-    border: var(--octopus-gray) solid 0.1em;
-    color: white;
-    text-align: center;
-    transition: background-color 0.5s ease;
-    min-width: 55px;
+  display: block;
+  cursor: pointer;
+  background-color: black;
+  padding: 0.1em 0.75em;
+  position: relative;
+  margin-left: 0.3em;
+  border: var(--octopus-gray) solid 0.1em;
+  color: white;
+  text-align: center;
+  transition: background-color 0.5s ease;
+  min-width: 55px;
 }
 
 .options-wrapper:hover label span {
-    border-radius: 0.1em;
-    border: solid 0.1em white;
+  border-radius: 0.1em;
+  border: solid 0.1em white;
 }
 
 .options-wrapper label:first-child span {
-    border-radius: 0.1em 0 0 0.1em;
+  border-radius: 0.1em 0 0 0.1em;
 }
 
 .options-wrapper label:last-child span {
-    border-radius: 0 0.1em 0.1em 0;
+  border-radius: 0 0.1em 0.1em 0;
 }
 
 .option-wrapper .text {
-    display: none;
+  display: none;
 }
 
 .option {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5em;
 }
 
 .option:hover {
-    margin-top: 0.20em;
+  margin-top: 0.2em;
 }
 
 .option:hover .text {
-    display: block;
-    width: 45px;
-    margin-top: 0.20em;
-    box-shadow: 0 0 0 0.08em white;
+  display: block;
+  width: 45px;
+  margin-top: 0.2em;
+  box-shadow: 0 0 0 0.08em white;
 }

@@ -32,19 +32,17 @@ function Card({ card, index, filter, setAlert }) {
     })
 
     const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
-    const response = await fetch(
-      `${server_url}/card?source=${source}&root_dir=${root_dir}`
-    )
+    const response = await fetch(`${server_url}/card?source=${source}&root_dir=${root_dir}`)
     const report_path = await response.text()
     const fullReportUrl = `${server_url}${report_path}`
     try {
-      const reportWindow = window.open(fullReportUrl, '_blank');
+      const reportWindow = window.open(fullReportUrl, "_blank")
       if (!reportWindow) {
-        alert('Popup was blocked. Please allow popups for doctor-octopus website.');
+        alert("Popup was blocked. Please allow popups for doctor-octopus website.")
       }
     } catch (error) {
-      console.error('Error opening report window:', error);
-      alert('Failed to open report window. Please try again.');
+      console.error("Error opening report window:", error)
+      alert("Failed to open report window. Please try again.")
     }
     setAlert({ ...alert, opening: false })
   }
@@ -53,7 +51,7 @@ function Card({ card, index, filter, setAlert }) {
     <div className={`card ${index} ${unexpected === 0 ? "golden" : ""}`}>
       <div className="card-content">
         <div className="card-header">
-        <span className="project-name">{project_name}</span>
+          <span className="project-name">{project_name}</span>
         </div>
         <div className="score-board-container ">
           <div className="score-board all">
@@ -84,8 +82,8 @@ function Card({ card, index, filter, setAlert }) {
           </button>
         </div>
         <span className="card-title">
-            {app ? `${app} -` : ""} {environment}{" "}
-          </span>
+          {app ? `${app} -` : ""} {environment}{" "}
+        </span>
         <div className="card-footer">
           <span className="branch">{git_branch}</span>
           <span className="duration">{Math.ceil(duration / 1000)} sec</span>

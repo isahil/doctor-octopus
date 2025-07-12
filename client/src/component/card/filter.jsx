@@ -12,7 +12,7 @@ const Filters = ({ filter_conf, filter, setFilter }) => {
   return (
     <div className={`${name} options-wrapper`}>
       {options
-        .sort((a, b) => (a[name] === filter[name] ? -1 : b[name]  === filter[name] ? 1 : 0))
+        .sort((a, b) => (a[name] === filter[name] ? -1 : b[name] === filter[name] ? 1 : 0))
         .map((option, i) => {
           return (
             <label key={i} className={`${name} option-wrapper`}>

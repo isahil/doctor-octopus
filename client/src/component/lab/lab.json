@@ -32,7 +32,18 @@
         "runs"
       ],
       "fix": ["client", "dealer"],
-      "perf": ["base", "api:clo:bilat", "api:clo:list", "api:clo:rfq", "api:clo:runs", "ui:clo:bilat:clients-counter", "ui:clo:bilat:dealers-execute", "ui:clo:list", "ui:clo:rfq", "ui:clo:runs"]
+      "perf": [
+        "base",
+        "api:clo:bilat",
+        "api:clo:list",
+        "api:clo:rfq",
+        "api:clo:runs",
+        "ui:clo:bilat:clients-counter",
+        "ui:clo:bilat:dealers-execute",
+        "ui:clo:list",
+        "ui:clo:rfq",
+        "ui:clo:runs"
+      ]
     }
   }
 ]
