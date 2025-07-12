@@ -18,10 +18,10 @@ dependencies = [
   "pydantic==2.11.7",
   "pydantic_core==2.33.2",
   "python-dateutil==2.9.0.post0",
-  "python-dotenv==1.1.1",
+  "python-dotenv==1.0.1",
   "python-engineio==4.12.2",
   "python-socketio==5.13.0",
-  "redis==6.2.0",
+  "redis==5.2.1",
   "s3transfer==0.13.0",
   "simple-websocket==1.1.0",
   "six==1.17.0",
@@ -31,7 +31,7 @@ dependencies = [
   "urllib3<=2.5.0",
   "uvicorn==0.35.0",
   "wsproto==1.2.0",
-  "ruff==0.12.1"
+  "ruff==0.9.6"
 ]
 
 [tool.ruff]

@@ -75,8 +75,8 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
-    redis: redis_module.RedisClient = instances.fastapi_app.state.redis
-    redis_client: _redis.StrictRedis = instances.fastapi_app.state.redis_client
+    redis: redis_module.RedisClient = instances.redis
+    redis_client: _redis.StrictRedis = instances.redis.redis_client
 
     card_date, card_value = card_tuple
     try:
