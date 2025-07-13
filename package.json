@@ -15,8 +15,8 @@
     "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main\"",
     "start-prod": "bash start.sh",
     "setup": "sh utils/setup-app.sh",
-    "setup-lite": "sh utils/setup-app.sh lite",
-    "setup-all": "sh utils/setup-app.sh all",
+    "setup:lite": "sh utils/setup-app.sh lite",
+    "setup:all": "sh utils/setup-app.sh all",
     "test": "echo \"Error: no test specified\" && exit 1",
     "stop": "bash stop.sh"
   },
