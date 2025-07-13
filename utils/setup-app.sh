@@ -27,9 +27,15 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
     echo "Creating & activating the python virtual environment..."
     
     if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
+        echo "[$(date)] installing pipx and poetry package manager."
+        pip3 install pipx poetry # Install pipx and poetry globally
+
         python3 -m venv $HOME/venv
         . $HOME/venv/bin/activate
     elif [ "$OS_NAME" = "CYGWIN" ] || [ "$OS_NAME" = "MINGW" ] || [ "$OS_NAME" = "MSYS" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-22631" ] || [ "$OS_NAME" = "MINGW64_NT-10.0-19045" ]; then
+        echo "[$(date)] installing pipx and poetry package manager."
+        pip install pipx poetry
+        
         python -m venv $HOME/venv
         source $HOME/venv/Scripts/Activate
     else
@@ -38,7 +44,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "app" ]; then
     fi
 
     echo "Installing the server python dependencies..."
-    pip3 install .
+    poetry install
     echo "Server set up finished!"
 
     cd ..

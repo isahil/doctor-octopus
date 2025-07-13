@@ -1,7 +1,12 @@
 [project]
-name = "doctor-octopus"
+name = "server"
 version = "1.0.0"
 description = "Doctor Octopus Test Runner Application"
+authors = [
+  {name = "Imran Sahil"}
+]
+readme = "readme.md"
+requires-python = ">=3.9"
 
 dependencies = [
   "aiofiles==24.1.0",
@@ -37,9 +42,6 @@ dependencies = [
 [tool.ruff]
 line-length = 120
 indent-width = 4
-
-# Assume Python 3.9
-target-version = "py39"
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -104,3 +106,10 @@ docstring-code-format = false
 # Set the line length limit used when formatting code snippets in docstrings.
 # This only has an effect when the `docstring-code-format` setting is enabled.
 docstring-code-line-length = "dynamic"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+script-one = "initialize"
