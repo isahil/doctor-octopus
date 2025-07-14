@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 os.environ["SERVER_MODE"] = "main"
 from instances import fastapi_app
@@ -17,6 +18,7 @@ fastapi_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+fastapi_app.add_middleware(GZipMiddleware, minimum_size=1000)
 fastapi_app.include_router(fastapi_router)
 # fastapi_app.mount("/ws/socket.io", socketio_app)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")

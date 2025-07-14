@@ -3,10 +3,19 @@ name = "server"
 version = "1.0.0"
 description = "Doctor Octopus Test Runner Application"
 authors = [
-  {name = "Imran Sahil"}
+  { name = "Imran Sahil",  role = "Lead SDET" }
 ]
 readme = "readme.md"
 requires-python = ">=3.9"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+initialize = "initialize:main"
+server = "server:fastapi_app"
+server-util = "server:fastapi_app"
 
 dependencies = [
   "aiofiles==24.1.0",
@@ -106,10 +115,3 @@ docstring-code-format = false
 # Set the line length limit used when formatting code snippets in docstrings.
 # This only has an effect when the `docstring-code-format` setting is enabled.
 docstring-code-line-length = "dynamic"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[project.scripts]
-script-one = "initialize:main"
