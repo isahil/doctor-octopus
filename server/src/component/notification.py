@@ -1,11 +1,11 @@
 import asyncio
-from fastapi import Request
-from redis.asyncio.client import PubSub
-from config import notification_frequency_time
-from src.util.aioredis import AioRedis
-import src.component.remote as remote_module
-from src.util.logger import logger
 import instances
+import src.component.remote as remote_module
+from fastapi.requests import Request
+from redis.asyncio.client import PubSub
+from config import notification_frequency_time, pubsub_frequency_time
+from src.util.aioredis import AioRedis
+from src.util.logger import logger
 
 
 async def update_alert_total_s3_objects():
@@ -51,10 +51,10 @@ async def update_alert_total_s3_objects():
             #     "timestamp": asyncio.get_event_loop().time()
             # }
             # await aioredis.publish("notifications", notification)
-            # logger.info(f"Redis pub | wait: {(time := time + 10)}")
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
         logger.info("Notification process cancelled")
+        raise
     except Exception as e:
         logger.error(f"Error in notification process: {str(e)}")
         raise
@@ -64,23 +64,23 @@ async def notification_stream(request: Request, client_id: str):
     aioredis: AioRedis = instances.aioredis
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
-    
     logger.info(f"Client [{client_id}] connected to SSE stream")
+
     # Send initial connection message
-    yield "event: connected\ndata: {\"status\": \"connected\", \"client_id\": \"" + client_id + "\"}\n\n"
+    yield 'event: connected\ndata: {"status": "connected", "client_id": "' + client_id + '"}\n\n'
+
     try:
         while True:
             if await request.is_disconnected():
                 logger.info(f"Client [{client_id}] disconnected from SSE stream")
                 break
-                
             message = await pubsub.get_message(ignore_subscribe_messages=True)
             if message and message["type"] == "message":
                 # logger.info(f"Stream received message from Redis sub: {message['data']}")
                 data = message["data"].decode("utf-8")
                 yield f"data: {data}\n\n"
                 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(pubsub_frequency_time)
             
     except asyncio.CancelledError:
         logger.info(f"Client [{client_id}] SSE stream cancelled")
