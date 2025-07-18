@@ -17,6 +17,7 @@ async def lifespan(app: FastAPI):
     Steps after yield gets executed after the server shut down is initiated.
     1: Initialize the resources. 2: Yield control to the server. 3: Clean up steps.
     """
+    import aiofiles
     import asyncio
     import instances
     import src.component.notification as notification_module
@@ -29,7 +30,8 @@ async def lifespan(app: FastAPI):
 
     logger.info("Starting the server lifespan...")
     if os.path.exists(the_lab_log_file_path):
-        with open(the_lab_log_file_path, "w"):
+        # Open the lab log file in append mode to ensure it exists before the server starts.
+        async with aiofiles.open(the_lab_log_file_path, "a"):
             pass
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | FIXME_MODE: {fixme_mode} | ENVIRONMENT: {environment} ")
 
