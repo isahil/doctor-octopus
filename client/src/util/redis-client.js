@@ -15,8 +15,8 @@ export class Redis {
     return client
   }
 
-  disconnect() {
-    client.quit()
+  async disconnect() {
+    await this.client.quit()
   }
 
   async hl_push(key, field, data) {

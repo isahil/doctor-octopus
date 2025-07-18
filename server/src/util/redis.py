@@ -31,9 +31,13 @@ class RedisClient:
         return self.redis_client
 
     def close(self) -> None:
-        if self.redis_client:
-            self.redis_client.decr(self.config.redis_instance_key, 1)
-            self.redis_client.close()
+        try:
+            if self.redis_client:
+                self.redis_client.decr(self.config.redis_instance_key, 1)
+                self.redis_client.close()
+                self.logger.info("Redis connection closed successfully")
+        except Exception as e:
+            self.logger.error(f"Error closing Redis connection: {e}")
 
     def set(self, key, value):
         self.redis_client.set(key, value)

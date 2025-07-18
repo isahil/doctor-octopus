@@ -1,9 +1,9 @@
 # This is the entry point of the server application
-from fastapi.staticfiles import StaticFiles
 import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
 
 os.environ["SERVER_MODE"] = "main"
 from instances import fastapi_app
@@ -25,7 +25,7 @@ fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name
 
 if __name__ == "__main__":
     node_env = os.environ.get("NODE_ENV", "")
-    workers = 1 if node_env == "production" else 1
+    workers = 1
     uvicorn.run(
         "server:fastapi_app",
         host="0.0.0.0",

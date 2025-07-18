@@ -19,13 +19,13 @@ async def lifespan(app: FastAPI):
     """
     import asyncio
     import instances
+    import src.component.notification as notification_module
     from config import the_lab_log_file_path
-    from src.wsocket import WebSocketServer
     from src.component.cards import Cards
     from src.util.cancel import cancel_app_task
     from src.util.fix import FixClient
-    import src.component.notification as notification_module
     from src.util.logger import logger
+    from src.wsocket import WebSocketServer
 
     logger.info("Starting the server lifespan...")
     if os.path.exists(the_lab_log_file_path):

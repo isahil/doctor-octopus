@@ -26,9 +26,14 @@ class AioRedis:
 
     async def close(self) -> None:
         if self.aioredis_client:
-            await self.aioredis_client.decr(self.config.aioredis_instance_key, 1)
-            await self.aioredis_client.close()
-            self.aioredis_client = None
+            try:
+                await self.aioredis_client.decr(self.config.aioredis_instance_key, 1)
+                await self.aioredis_client.close()
+                self.aioredis_client = None
+                self.logger.info("Successfully closed AioRedis connection.")
+            except Exception as e:
+                self.logger.error(f"Error closing AioRedis connection: {str(e)}")
+                self.aioredis_client = None # Still set client to None to avoid reusing a potentially broken connection
 
     async def publish(self, channel, message: Union[str, dict]) -> int:
         """Publish a message to a Redis channel"""
