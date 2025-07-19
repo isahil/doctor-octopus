@@ -15,11 +15,13 @@ fixme_mode: str = os.environ.get("FIXME_MODE", "")  # [true, false]
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
 test_reports_redis_cache_name = "trading-apps-reports"
-current_doctor_clients_count_key = "DO_current_clients_count"
-lifetime_doctor_clients_count_key = "DO_lifetime_clients_count"
-max_concurrent_clients_key = "DO_max_concurrent_clients_count"
-redis_instance_key: str = "DO_redis_instance"
-aioredis_instance_key: str = "DO_aioredis_instance"
+
+do_current_clients_count_key = "DO_current_clients_count"
+do_lifetime_clients_count_key = "DO_lifetime_clients_count"
+do_max_concurrent_clients_key = "DO_max_concurrent_clients_count"
+
+redis_instance_key: str = "DO_redis_instance_count"
+aioredis_instance_key: str = "DO_aioredis_instance_count"
 
 the_lab_log_file_name: str = "lab.log"
 the_doc_log_file_name: str = "doc.log"
@@ -32,10 +34,10 @@ pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
 __all__ = [
     "environment",
-    "lifetime_doctor_clients_count_key",
+    "do_lifetime_clients_count_key",
     "local_dir",
-    "current_doctor_clients_count_key",
-    "max_concurrent_clients_key",
+    "do_current_clients_count_key",
+    "do_max_concurrent_clients_key",
     "max_local_dirs",
     "node_env",
     "test_reports_dir",
@@ -44,5 +46,5 @@ __all__ = [
     "the_lab_log_file_path",
     "the_doc_log_file_name",
     "the_doc_log_file_path",
-    "pubsub_frequency_time"
+    "pubsub_frequency_time",
 ]  # export the variables

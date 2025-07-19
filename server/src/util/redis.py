@@ -4,8 +4,6 @@ import redis
 import datetime
 from typing import Union
 
-# from config import lifetime_doctor_clients_count_key, max_concurrent_clients_key
-
 redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
 redis_port = os.getenv("SDET_REDIS_PORT", 6379)
 
@@ -33,7 +31,7 @@ class RedisClient:
     def close(self) -> None:
         try:
             if self.redis_client:
-                self.redis_client.decr(self.config.redis_instance_key, 1)
+                self.decrement_key(self.config.redis_instance_key)
                 self.redis_client.close()
                 self.logger.info("Redis connection closed successfully")
         except Exception as e:
@@ -49,7 +47,7 @@ class RedisClient:
     def increment_key(self, key):
         new_value = self.redis_client.incr(key, 1)
         return new_value
-    
+
     def decrement_key(self, key: str):
         current_value = self.get(key)
         if not current_value:
@@ -100,17 +98,23 @@ class RedisClient:
         result = self.redis_client.hgetall(report_cache_key)
         return result
 
-    def update_redis_cache_client_data(self):
-        lifetime_doctor_clients_count_key = self.config.lifetime_doctor_clients_count_key
-        self.logger.info(f"Updating Redis cache with client data for key: {lifetime_doctor_clients_count_key}")
-        max_concurrent_clients_key = self.config.max_concurrent_clients_key
-        self.logger.info(f"Max concurrent clients key: {max_concurrent_clients_key}")
-        lifetime_sio_client_count = self.increment_key(lifetime_doctor_clients_count_key)
-        self.logger.info(f"Lifetime SIO client count: {lifetime_sio_client_count}")
-        current_sio_client_count = self.get(self.config.current_doctor_clients_count_key)
+    def update_redis_client_data(self):
+        lifetime_clients_count_key = self.config.do_lifetime_clients_count_key
+        max_concurrent_clients_key = self.config.do_max_concurrent_clients_key
 
-        # max_concurrent_clients = self.get(max_concurrent_clients_key)
-        # max_clients_value = max_concurrent_clients
-        # if current_sio_client_count > max_clients_value:
-        #     self.set(max_concurrent_clients_key, current_sio_client_count)
+        lifetime_do_client_count = self.increment_key(lifetime_clients_count_key)
+        self.logger.info(f"DO lifetime clients count - {lifetime_do_client_count}")
+
+        current_sio_client_count = self.get(self.config.do_current_clients_count_key)
+        max_concurrent_clients = self.get(max_concurrent_clients_key)
+        if not current_sio_client_count:
+            current_sio_client_count = 0
+        else:
+            current_sio_client_count = int(str(current_sio_client_count))
+        if not max_concurrent_clients:
+            max_concurrent_clients = 0
+        else:
+            max_concurrent_clients = int(str(max_concurrent_clients))
+        if current_sio_client_count > max_concurrent_clients:
+            self.set(max_concurrent_clients_key, current_sio_client_count)
         return current_sio_client_count

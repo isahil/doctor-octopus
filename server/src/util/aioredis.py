@@ -2,14 +2,14 @@ import redis.asyncio as aioredis
 from redis.asyncio.client import PubSub
 import json
 from typing import Union
-
+from src.util.logger import logger
 
 class AioRedis:
     import config
-    from src.util.logger import logger
 
     aioredis_client: Union[aioredis.Redis, None]
     redis_url: str
+    aioredis_instance_key: str = config.aioredis_instance_key
 
     def __init__(self, redis_url: str) -> None:
         self.aioredis_client = None
@@ -20,19 +20,19 @@ class AioRedis:
             return self.aioredis_client
         aioredis_client = await aioredis.from_url(self.redis_url)
         self.aioredis_client = aioredis_client
-        aioredis_instance = await aioredis_client.incr(self.config.aioredis_instance_key, 1)
-        self.logger.info(f"Connected to AioRedis at {self.redis_url}. Connected clients count: {aioredis_instance}")
+        aioredis_instance = await aioredis_client.incr(self.aioredis_instance_key, 1)
+        logger.info(f"Connected to AioRedis at {self.redis_url}. Connected clients count: {aioredis_instance}")
         return aioredis_client
 
     async def close(self) -> None:
         if self.aioredis_client:
+            await self.aioredis_client.decr(self.aioredis_instance_key, 1)
             try:
-                await self.aioredis_client.decr(self.config.aioredis_instance_key, 1)
-                await self.aioredis_client.close()
+                await self.aioredis_client.aclose()
                 self.aioredis_client = None
-                self.logger.info("Successfully closed AioRedis connection.")
+                logger.info("Successfully closed AioRedis connection.")
             except Exception as e:
-                self.logger.error(f"Error closing AioRedis connection: {str(e)}")
+                logger.error(f"Error closing AioRedis connection: {str(e)}")
                 self.aioredis_client = None # Still set client to None to avoid reusing a potentially broken connection
 
     async def publish(self, channel, message: Union[str, dict]) -> int:

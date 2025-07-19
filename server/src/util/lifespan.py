@@ -36,14 +36,10 @@ async def lifespan(app: FastAPI):
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | FIXME_MODE: {fixme_mode} | ENVIRONMENT: {environment} ")
 
     cards = Cards()
-    app.state.cards = cards
 
-    redis = instances.redis
-    app.state.redis = redis
-    app.state.redis_client = redis.get_client()
-    aioredis = instances.aioredis
-    app.state.aioredis = aioredis
-    app.state.aioredis_client = await aioredis.get_client()
+    app.state.cards = cards
+    app.state.redis = instances.redis
+    app.state.aioredis = instances.aioredis
 
     if server_mode == "util" and node_env == "production":
         if fixme_mode == "true":
@@ -82,6 +78,6 @@ async def lifespan(app: FastAPI):
             logger.error(f"Error closing Socket.IO connections: {str(e)}")
 
     if hasattr(app.state, "redis"):
-        redis.close()
+        app.state.redis.close()
     if hasattr(app.state, "aioredis"):
-        await aioredis.close()
+        await app.state.aioredis.close()
