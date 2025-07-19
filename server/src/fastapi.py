@@ -22,14 +22,14 @@ async def get_all_cards(
     ),
     day: int = Query(
         ...,
-        title="Filter",
-        description="Filter the reports age based on the given string",
-        example=7,
+        title="Day",
+        description="Filter the reports age based on the given day number",
+        example=3,
     ),
     environment: str = Query(
         "qa",
         title="Environment",
-        description="Environment to filter the reports",
+        description="Test environment to filter the reports by",
         example="qa",
     ),
 ):
@@ -86,10 +86,10 @@ async def get_a_card(
     local_r_directories = local_report_directories()
 
     if source == "remote" and test_report_dir not in local_r_directories:
-        logger.info(f"Not in local. Downloading report from S3: {test_report_dir}")
+        logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
         test_report_dir = remote.download_s3_folder(root_dir)
     else:
-        logger.info(f"Card already in local. Download not needed for: {test_report_dir}")
+        logger.info(f"Card available in local: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return f"{mount_path}/index.html"
 
