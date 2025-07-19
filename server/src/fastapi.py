@@ -47,7 +47,7 @@ async def get_all_cards(
                     "cards": [],
                 },
                 status_code=200,
-            )            
+            )
 
         return JSONResponse(
             content={
@@ -154,15 +154,12 @@ async def execute_command(
     except Exception as e:
         return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
 
+
 @router.get("/notifications/{client_id}", response_class=StreamingResponse)
 async def notifications_sse(client_id: str, request: Request):
     """Server-Sent Events (SSE) endpoint to stream push notifications"""
     return StreamingResponse(
         notification.notification_stream(request, client_id),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"
-        }
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
     )

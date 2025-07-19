@@ -4,6 +4,7 @@ import json
 from typing import Union
 from src.util.logger import logger
 
+
 class AioRedis:
     import config
 
@@ -33,7 +34,7 @@ class AioRedis:
                 logger.info("Successfully closed AioRedis connection.")
             except Exception as e:
                 logger.error(f"Error closing AioRedis connection: {str(e)}")
-                self.aioredis_client = None # Still set client to None to avoid reusing a potentially broken connection
+                self.aioredis_client = None  # Still set client to None to avoid reusing a potentially broken connection
 
     async def publish(self, channel, message: Union[str, dict]) -> int:
         """Publish a message to a Redis channel"""

@@ -1,6 +1,7 @@
 import time
 from src.util.logger import logger
 
+
 def performance_log(func):
     """
     Decorator to log the performance of a function.

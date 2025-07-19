@@ -85,9 +85,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
                 if file.endswith(".json"):
                     with open(file_path, encoding="utf-8") as j_report:
                         card_value["json_report"] = json.load(j_report)
-                        del card_value["json_report"][
-                            "suites"
-                        ]  # remove suites from the report to reduce report size
+                        del card_value["json_report"]["suites"]  # remove suites from the report to reduce report size
                         # await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
                     return card_value
     except (KeyError, json.JSONDecodeError):
@@ -156,8 +154,8 @@ def cleanup_old_test_report_directories(max_dirs=10):
                 dirs.append((item_path, timestamp))
 
         if len(dirs) > max_dirs:
-            dirs.sort(key=lambda x: x[1], reverse=True) # Sort by timestamp (newest first)
-            dirs_to_remove = dirs[max_dirs:] # Keep track of removed directories
+            dirs.sort(key=lambda x: x[1], reverse=True)  # Sort by timestamp (newest first)
+            dirs_to_remove = dirs[max_dirs:]  # Keep track of removed directories
             removed_count = 0
 
             for dir_path, _ in dirs_to_remove:
@@ -167,7 +165,7 @@ def cleanup_old_test_report_directories(max_dirs=10):
                     logger.info(f"Removed old test report directory: {os.path.basename(dir_path)}")
                 except Exception as e:
                     logger.error(f"Failed to remove directory {dir_path}: {str(e)}")
-            
+
             logger.info(f"Cleanup complete. Removed {removed_count} old test report directories.")
         else:
             logger.info(f"No cleanup needed. Only {len(dirs)} directories exist (max: {max_dirs}).")

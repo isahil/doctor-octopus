@@ -33,7 +33,9 @@ async def lifespan(app: FastAPI):
         # Open the lab log file in append mode to ensure it exists before the server starts.
         async with aiofiles.open(the_lab_log_file_path, "a"):
             pass
-    logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | FIXME_MODE: {fixme_mode} | ENVIRONMENT: {environment} ")
+    logger.info(
+        f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | FIXME_MODE: {fixme_mode} | ENVIRONMENT: {environment} "
+    )
 
     cards = Cards()
 

@@ -34,6 +34,7 @@ class Cards:
     def download_missing_cards(self, expected_filter_data: dict) -> None:
         """Download the missing cards from S3 to cache them on the server"""
         import instances
+
         redis = instances.redis
         local_cards_dates = get_all_local_cards(expected_filter_data) or {}
         missing_cards_dates = []
@@ -67,6 +68,7 @@ class Cards:
         if self.environment != environment or self.day < day:
             logger.info(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
             import instances
+
             redis = instances.redis
             cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
             if cached_cards and isinstance(cached_cards, dict):
