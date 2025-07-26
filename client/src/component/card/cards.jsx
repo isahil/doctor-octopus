@@ -16,16 +16,6 @@ const Cards = () => {
 
   const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
 
-  // TODO: To enable the local source, we will need to implement the local static server source logic.
-  // const toggle_source = () => {
-  //   setFilters((current_filter) => {
-  //     const current_source = current_filter.source
-  //     const updated_source = current_source === "remote" ? "local" : "remote"
-  //     console.log(`Toggled source: ${updated_source}`)
-  //     return { ...current_filter, source: updated_source }
-  //   })
-  // }
-
   const start_notification_stream = () => {
     if (eventSource) {
       console.warn("EventSource already initialized, closing the previous connection.")
@@ -38,11 +28,9 @@ const Cards = () => {
 
     event_source.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      // console.log("SSE notification received:", data)
       if (data.type === "new_s3_objects") {
         console.log(`New S3 objects alert: current ${data.count} (prev ${data.previous})`)
         setAlert({ new: true, opening: false })
-        // get_cards_from_api() // Refresh Cards
       }
     }
 
@@ -130,12 +118,6 @@ const Cards = () => {
         <div className="total">{totalCards} cards</div>
         {alert["new"] && <div className="new-pulse"></div>}
         {alert["opening"] && <div className="opening-bars"></div>}
-        {/* <div className="source">
-          <span className="source-header">{filters["source"]}</span>
-          <label>
-            <input type="checkbox" onClick={toggle_source} />
-          </label>
-        </div> */}
       </div>
       <div className="cards-body">
         {cards.length > 0 ? (

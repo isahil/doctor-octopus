@@ -86,6 +86,7 @@ async def notification_stream(request: Request, client_id: str):
 
     except asyncio.CancelledError:
         logger.info(f"Client [{client_id}] SSE stream cancelled")
+        raise
     finally:
         redis.decrement_key(do_current_clients_count_key)
         await pubsub.unsubscribe("notifications")
