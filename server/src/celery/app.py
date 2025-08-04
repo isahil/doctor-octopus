@@ -6,7 +6,7 @@ REDIS_HOST = os.environ.get("SDET_REDIS_HOST", "localhost")
 REDIS_PORT = os.environ.get("SDET_REDIS_PORT", "6379")
 
 celery_app = Celery(
-    "doctor_octopus",
+    "doctor-octopus",
     broker=f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
     backend=f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
     include=["src.celery.tasks"]
@@ -22,8 +22,8 @@ celery_app.conf.update(
     task_track_started=True,
     worker_redirect_stdouts_level="INFO",
     task_routes={
-        "src.celery.tasks.run_main_server": {"queue": "main_server"},
-        "src.celery.tasks.initialize_environment": {"queue": "main_server"},
+        "src.celery.tasks.run_main_server": {"queue": "main"},
+        "src.celery.tasks.initialize_environment": {"queue": "main"},
         "src.celery.tasks.run_notification_server": {"queue": "notification"},
         "src.celery.tasks.health_check": {"queue": "monitoring"},
     },
