@@ -112,7 +112,7 @@ def run_notification_server(self, host="0.0.0.0", port=8001):
     logger.info(f"Util server started with PID: {process.pid}")
 
     # Store the process for cleanup
-    running_processes[f"util_server_{port}"] = process
+    running_processes[f"notification_server_{port}"] = process
 
     return {"status": "running", "pid": process.pid, "port": port, "service": "notification"}
 

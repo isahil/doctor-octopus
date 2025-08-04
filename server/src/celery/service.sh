@@ -35,23 +35,23 @@ start_celery() {
     
     # Start main server worker
     $CELERY_BIN -A src.celery.app worker \
-        --hostname=main_server@%h \
+        --hostname=main@%h \
         --concurrency=$CONCURRENCY \
-        --queues=main_server,celery \
+        --queues=main,celery \
         --loglevel=info \
-        --logfile="$LOG_DIR/main_server.log" \
-        --pidfile="$LOG_DIR/main_server.pid" \
+        --logfile="$LOG_DIR/main.log" \
+        --pidfile="$LOG_DIR/main.pid" \
         --detach
 
-    # # Start notification and monitoring worker
-    # $CELERY_BIN -A src.celery.app worker \
-    #     --hostname=service@%h \
-    #     --concurrency=$CONCURRENCY \
-    #     --queues=notification,monitoring \
-    #     --loglevel=info \
-    #     --logfile="$LOG_DIR/util_server.log" \
-    #     --pidfile="$LOG_DIR/util_server.pid" \
-    #     --detach
+    # Start notification and monitoring worker
+    $CELERY_BIN -A src.celery.app worker \
+        --hostname=service@%h \
+        --concurrency=$CONCURRENCY \
+        --queues=notification,monitoring \
+        --loglevel=info \
+        --logfile="$LOG_DIR/notification.log" \
+        --pidfile="$LOG_DIR/notification.pid" \
+        --detach
     
     # Start celery beat for periodic tasks
     $CELERY_BIN -A src.celery.app beat \

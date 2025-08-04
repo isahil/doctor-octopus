@@ -24,9 +24,9 @@ echo "To stop all services, run: ./stop_all.sh"
 
 # Example usage:
 # Start specific services
-# python launcher.py --services main util
+# python launcher.py --services main notification
 # Stop specific services
-# python stop_servers.py --service main_server --port 8000
+# python stop_servers.py --service main --port 8000
 # Manage Celery workers
 # ./service.sh --action=status
 # ./service.sh --action=restart
