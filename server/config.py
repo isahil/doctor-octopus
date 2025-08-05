@@ -16,12 +16,11 @@ test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
 test_reports_redis_cache_name = "trading-apps-reports"
 
-do_current_clients_count_key = "DO_current_clients_count"
-do_lifetime_clients_count_key = "DO_lifetime_clients_count"
-do_max_concurrent_clients_key = "DO_max_concurrent_clients_count"
-
-redis_instance_key: str = "DO_redis_instance_count"
-aioredis_instance_key: str = "DO_aioredis_instance_count"
+do_current_clients_count_key = "DO:current_clients_count"
+do_lifetime_clients_count_key = "DO:lifetime_clients_count"
+do_max_concurrent_clients_key = "DO:max_concurrent_clients_count"
+redis_instance_key: str = "DO:redis_instance_count"
+aioredis_instance_key: str = "DO:aioredis_instance_count"
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
 
