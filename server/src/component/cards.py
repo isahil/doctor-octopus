@@ -65,7 +65,7 @@ class Cards:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
         environment = expected_filter_data.get("environment", "")
         day = int(expected_filter_data.get("day", ""))
-
+        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"
         filtered_cards: list[dict] = []
 
         if self.environment != environment or self.day < day:
@@ -73,7 +73,7 @@ class Cards:
             import instances
 
             redis = instances.redis
-            cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
+            cached_cards = redis.get_all_cached_cards(reports_cache_key)
             if cached_cards and isinstance(cached_cards, dict):
                 for _, received_card_data in cached_cards.items():
                     received_card_data = json.loads(received_card_data)
