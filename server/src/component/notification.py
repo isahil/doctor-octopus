@@ -3,7 +3,7 @@ import instances
 import src.component.remote as remote_module
 from fastapi.requests import Request
 from redis.asyncio.client import PubSub
-from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
+from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key, test_environments
 from src.util.logger import logger
 
 
@@ -37,8 +37,9 @@ async def update_alert_total_s3_objects():
                 initial_total_s3_objects = current_total_s3_objects
 
                 if cards:
-                    await cards.fetch_cards_and_cache({"environment": "qa", "day": 1, "source": "remote"})
-                    await cards.fetch_cards_and_cache({"environment": "qa", "day": 1, "source": "local"})
+                    for env in test_environments:
+                        # Fetch and cache cards for each environment
+                        await cards.fetch_cards_and_cache({"environment": env, "day": 1, "source": "remote"})
 
                 await aioredis.publish("notifications", notification)
                 # if instances.sio:

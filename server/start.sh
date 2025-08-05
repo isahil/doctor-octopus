@@ -3,6 +3,7 @@ START_TIME=$(date +%s)
 echo "[$(date)] Starting the FASTAPI server"
 
 SERVER_MODE=$1
+INITIALIZE=$2
 
 if [ -z "$SERVER_MODE" ]; then
     echo "[$(date)] No server mode specified. Defaulting to 'main'."
@@ -22,14 +23,22 @@ fi
 
 if [ "$SERVER_MODE" = "main" ]; then
     echo "[$(date)] Started setting up the app environment"
-    python initialize.py
+
+    if [ "$INITIALIZE" = "true" ]; then
+        echo "[$(date)] Initializing the app environment"
+        python initialize.py
+    fi
     echo "[$(date)] Finished setting up the app environment"
 
     echo "[$(date)] Running main server"
     python server.py
-else
+elif [ "$SERVER_MODE" = "util" ]; then
     echo "[$(date)] Running util server"
     python server-util.py
+else
+    echo "[$(date)] Unknown server mode: $SERVER_MODE"
+    echo "[$(date)] Supported modes: 'main', 'util'"
+    exit 1
 fi
 
 # alternative way to run the server

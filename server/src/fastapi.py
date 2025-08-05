@@ -158,6 +158,7 @@ async def execute_command(
 @router.get("/notifications/{client_id}", response_class=StreamingResponse)
 async def notifications_sse(client_id: str, request: Request):
     """Server-Sent Events (SSE) endpoint to stream push notifications"""
+    logger.info(f"Client [{client_id}] connected to /notifications S.S.E endpoint")
     return StreamingResponse(
         notification.notification_stream(request, client_id),
         media_type="text/event-stream",

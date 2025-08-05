@@ -23,23 +23,26 @@ do_max_concurrent_clients_key = "DO_max_concurrent_clients_count"
 redis_instance_key: str = "DO_redis_instance_count"
 aioredis_instance_key: str = "DO_aioredis_instance_count"
 
-the_lab_log_file_name: str = "lab.log"
-the_doc_log_file_name: str = "doc.log"
+test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
+
+the_lab_log_file_name: str = "lab.log"  # default log file name for the lab component
+the_doc_log_file_name: str = "doc.log"  # default log file name for the executor component
 the_lab_log_file_path: str = f"{local_dir}logs/{the_lab_log_file_name}"
 the_doc_log_file_path: str = f"{local_dir}logs/{the_doc_log_file_name}"
 
-max_local_dirs = 250  # max number of downloaded test report directories to keep
+max_local_dirs = 100  # max number of downloaded test report directories to keep
 notification_frequency_time: int = 10  # frequency of S3 notifications update in seconds
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
 __all__ = [
     "environment",
     "do_lifetime_clients_count_key",
-    "local_dir",
     "do_current_clients_count_key",
     "do_max_concurrent_clients_key",
+    "local_dir",
     "max_local_dirs",
     "node_env",
+    "test_environments",
     "test_reports_dir",
     "test_reports_redis_cache_name",
     "the_lab_log_file_name",

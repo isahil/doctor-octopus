@@ -81,15 +81,17 @@ async def process_card(card_tuple) -> Union[dict, None]:
     card_date, card_value = card_tuple
     try:
         object_name = card_value["filter_data"].get("object_name")
+        environment = card_value["filter_data"].get("environment", "")
+        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}" # e.g. trading-apps-reports:qa
         if not object_name:
             return None
 
-        if not redis_client.hexists(test_reports_redis_cache_name, card_date):
+        if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
             del j_report["config"]  # remove config details from the report to reduce report size
             del j_report["suites"]  # remove suites from the report to reduce report size
             card_value["json_report"] = j_report
-            await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
+            await redis.create_reports_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
         else:
             # logger.info(f"Card found in Redis cache: {card_date}")
