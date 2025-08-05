@@ -36,9 +36,12 @@ class Cards:
         import instances
 
         redis = instances.redis
+        environment = expected_filter_data.get("environment", "")
+        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"
+
         local_cards_dates = get_all_local_cards(expected_filter_data) or {}
         missing_cards_dates = []
-        cached_cards = redis.get_all_cached_cards(test_reports_redis_cache_name)
+        cached_cards = redis.get_all_cached_cards(reports_cache_key)
         logger.info(f"Cached cards in Redis - bool: {bool(cached_cards)} | type: {type(cached_cards)}")
         if cached_cards and isinstance(cached_cards, dict):
             for cached_card_date, cached_card_value in cached_cards.items():
