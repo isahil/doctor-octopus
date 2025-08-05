@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "day_filter_conf": {
     "name": "day",
-    "options": ["1", "2", "3"]
+    "options": ["1", "2", "3", "5", "10", "15", "30"]
   },
   "environment_filter_conf": {
     "name": "environment",
-    "options": ["dev", "qa", "uat"]
+    "options": ["dev", "qa", "uat", "sit"]
   },
   "app_filter_conf": {
     "name": "app",
