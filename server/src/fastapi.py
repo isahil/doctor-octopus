@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
@@ -164,3 +165,39 @@ async def notifications_sse(client_id: str, request: Request):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
     )
+
+
+@router.get("/health", response_class=JSONResponse, status_code=200)
+async def health_check():
+    start_time = datetime.now()
+    health_data = {
+        "status": "healthy",
+        "timestamp": start_time.isoformat(),
+        "version": os.environ.get("VERSION", "unknown"),
+        "services": {},
+    }
+
+    try:
+        # Various instance health checks for services
+        states = ["redis", "aioredis", "cards"]
+        for state in states:
+            if hasattr(instances.fastapi_app.state, state):
+                try:
+                    result = await getattr(instances.fastapi_app.state, state).ping()
+                    health_data["services"][state] = "healthy" if result else "unhealthy"
+                except Exception as e:
+                    logger.warning(f"{state} health check failed: {str(e)}")
+                    health_data["services"][state] = "unhealthy"
+            else:
+                health_data["services"][state] = "n/a"
+
+        response_time = (datetime.now() - start_time).total_seconds() * 1000
+        health_data["response_time_ms"] = round(response_time, 2)
+
+        logger.info(f"Health check completed successfully in {response_time:.2f}ms")
+        return JSONResponse(content=health_data, status_code=200)
+    except Exception as e:
+        health_data["status"] = "unhealthy"
+        health_data["error"] = str(e)
+        logger.error(f"Health check failed: {str(e)}")
+        return JSONResponse(content=health_data, status_code=500)
