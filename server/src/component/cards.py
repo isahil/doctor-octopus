@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import json
-from config import max_local_dirs, test_reports_redis_cache_name
+from config import max_local_dirs, test_reports_redis_cache_name, test_environments
 from src.component.validation import validate
 from src.component.local import get_all_local_cards, cleanup_old_test_report_directories
 from src.component.remote import download_s3_folder, get_all_s3_cards
@@ -31,16 +31,12 @@ class Cards:
         else:
             logger.error(f"Unknown source/mode: {mode}. Expected 'remote', 'local', or 'download'.")
 
-    def download_missing_cards(self, expected_filter_data: dict) -> None:
-        """Download the missing cards from S3 to cache them on the server"""
+    def missing_cards(self, local_cards: dict, env: str, expected_filter_data: dict) -> list[str]:
         import instances
-
         redis = instances.redis
-        environment = expected_filter_data.get("environment", "")
-        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"
-
+        reports_cache_key = f"{test_reports_redis_cache_name}:{env}"
         missing_cards = []
-        local_cards = get_all_local_cards(expected_filter_data) or {}
+
         cached_cards = redis.get_all_cached_cards(reports_cache_key)
         if cached_cards and isinstance(cached_cards, dict):
             for cached_card_date, cached_card_value in cached_cards.items():
@@ -55,6 +51,24 @@ class Cards:
                     missing_cards.append(cached_card_s3_root_dir)
         else:
             logger.info("No cached cards found in Redis.")
+        return missing_cards
+
+    def download_missing_cards(self, expected_filter_data: dict) -> None:
+        """Download the missing cards from S3 to cache them on the server"""
+        local_cards = get_all_local_cards(expected_filter_data) or {}
+        environments_to_check = [expected_filter_data.get("environment")] if expected_filter_data.get("environment") else test_environments
+        missing_cards = []
+        
+        def process_environment_cache(env):
+            return self.missing_cards(local_cards, env, expected_filter_data)
+            
+        with ThreadPoolExecutor() as executor:
+            cards_missing_per_environment = list(executor.map(process_environment_cache, environments_to_check))
+            
+        # Flatten the list of lists into a single list
+        for card in cards_missing_per_environment:
+            missing_cards.extend(card)
+
         with ThreadPoolExecutor() as executor:
             executor.map(download_s3_folder, missing_cards)
         logger.info(f"Missing cards downloaded on the server: {missing_cards}")
