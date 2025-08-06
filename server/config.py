@@ -21,6 +21,7 @@ do_lifetime_clients_count_key = "DO:lifetime_clients_count"
 do_max_concurrent_clients_key = "DO:max_concurrent_clients_count"
 redis_instance_key: str = "DO:redis_instance_count"
 aioredis_instance_key: str = "DO:aioredis_instance_count"
+redis_cache_expiry_days: int = 30  # number of days to keep the Redis cache
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
 
@@ -49,4 +50,5 @@ __all__ = [
     "the_doc_log_file_name",
     "the_doc_log_file_path",
     "pubsub_frequency_time",
+    "redis_cache_expiry_days",
 ]  # export the variables

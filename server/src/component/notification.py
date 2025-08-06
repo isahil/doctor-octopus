@@ -3,11 +3,11 @@ import instances
 import src.component.remote as remote_module
 from fastapi.requests import Request
 from redis.asyncio.client import PubSub
-from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key, test_environments
+from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
 from src.util.logger import logger
 
 
-async def update_alert_total_s3_objects():
+async def notify_s3_object_updates():
     """Update the total number of S3 objects and emit an alert if the count increases"""
     try:
         aioredis = instances.aioredis
@@ -37,11 +37,10 @@ async def update_alert_total_s3_objects():
                 initial_total_s3_objects = current_total_s3_objects
 
                 if cards:
-                    for env in test_environments:
-                        # Fetch and cache cards for each environment
-                        await cards.fetch_cards_and_cache({"environment": env, "day": 1, "source": "remote"})
-
-                await aioredis.publish("notifications", notification)
+                    await cards.cards_action({"day": 1, "source": "remote"})
+                    await cards.cards_action({"day": 1, "source": "download"})
+                    await aioredis.publish("notifications", notification)
+                    await cards.cards_action({"day": 1, "source": "cleanup"})
                 # if instances.sio:
                 #     await instances.sio.emit("alert", {"new_alert": True})
             # notification = {
@@ -67,7 +66,7 @@ async def notification_stream(request: Request, client_id: str):
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
     logger.info(f"Client [{client_id}] connected to SSE stream")
-    instances.redis.update_redis_client_data()
+    instances.redis.refresh_redis_client_metrics()
 
     # Send initial connection message
     yield 'event: connected\ndata: {"status": "connected", "client_id": "' + client_id + '"}\n\n'
@@ -95,4 +94,4 @@ async def notification_stream(request: Request, client_id: str):
 
 if __name__ == "__main__":
     logger.info("Starting the S3 update notification process...")
-    asyncio.run(update_alert_total_s3_objects())
+    asyncio.run(notify_s3_object_updates())

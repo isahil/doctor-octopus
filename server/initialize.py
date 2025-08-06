@@ -1,15 +1,18 @@
 import asyncio
 import os
 import platform
-from config import test_environments
 from src.component import cards as cards_module
+from src.util.helper import performance_log
 from src.util.logger import logger
 
 
-async def main():
+@performance_log
+async def server_initialization():
+    import instances
+
     os.environ["SERVER_MODE"] = "setup"
     os_name = platform.system()
-    logger.info(os_name)
+    logger.info(f"Server is running on {os_name} OS")
 
     if os_name == "Windows":
         os.environ["OS_NAME"] = "Windows"
@@ -20,17 +23,11 @@ async def main():
     else:
         logger.info("Unknown OS")
 
-    logger.info("Caching steps started...")
     cards = cards_module.Cards()
-    for env in test_environments:
-        await cards.fetch_cards_and_cache({"environment": env, "day": 30, "source": "remote"})
-    logger.info("Caching steps completed.")
-    logger.info("Server setup completed. Ready to run.")
-
-    import instances
-
+    await cards.cards_action({"day": 30, "source": "remote"})
+    await cards.cards_action({"day": 1, "source": "download"})
     instances.redis.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(server_initialization())

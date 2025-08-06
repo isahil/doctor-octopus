@@ -17,7 +17,7 @@ def local_report_directories():
     """get all local report directories"""
     local_report_directories = os.listdir(test_reports_path)
     logger.info(f"Total reports found on local: {len(local_report_directories)}")
-    logger.info(f"Local report directories: {local_report_directories}")
+    # logger.info(f"Local report directories: {local_report_directories}")
     return local_report_directories
 
 
@@ -43,10 +43,9 @@ def format_local_dir_filter_data(local_dir):
 def get_all_local_cards(expected_filter_data: dict) -> dict:
     """get all local report cards in the local test reports directory"""
     local_report_dirs = local_report_directories()
-
     formatted_cards_filter_data = list(filter(None, map(format_local_dir_filter_data, local_report_dirs)))
-
     final_cards_pool = {}
+
     for received_card_filter_data in formatted_cards_filter_data:
         day = int(expected_filter_data.get("day", ""))
         if not less_or_eqaul_to_date_time(received_card_filter_data["day"], day):
@@ -86,7 +85,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
                     with open(file_path, encoding="utf-8") as j_report:
                         card_value["json_report"] = json.load(j_report)
                         del card_value["json_report"]["suites"]  # remove suites from the report to reduce report size
-                        # await redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
+                        # redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
                     return card_value
     except (KeyError, json.JSONDecodeError):
         logger.info(f"Error processing card: {card_date}")

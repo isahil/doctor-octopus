@@ -9,7 +9,7 @@ from src.util.logger import logger
 
 
 class Cards:
-    cards: list[dict] = []
+    stored_cards_collection: list[dict] = []
     day: int = 0
     environment: str = ""
     source: str = ""
@@ -18,18 +18,18 @@ class Cards:
     #     self.set_filter_data(expected_filter_data)
 
     @performance_log
-    async def fetch_cards_and_cache(self, expected_filter_data: dict) -> None:
-        """Fetch the cards from the source and cache them in Redis"""
-        source = expected_filter_data.get("source")
-        logger.info(f"Fetch cards expected filter data: {expected_filter_data}")
-        if source == "remote":
+    async def cards_action(self, expected_filter_data: dict) -> None:
+        """Action to fetch and cache cards based on the expected filter data"""
+        mode = expected_filter_data.get("source")
+        logger.info(f"Fetch cards expected filter: {expected_filter_data}")
+        if mode == "remote":
             await get_all_s3_cards(expected_filter_data)
-        elif source == "local":
+        elif mode == "download":
             self.download_missing_cards(expected_filter_data)
+        elif mode == "cleanup":
             cleanup_old_test_report_directories(max_local_dirs)
         else:
-            logger.error(f"Unknown source: {source}. Expected 'remote' or 'local'.")
-            return
+            logger.error(f"Unknown source/mode: {mode}. Expected 'remote', 'local', or 'download'.")
 
     def download_missing_cards(self, expected_filter_data: dict) -> None:
         """Download the missing cards from S3 to cache them on the server"""
@@ -39,10 +39,9 @@ class Cards:
         environment = expected_filter_data.get("environment", "")
         reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"
 
-        local_cards_dates = get_all_local_cards(expected_filter_data) or {}
-        missing_cards_dates = []
+        missing_cards = []
+        local_cards = get_all_local_cards(expected_filter_data) or {}
         cached_cards = redis.get_all_cached_cards(reports_cache_key)
-        logger.info(f"Cached cards in Redis - bool: {bool(cached_cards)} | type: {type(cached_cards)}")
         if cached_cards and isinstance(cached_cards, dict):
             for cached_card_date, cached_card_value in cached_cards.items():
                 cached_card_date = cached_card_date.decode("utf-8")
@@ -52,16 +51,15 @@ class Cards:
                 error = validate(cached_card_filter_data, expected_filter_data)
                 if error:
                     continue
-                if cached_card_date not in local_cards_dates:
-                    missing_cards_dates.append(cached_card_s3_root_dir)
+                if cached_card_date not in local_cards:
+                    missing_cards.append(cached_card_s3_root_dir)
         else:
-            logger.info("No cached cards found in Redis. Downloading all cards from the source.")
+            logger.info("No cached cards found in Redis.")
         with ThreadPoolExecutor() as executor:
-            executor.map(download_s3_folder, missing_cards_dates)
-        logger.info(f"Missing cards downloaded on the server: {missing_cards_dates}")
+            executor.map(download_s3_folder, missing_cards)
+        logger.info(f"Missing cards downloaded on the server: {missing_cards}")
 
-    @performance_log
-    async def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
+    def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
         environment = expected_filter_data.get("environment", "")
         day = int(expected_filter_data.get("day", ""))
@@ -69,7 +67,7 @@ class Cards:
         filtered_cards: list[dict] = []
 
         if self.environment != environment or self.day < day:
-            logger.info(f"Cards in app state did not match filters. Environment: {environment} | Day: {day}")
+            logger.info(f"Fetch cards from cache filters env: {environment} | day: {day}")
             import instances
 
             redis = instances.redis
@@ -84,7 +82,7 @@ class Cards:
                     filtered_cards.append(received_card_data)
         elif self.environment == environment and self.day == day:
             logger.info(f"Cards in app state matched filters. Environment: {self.environment} | Day: {self.day}")
-            for received_card_data in self.cards:
+            for received_card_data in self.stored_cards_collection:
                 received_filter_data = received_card_data.get("filter_data")
                 error = validate(received_filter_data, expected_filter_data)
                 if error:
@@ -93,11 +91,11 @@ class Cards:
         sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
         return sorted_cards
 
-    async def set_cards(self, expected_filter_data: dict):
+    def set_cards(self, expected_filter_data: dict):
         """Force update the cards in Cards app memory state. Warning: memory intensive"""
-        self.cards = await self.get_cards_from_cache(expected_filter_data)
+        self.stored_cards_collection = self.get_cards_from_cache(expected_filter_data)
         self.set_filter_data(expected_filter_data)
-        return self.cards
+        return self.stored_cards_collection
 
     def set_filter_data(self, expected_filter_data: dict) -> dict:
         """Set the filter data to the app state"""

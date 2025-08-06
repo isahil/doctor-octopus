@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
             app.state.fix = fix_task
         else:
             logger.info("Starting the notification task...")
-            notification_task = asyncio.create_task(notification_module.update_alert_total_s3_objects())
+            notification_task = asyncio.create_task(notification_module.notify_s3_object_updates())
             app.state.notification = notification_task
 
     yield  # Yield control to the FastAPI application

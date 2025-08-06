@@ -1,7 +1,7 @@
 import json
 import os
 import redis
-import datetime
+from datetime import datetime, timedelta
 from typing import Union
 
 redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
@@ -56,27 +56,23 @@ class RedisClient:
         new_value = self.redis_client.decr(key, 1)
         return new_value
 
+    def seconds_until_midnight(self, days: int = 0):
+        now = datetime.now()
+        midnight = datetime.combine(now.date() + timedelta(days=days), datetime.min.time())
+        seconds_until_midnight = int((midnight - now).total_seconds())
+        return seconds_until_midnight
+
     def has_it_been_cached(self, key, value):
         used = self.redis_client.lpos(key, value) is not None
         self.logger.info(f"Checking if {key} value: {value} has been used: {used}")
         return used
 
     def it_has_been_cached(self, key, value):
-        self.logger.info(f"Marking id {value} as used for {key}")
-        self.redis_client.lpush(key, value)
+        client = self.get_client()
+        client.lpush(key, value)
+        client.expire(key, self.seconds_until_midnight(self.config.redis_cache_expiry_days))  # Set expiry in seconds
 
-    def create_a_unique_order_id(self):
-        key = "used_order_ids"
-        value = f"sdet-{datetime.datetime.now().strftime('%m%d-%H:%M:%S')}"
-
-        while self.has_it_been_cached(key, value):
-            value = f"sdet-{datetime.datetime.now().strftime('%m%d-%H:%M:%S')}"
-        self.it_has_been_cached(key, value)
-        return value
-
-    async def create_reports_cache(
-        self, report_cache_key: str, report_cache_field: str, report_cache_value: str
-    ) -> None:
+    def create_reports_cache(self, report_cache_key: str, report_cache_field: str, report_cache_value: str) -> None:
         if not self.redis_client.hexists(report_cache_key, report_cache_field):
             self.logger.info(f"Creating a new cache for: {report_cache_field}")
             self.redis_client.hset(report_cache_key, report_cache_field, report_cache_value)
@@ -98,23 +94,16 @@ class RedisClient:
         result = self.redis_client.hgetall(report_cache_key)
         return result
 
-    def update_redis_client_data(self):
+    def refresh_redis_client_metrics(self) -> None:
         lifetime_clients_count_key = self.config.do_lifetime_clients_count_key
         max_concurrent_clients_key = self.config.do_max_concurrent_clients_key
+        current_clients_count_key = self.config.do_current_clients_count_key
 
         lifetime_do_client_count = self.increment_key(lifetime_clients_count_key)
         self.logger.info(f"DO lifetime clients count - {lifetime_do_client_count}")
+        current_clients_count = int(str(self.increment_key(current_clients_count_key)))
 
-        current_sio_client_count = self.get(self.config.do_current_clients_count_key)
         max_concurrent_clients = self.get(max_concurrent_clients_key)
-        if not current_sio_client_count:
-            current_sio_client_count = 0
-        else:
-            current_sio_client_count = int(str(current_sio_client_count))
-        if not max_concurrent_clients:
-            max_concurrent_clients = 0
-        else:
-            max_concurrent_clients = int(str(max_concurrent_clients))
-        if current_sio_client_count > max_concurrent_clients:
-            self.set(max_concurrent_clients_key, current_sio_client_count)
-        return current_sio_client_count
+        max_concurrent_clients_count = 0 if not max_concurrent_clients else int(str(max_concurrent_clients))
+        if current_clients_count > max_concurrent_clients_count:
+            self.set(max_concurrent_clients_key, current_clients_count)

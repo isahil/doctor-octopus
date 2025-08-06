@@ -91,7 +91,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
             del j_report["config"]  # remove config details from the report to reduce report size
             del j_report["suites"]  # remove suites from the report to reduce report size
             card_value["json_report"] = j_report
-            await redis.create_reports_cache(reports_cache_key, card_date, json.dumps(card_value))
+            redis.create_reports_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
         else:
             # logger.info(f"Card found in Redis cache: {card_date}")

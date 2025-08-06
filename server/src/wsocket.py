@@ -33,11 +33,10 @@ class WebSocketServer:
             room=sid,
         )
         if node_env == "production":
-            count = self.instances.redis.update_redis_client_data()
-            logger.info(f"Redis cache updated with client data. Total clients: {count}")
+            self.instances.redis.refresh_redis_client_metrics()
             await self.sio.emit(
                 "message",
-                f"Total clients: {count} #{do_clients_count} | Node Env: {node_env}",
+                f"DO active clients count: {do_clients_count} | Node Env: {node_env}",
                 room=sid,
             )
 
@@ -50,7 +49,7 @@ class WebSocketServer:
         logger.info(f"Socket client [{sid}] sent data to cards: {expected_filter_data}")
         cards = self.fastapi_app.state.cards
         if cards:
-            cards = await cards.get_cards_from_cache(expected_filter_data)
+            cards = cards.get_cards_from_cache(expected_filter_data)
             if len(cards) == 0:
                 logger.info(f"No cards found in cache. length: {len(cards)}")
                 await self.sio.emit("cards", False, room=sid)

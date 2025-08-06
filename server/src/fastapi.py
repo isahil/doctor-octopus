@@ -39,7 +39,7 @@ async def get_all_cards(
     logger.info(f"Getting all cards with filter data: {expected_filter_data}")
     cards = instances.fastapi_app.state.cards
     if cards:
-        cards = await cards.get_cards_from_cache(expected_filter_data)
+        cards = cards.get_cards_from_cache(expected_filter_data)
         if len(cards) == 0:
             logger.info("No cards found in redis cache.")
             return JSONResponse(
@@ -119,7 +119,7 @@ async def reload_cards_cache(
     """Get available report cards based on the source requested"""
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards = instances.fastapi_app.state.cards
-    await cards.fetch_cards_and_cache(expected_filter_data)
+    await cards.cards_action(expected_filter_data)
 
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)
