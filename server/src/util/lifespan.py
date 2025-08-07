@@ -38,12 +38,13 @@ async def lifespan(app: FastAPI):
     )
 
     cards = Cards()
-
+    redis = instances.redis
     app.state.cards = cards
-    app.state.redis = instances.redis
+    app.state.redis = redis
     app.state.aioredis = instances.aioredis
 
     if server_mode == "util" and node_env == "production":
+        redis.reset_redis_client_metrics()
         if fixme_mode == "true":
             logger.info("Starting FixMe client task...")
             sio = instances.sio

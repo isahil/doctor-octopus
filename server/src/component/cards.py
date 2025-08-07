@@ -68,10 +68,10 @@ class Cards:
         # Flatten the list of lists into a single list
         for card in cards_missing_per_environment:
             missing_cards.extend(card)
+        logger.info(f"Missing cards downloaded on the server: {missing_cards}")
 
         with ThreadPoolExecutor() as executor:
             executor.map(download_s3_folder, missing_cards)
-        logger.info(f"Missing cards downloaded on the server: {missing_cards}")
 
     def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
