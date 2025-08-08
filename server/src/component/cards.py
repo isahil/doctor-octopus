@@ -18,7 +18,7 @@ class Cards:
     #     self.set_filter_data(expected_filter_data)
 
     @performance_log
-    async def cards_action(self, expected_filter_data: dict) -> None:
+    async def actions(self, expected_filter_data: dict) -> None:
         """Action to fetch and cache cards based on the expected filter data"""
         mode = expected_filter_data.get("source")
         logger.info(f"Fetch cards expected filter: {expected_filter_data}")
@@ -31,10 +31,10 @@ class Cards:
         else:
             logger.error(f"Unknown source/mode: {mode}. Expected 'remote', 'local', or 'download'.")
 
-    def missing_cards(self, local_cards: dict, env: str, expected_filter_data: dict) -> list[str]:
+    def missing_cards(self, local_cards: dict, expected_filter_data: dict) -> list[str]:
         import instances
         redis = instances.redis
-        reports_cache_key = f"{test_reports_redis_cache_name}:{env}"
+        reports_cache_key = f"{test_reports_redis_cache_name}:{expected_filter_data.get('environment')}" # trading-app-reports:qa
         missing_cards = []
 
         cached_cards = redis.get_all_cached_cards(reports_cache_key)
@@ -60,15 +60,16 @@ class Cards:
         missing_cards = []
         
         def process_environment_cache(env):
-            return self.missing_cards(local_cards, env, expected_filter_data)
-            
+            expected_filter_data["environment"] = env
+            return self.missing_cards(local_cards, expected_filter_data)
+
         with ThreadPoolExecutor() as executor:
             cards_missing_per_environment = list(executor.map(process_environment_cache, environments_to_check))
             
         # Flatten the list of lists into a single list
         for card in cards_missing_per_environment:
             missing_cards.extend(card)
-        logger.info(f"Missing cards downloaded on the server: {missing_cards}")
+        logger.info(f"Missing cards to download on the server: {missing_cards}")
 
         with ThreadPoolExecutor() as executor:
             executor.map(download_s3_folder, missing_cards)

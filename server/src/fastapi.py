@@ -119,7 +119,7 @@ async def reload_cards_cache(
     """Get available report cards based on the source requested"""
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards = instances.fastapi_app.state.cards
-    await cards.cards_action(expected_filter_data)
+    await cards.actions(expected_filter_data)
 
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)

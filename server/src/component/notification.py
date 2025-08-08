@@ -37,10 +37,10 @@ async def notify_s3_object_updates():
                 initial_total_s3_objects = current_total_s3_objects
 
                 if cards:
-                    await cards.cards_action({"day": 1, "source": "remote"})
-                    await cards.cards_action({"day": 1, "source": "download"})
+                    await cards.actions({"day": 1, "source": "remote"})
+                    await cards.actions({"day": 1, "source": "download"})
                     await aioredis.publish("notifications", notification)
-                    await cards.cards_action({"day": 1, "source": "cleanup"})
+                    await cards.actions({"day": 1, "source": "cleanup"})
                 # if instances.sio:
                 #     await instances.sio.emit("alert", {"new_alert": True})
             # notification = {

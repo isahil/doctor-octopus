@@ -24,8 +24,8 @@ async def server_initialization():
         logger.info("Unknown OS")
 
     cards = cards_module.Cards()
-    await cards.cards_action({"day": 30, "source": "remote"})
-    await cards.cards_action({"day": 1, "source": "download"})
+    await cards.actions({"day": 30, "source": "remote"})
+    await cards.actions({"day": 1, "source": "download"})
     instances.redis.close()
 
 
