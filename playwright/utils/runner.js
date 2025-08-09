@@ -35,10 +35,13 @@ const upload_report = async (code) => {
 		const repo = process.env.GITHUB_REPOSITORY; // e.g., owner/repo
 		const server = process.env.GITHUB_SERVER_URL || "https://github.com";
 		const run_url = run_id && repo ? `${server}/${repo}/actions/runs/${run_id}` : undefined;
+  const sdet = process.env.GITHUB_ACTOR
+		console.log("Workflow SDET = ", sdet)
 
 		report_card["ci"] = {
 			run_id: run_id ?? null,
 			run_url: run_url ?? null,
+			sdet
 		};
 	}
 
