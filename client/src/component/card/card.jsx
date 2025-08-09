@@ -6,8 +6,7 @@ const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 function Card({ card, index, filter, setAlert }) {
   const { source } = filter
   const { json_report, root_dir } = card
-  const { stats } = json_report
-
+  const { stats, ci } = json_report
   const {
     expected,
     flaky,
@@ -25,7 +24,7 @@ function Card({ card, index, filter, setAlert }) {
 
   const date = new Date(startTime) // convert startTime to a Date object
   const formatted_date_time = date.toLocaleString() // adjust formatting as needed
-
+  const run_url = ci?.run_url ?? ""
   const handle_view_report_click = async () => {
     setAlert((prev) => {
       return { ...prev, opening: true }
@@ -34,10 +33,10 @@ function Card({ card, index, filter, setAlert }) {
     const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
     const response = await fetch(`${server_url}/card?source=${source}&root_dir=${root_dir}`)
     const report_path = await response.text()
-    const fullReportUrl = `${server_url}${report_path}`
+    const full_report_url = `${server_url}${report_path}`
     try {
-      const reportWindow = window.open(fullReportUrl, "_blank")
-      if (!reportWindow) {
+      const report_window = window.open(full_report_url, "_blank")
+      if (!report_window) {
         alert("Popup was blocked. Please allow popups for doctor-octopus website.")
       }
     } catch (error) {
@@ -45,6 +44,14 @@ function Card({ card, index, filter, setAlert }) {
       alert("Failed to open report window. Please try again.")
     }
     setAlert({ ...alert, opening: false })
+  }
+
+  const handle_github_click = (e) => {
+    console.log(`GitHub button clicked.. url: ${run_url}`);
+    e.stopPropagation()
+    if (run_url) {
+      window.open(run_url, "_blank")
+    }
   }
 
   return (
@@ -89,6 +96,29 @@ function Card({ card, index, filter, setAlert }) {
           <span className="duration">{Math.ceil(duration / 1000)} sec</span>
           <span className="time-stamp">{formatted_date_time}</span>
         </div>
+           {run_url && (
+            <button
+              className="github-icon-button"
+              onClick={handle_github_click}
+              title="View GitHub Actions Run"
+              aria-label="View GitHub Actions Run"
+            >
+              <svg
+                className="github-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+            </button>
+          )}
       </div>
     </div>
   )
