@@ -15,6 +15,7 @@ server/.venv/
 .pnp.js
 
 # test reports
+test_reports/*
 playwright/test_reports/*
 playwright/test-results/*
 playwright/playwright-report/*
