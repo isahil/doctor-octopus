@@ -30,6 +30,19 @@
   margin-bottom: 10px;
 }
 
+.sdet-name {
+  font-size: 10px;
+  color: white;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  text-align: left;
+}
+
+.card-header {
+  position: relative;
+}
+
 .card-title .project-name {
   font-size: 15px;
   font-weight: bold;
@@ -130,16 +143,12 @@ button:hover {
   z-index: 5;
 }
 
-.github-icon-button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.github-icon {
-  color: #24292e;
+.github-icon-button:hover .github-icon {
+  color: #f1c40f;
 }
 
 .golden .github-icon {
-  color: #f1c40f;
+  color: cyan;
 }
 
 @media screen and (max-width: 1500px) {

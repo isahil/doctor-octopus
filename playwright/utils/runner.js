@@ -31,18 +31,13 @@ const upload_report = async (code) => {
 	report_card["stats"]["test_suite"] = test_script_name;
 
 	if (CI) {
-		const run_id = process.env.GITHUB_RUN_ID;
+		const run_id = process.env.GITHUB_RUN_ID; // e.g., 1234567890
 		const repo = process.env.GITHUB_REPOSITORY; // e.g., owner/repo
 		const server = process.env.GITHUB_SERVER_URL || "https://github.com";
 		const run_url = run_id && repo ? `${server}/${repo}/actions/runs/${run_id}` : undefined;
-  const sdet = process.env.GITHUB_ACTOR
-		console.log("Workflow SDET = ", sdet)
+		const sdet = process.env.GITHUB_ACTOR || os_username; // Use GITHUB_ACTOR or fallback to os_username
 
-		report_card["ci"] = {
-			run_id: run_id ?? null,
-			run_url: run_url ?? null,
-			sdet
-		};
+		report_card["ci"] = { run_id, run_url, sdet };
 	}
 
 	// Write the updated reportCard object back to the report.json file

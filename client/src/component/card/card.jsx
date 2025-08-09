@@ -21,10 +21,11 @@ function Card({ card, index, filter, setAlert }) {
   } = stats // scoreboard values to display
   const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected
-
   const date = new Date(startTime) // convert startTime to a Date object
   const formatted_date_time = date.toLocaleString() // adjust formatting as needed
   const run_url = ci?.run_url ?? ""
+  const sdet = ci?.sdet ?? ""
+
   const handle_view_report_click = async () => {
     setAlert((prev) => {
       return { ...prev, opening: true }
@@ -47,7 +48,7 @@ function Card({ card, index, filter, setAlert }) {
   }
 
   const handle_github_click = (e) => {
-    console.log(`GitHub button clicked.. url: ${run_url}`);
+    console.log(`GitHub button clicked.. url: ${run_url}`)
     e.stopPropagation()
     if (run_url) {
       window.open(run_url, "_blank")
@@ -58,6 +59,7 @@ function Card({ card, index, filter, setAlert }) {
     <div className={`card ${index} ${unexpected === 0 ? "golden" : ""}`}>
       <div className="card-content">
         <div className="card-header">
+          <span className="sdet-name">{sdet}</span>
           <span className="project-name">{project_name}</span>
         </div>
         <div className="score-board-container ">
@@ -84,7 +86,12 @@ function Card({ card, index, filter, setAlert }) {
             Skipped
             <span className="score"> {skipped} </span>
           </div>
-          <button className="score-board" onClick={handle_view_report_click}>
+          <button
+            className="score-board"
+            onClick={handle_view_report_click}
+            title="View Report"
+            aria-label="View Report"
+          >
             View
           </button>
         </div>
@@ -96,12 +103,13 @@ function Card({ card, index, filter, setAlert }) {
           <span className="duration">{Math.ceil(duration / 1000)} sec</span>
           <span className="time-stamp">{formatted_date_time}</span>
         </div>
-           {run_url && (
+        <div className="github-info">
+          {run_url && (
             <button
               className="github-icon-button"
               onClick={handle_github_click}
-              title="View GitHub Actions Run"
-              aria-label="View GitHub Actions Run"
+              title="View GitHub Workflow"
+              aria-label="View GitHub Workflow"
             >
               <svg
                 className="github-icon"
@@ -119,6 +127,7 @@ function Card({ card, index, filter, setAlert }) {
               </svg>
             </button>
           )}
+        </div>
       </div>
     </div>
   )
