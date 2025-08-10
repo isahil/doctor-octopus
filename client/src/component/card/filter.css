@@ -77,13 +77,11 @@
   box-shadow: none;
   z-index: 1;
   color: white;
-  background: linear-gradient(90deg, #4d9de0 0%, #ab5449 100%);
+  background: linear-gradient(90deg, var(--octopus-green) 0%, #1f787b 100%);
 }
 
 .options-wrapper input[type="radio"]:checked+.option .filter {
   color: white;
-  background-color: rgba(77, 157, 224, 0.8);
-  /* Match NavBar blue */
   border: none;
   border-radius: 4px;
 }
