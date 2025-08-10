@@ -30,7 +30,7 @@ the_doc_log_file_name: str = "doc.log"  # default log file name for the executor
 the_lab_log_file_path: str = f"{local_dir}logs/{the_lab_log_file_name}"
 the_doc_log_file_path: str = f"{local_dir}logs/{the_doc_log_file_name}"
 
-max_local_dirs = 100  # max number of downloaded test report directories to keep
+max_local_dirs = 500  # max number of downloaded test report directories to keep
 notification_frequency_time: int = 10  # frequency of S3 notifications update in seconds
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
