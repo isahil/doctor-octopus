@@ -3,10 +3,14 @@ import { createContext, useEffect, useState } from "react"
 
 export const SocketIOContext = createContext()
 
-const SocketIOProvider = ({ children, host, port }) => {
+const SocketIOProvider = ({ children, host, port, enabled = true }) => {
   const [sio, setSio] = useState(null)
 
   useEffect(() => {
+    if (!enabled) {
+      console.log("Socket.IO is disabled.")
+      return
+    }
     // Establish a WebSocket connection to the server w. the specified host and port on component mount
     const socket = io(`http://${host}:${port}`, {
       path: "/ws/socket.io",
@@ -34,7 +38,7 @@ const SocketIOProvider = ({ children, host, port }) => {
         setSio(null)
       }
     }
-  }, [host, port])
+  }, [host, port, enabled])
   return <SocketIOContext value={{ sio }}>{children}</SocketIOContext>
 }
 
