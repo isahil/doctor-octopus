@@ -15,7 +15,6 @@ class RedisClient:
     redis_client: redis.StrictRedis
 
     def __init__(self, host=redis_host, port=redis_port):
-        self.logger = self.logger  # Assign the imported logger to self.logger
         self.connect(host, port)
 
     def connect(self, host, port):
@@ -117,9 +116,8 @@ class RedisClient:
         max_active_clients = self.get(max_active_client_key)
         max_active_clients_count = 0 if not max_active_clients else int(str(max_active_clients))
         if active_clients_count > max_active_clients_count:
-            if max_active_clients_count != active_clients_count:
-                self.set(max_active_client_key, active_clients_count)
-                self.logger.info(f"DO max active clients count - {max_active_clients_count}")
+            self.set(max_active_client_key, active_clients_count)
+            self.logger.info(f"DO max active clients count - {max_active_clients_count}")
         return active_clients_count, max_active_clients_count, int(str(lifetime_do_client_count))
 
     def reset_redis_client_metrics(self) -> None:

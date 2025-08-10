@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
+import { Routes, Route, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import NavBar from "./component/navbar/navbar.jsx"
 import Cards from "./component/card/cards.jsx"

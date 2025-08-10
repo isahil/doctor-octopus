@@ -6,7 +6,6 @@ import { github_icon, grafana_icon } from "../../util/icons"
 const { VITE_GITHUB_LINK, VITE_GRAFANA_LINK } = import.meta.env
 
 const NavBar = () => {
-  console.log("GITHUB_LINK:", VITE_GITHUB_LINK)
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 

@@ -28,6 +28,7 @@
 
 .card-header {
   margin-bottom: 10px;
+  position: relative;
 }
 
 .sdet-name {
@@ -37,10 +38,6 @@
   top: 10px;
   left: 10px;
   text-align: left;
-}
-
-.card-header {
-  position: relative;
 }
 
 .card-title .project-name {
@@ -117,13 +114,6 @@ button:hover {
   font-weight: 500;
   color: #c9d1d9;
   text-align: center;
-}
-
-.card-footer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .github-icon-button {
