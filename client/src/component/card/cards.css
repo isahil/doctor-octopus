@@ -252,58 +252,6 @@
   animation-delay: -1s;
 }
 
-@keyframes pulse-kefe91mn {
-  100% {
-    box-shadow: 0 0 0 19.2px #0000;
-  }
-}
-
-.opening-bars {
-  width: 21.6px;
-  height: 15px;
-  position: absolute;
-  right: 325px;
-  --c: linear-gradient(cyan 0 0);
-  background:
-    var(--c) 0% 100%,
-    var(--c) 50% 100%,
-    var(--c) 100% 100%;
-  background-size: 4.3px 65%;
-  background-repeat: no-repeat;
-  animation: bars-1hcj36 0.8s infinite linear;
-}
-
-@keyframes bars-1hcj36 {
-  20% {
-    background-position:
-      0% 50%,
-      50% 100%,
-      100% 100%;
-  }
-
-  40% {
-    background-position:
-      0% 0%,
-      50% 50%,
-      100% 100%;
-  }
-
-  60% {
-    background-position:
-      0% 100%,
-      50% 0%,
-      100% 50%;
-  }
-
-  80% {
-    background-position:
-      0% 100%,
-      50% 100%,
-      100% 0%;
-  }
-}
-
-/* Add this to your cards.css file */
 .client-count-roman {
   position: fixed;
   bottom: 20px;

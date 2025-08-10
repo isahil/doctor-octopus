@@ -182,3 +182,44 @@
     justify-content: center;
   }
 }
+
+.external-links {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 15px;
+  padding-left: 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.external-link {
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.external-link:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .external-links {
+    width: 100%;
+    justify-content: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: none;
+    padding-left: 0;
+  }
+  
+  .external-link {
+    padding: 10px;
+  }
+}

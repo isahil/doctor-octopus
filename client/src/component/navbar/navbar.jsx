@@ -1,18 +1,35 @@
 import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import "./navbar.css"
+import { github_icon, grafana_icon } from "../../util/icons"
+
+const { VITE_GITHUB_LINK, VITE_GRAFANA_LINK } = import.meta.env
 
 const NavBar = () => {
+  console.log("GITHUB_LINK:", VITE_GITHUB_LINK)
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const navLinks = [
+  const nav_bars = [
     { path: "/", label: "Reports", icon: "👩🏻‍🔬" },
     { path: "/the-lab", label: "Lab", icon: "🧪" },
     // { path: "/settings", label: "Settings", icon: "⚙️" },
   ]
 
-  const toggleMenu = () => {
+  const external_links = [
+    {
+      url: VITE_GITHUB_LINK,
+      label: "GitHub Repository",
+      icon: github_icon(20, 20)
+    },
+    {
+      url: VITE_GRAFANA_LINK,
+      label: "Grafana Dashboard",
+      icon: grafana_icon(20, 20)
+    },
+  ]
+
+  const toggle_menu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
 
@@ -27,7 +44,7 @@ const NavBar = () => {
         {/* Mobile menu toggle */}
         <button
           className="menu-toggle"
-          onClick={toggleMenu}
+          onClick={toggle_menu}
           aria-expanded={isMenuOpen}
           aria-controls="navigation-menu"
         >
@@ -36,7 +53,7 @@ const NavBar = () => {
         </button>
 
         <nav id="navigation-menu" className={`navigation-tabs ${isMenuOpen ? "is-open" : ""}`}>
-          {navLinks.map(({ path, label, icon }) => (
+          {nav_bars.map(({ path, label, icon }) => (
             <NavLink
               key={path}
               to={path}
@@ -47,11 +64,28 @@ const NavBar = () => {
               <span className="nav-label">{label}</span>
             </NavLink>
           ))}
+
+          {/* External links section */}
+          <div className="external-links">
+            {external_links.map((link, index) => (
+              <a
+                key={index}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="external-link"
+                title={link.label}
+                aria-label={link.label}
+              >
+                {link.icon}
+              </a>
+            ))}
+          </div>
         </nav>
       </div>
 
       <div className="current-page-indicator">
-        {navLinks.find((link) => link.path === location.pathname)?.label || "Home"}
+        {nav_bars.find((link) => link.path === location.pathname)?.label || "Home"}
       </div>
     </header>
   )
