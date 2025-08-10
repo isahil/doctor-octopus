@@ -8,8 +8,6 @@ import Lab from "./component/lab/lab.jsx"
 import XTerm from "./component/xterm/xterm.jsx"
 
 function App() {
-  const [showFixMe, setShowFixMe] = useState(true)
-
   return (
     <Router>
       <div className="app">
@@ -21,9 +19,9 @@ function App() {
               path="/the-lab"
               element={
                 <div className="tech-container">
-                  {showFixMe && <FixMe />}
+                  <FixMe />
                   <div>
-                    <XTerm setShowFixMe={setShowFixMe} />
+                    <XTerm />
                     <Lab />
                   </div>
                 </div>

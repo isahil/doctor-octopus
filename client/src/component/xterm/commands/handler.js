@@ -6,7 +6,6 @@ let interactive_mode_status = false
 export const command_handler = ({
   terminal,
   input,
-  setShowFixMe,
   update_options_handler,
   clear_selected_options,
   handle_run_click,
@@ -52,7 +51,6 @@ export const command_handler = ({
       terminal.clear()
       break
     case input === "fixme":
-      setShowFixMe(true)
       update_options_handler(0, "qa")
       update_options_handler(1, "loan")
       update_options_handler(2, "fix")

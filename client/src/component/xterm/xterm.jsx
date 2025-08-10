@@ -5,7 +5,7 @@ import "./xterm.css"
 import { useOptionsUpdate, useSocketIO, useTerminal } from "../../hooks"
 import { command_handler } from "./commands/handler.js"
 
-const XTerm = ({ setShowFixMe }) => {
+const XTerm = () => {
   const terminalRef = useRef(null)
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
   const { terminal, setTerminal } = useTerminal() // TerminalContext that store the terminal object
@@ -54,7 +54,6 @@ const XTerm = ({ setShowFixMe }) => {
           command_handler({
             terminal,
             input,
-            setShowFixMe,
             update_options_handler,
             clear_selected_options,
             handle_run_click,
