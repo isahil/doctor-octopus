@@ -1,5 +1,4 @@
 import asyncio
-import json
 import instances
 import src.component.remote as remote_module
 from fastapi.requests import Request
@@ -24,7 +23,7 @@ async def notify_s3_object_updates():
                     "type": "s3",
                     "count": current_total_s3_objects,
                     "previous": initial_total_s3_objects,
-                    "timestamp": asyncio.get_event_loop().time(),
+                    # "timestamp": asyncio.get_event_loop().time(),
                 }
 
                 initial_total_s3_objects = current_total_s3_objects
@@ -60,7 +59,7 @@ async def notification_stream(request: Request, client_id: str):
         "max": max_active_clients_count,
         "lifetime": lifetime_do_client_count,
         "client": client_id,
-        "timestamp": asyncio.get_event_loop().time(),
+        # "timestamp": asyncio.get_event_loop().time(),
     }
     logger.info(f"Sending initial connection data: {data}")
     await aioredis.publish("notifications", data)
@@ -87,9 +86,9 @@ async def notification_stream(request: Request, client_id: str):
         active_clients_count = redis.decrement_key(do_current_clients_count_key)
         data = {
             "type": "client",
-            "active": active_clients_count,
+            "active": int(str(active_clients_count)),
             "client": client_id,
-            "timestamp": asyncio.get_event_loop().time(),
+            # "timestamp": asyncio.get_event_loop().time(),
         }
         await aioredis.publish("notifications", data)
         await pubsub.unsubscribe("notifications")

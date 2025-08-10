@@ -33,8 +33,8 @@ const Cards = () => {
         setAlert((prev) => ({ ...prev, new: true }))
       } else if (data.type === "client") {
         const active = data?.active ?? 0
-        const max = data?.max ?? 0
-        const lifetime = data?.lifetime ?? 0
+        const max = data?.max ?? null
+        const lifetime = data?.lifetime ?? null
         console.log(`Active clients: ${active} | max: ${max} | lifetime: ${lifetime}`)
         setAlert((prev) => ({ ...prev, active_clients: active }))
       }
