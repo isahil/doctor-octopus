@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Card from "./card"
 import "./cards.css"
 import Filters from "./filter"
@@ -11,8 +11,9 @@ const Cards = () => {
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState({ source: "remote", day: 1, environment: "qa" })
-  const [alert, setAlert] = useState({ new: false, opening: false })
+  const [alert, setAlert] = useState({ new: false, opening: false, active_clients: 0 })
   const [eventSource, setEventSource] = useState(null)
+  const clientCountRef = useRef(null)
 
   const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
 
@@ -28,9 +29,14 @@ const Cards = () => {
 
     event_source.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      if (data.type === "new_s3_objects") {
-        console.log(`New S3 objects alert: current ${data.count} (prev ${data.previous})`)
-        setAlert({ new: true, opening: false })
+      if (data.type === "s3") {
+        setAlert((prev) => ({ ...prev, new: true }))
+      } else if (data.type === "client") {
+        const active = data?.active ?? 0
+        const max = data?.max ?? 0
+        const lifetime = data?.lifetime ?? 0
+        console.log(`Active clients: ${active} | max: ${max} | lifetime: ${lifetime}`)
+        setAlert((prev) => ({ ...prev, active_clients: active }))
       }
     }
 
@@ -45,6 +51,36 @@ const Cards = () => {
     return event_source
   }
 
+  const to_roman_numeral = (num) => {
+    if (num <= 0 || num > 3999) return num.toString() // Return original number if out of range
+
+    const roman_numerals = [
+      { value: 1000, numeral: "M" },
+      { value: 900, numeral: "CM" },
+      { value: 500, numeral: "D" },
+      { value: 400, numeral: "CD" },
+      { value: 100, numeral: "C" },
+      { value: 90, numeral: "XC" },
+      { value: 50, numeral: "L" },
+      { value: 40, numeral: "XL" },
+      { value: 10, numeral: "X" },
+      { value: 9, numeral: "IX" },
+      { value: 5, numeral: "V" },
+      { value: 4, numeral: "IV" },
+      { value: 1, numeral: "I" },
+    ]
+
+    let result = ""
+    for (const { value, numeral } of roman_numerals) {
+      while (num >= value) {
+        result += numeral
+        num -= value
+      }
+    }
+
+    return result
+  }
+
   /**
    * Fetch cards data from the REST API endpoint.
    * Clear the existing states before fetching new cards data.
@@ -54,7 +90,7 @@ const Cards = () => {
     setIsLoading(true)
     setCards([])
     setTotalCards(0)
-    setAlert({ new: false, opening: false })
+    setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
     const { source, day, environment } = filters
     const url = `${server_url}/cards/?source=${source}&day=${day}&environment=${environment}`
@@ -76,7 +112,19 @@ const Cards = () => {
     return () => {
       new_event_source.close()
     }
-  }, [filters]) // fetch cards data when the source changes
+  }, [filters])
+
+  useEffect(() => {
+    // Only run this effect when client_count changes, not on first render
+    if (clientCountRef.current) {
+      clientCountRef.current.classList.add("pulse")
+      setTimeout(() => {
+        if (clientCountRef.current) {
+          clientCountRef.current.classList.remove("pulse")
+        }
+      }, 500)
+    }
+  }, [alert.active_clients])
 
   if (isLoading) {
     return (
@@ -128,6 +176,12 @@ const Cards = () => {
           <p style={{ color: "white", marginTop: "30px" }}>No cards yet</p>
         )}
       </div>
+      {/* Roman numeral of active clients count display */}
+      {alert.active_clients > 0 && (
+        <div className="client-count-roman" ref={clientCountRef}>
+          {to_roman_numeral(alert.active_clients)}
+        </div>
+      )}
     </div>
   )
 }

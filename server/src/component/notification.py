@@ -1,4 +1,5 @@
 import asyncio
+import json
 import instances
 import src.component.remote as remote_module
 from fastapi.requests import Request
@@ -15,20 +16,12 @@ async def notify_s3_object_updates():
         initial_total_s3_objects = remote_module.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
 
-        # First notification to clients connecting after server started
-        notification = {
-            "type": "initial_count",
-            "count": initial_total_s3_objects,
-            "timestamp": asyncio.get_event_loop().time(),
-        }
-        await aioredis.publish("notifications", notification)
-
         while True:
             current_total_s3_objects = remote_module.total_s3_objects()
             if current_total_s3_objects > initial_total_s3_objects:
                 logger.info(f"new alert: {current_total_s3_objects}")
-                notification = {
-                    "type": "new_s3_objects",
+                data = {
+                    "type": "s3",
                     "count": current_total_s3_objects,
                     "previous": initial_total_s3_objects,
                     "timestamp": asyncio.get_event_loop().time(),
@@ -39,17 +32,10 @@ async def notify_s3_object_updates():
                 if cards:
                     await cards.actions({"day": 1, "source": "remote"})
                     await cards.actions({"day": 1, "source": "download"})
-                    await aioredis.publish("notifications", notification)
+                    await aioredis.publish("notifications", data) # publish messages to pubsub
                     await cards.actions({"day": 1, "source": "cleanup"})
                 # if instances.sio:
                 #     await instances.sio.emit("alert", {"new_alert": True})
-            # notification = {
-            #     "type": "new_s3_objects",
-            #     "count": current_total_s3_objects + 1,
-            #     "previous": initial_total_s3_objects,
-            #     "timestamp": asyncio.get_event_loop().time()
-            # }
-            # await aioredis.publish("notifications", notification)
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
         logger.info("Notification process cancelled")
@@ -66,17 +52,27 @@ async def notification_stream(request: Request, client_id: str):
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
     logger.info(f"Client [{client_id}] connected to SSE stream")
-    instances.redis.refresh_redis_client_metrics()
+    active_clients_count, max_active_clients_count, lifetime_do_client_count = instances.redis.refresh_redis_client_metrics()
 
+    data = {
+        "type": "client",
+        "active": active_clients_count,
+        "max": max_active_clients_count,
+        "lifetime": lifetime_do_client_count,
+        "client": client_id,
+        "timestamp": asyncio.get_event_loop().time(),
+    }
+    logger.info(f"Sending initial connection data: {data}")
+    await aioredis.publish("notifications", data)
     # Send initial connection message
-    yield 'event: connected\ndata: {"status": "connected", "client_id": "' + client_id + '"}\n\n'
+    yield f'event: connected\ndata: {data}\n\n'
 
     try:
         while True:
             if await request.is_disconnected():
                 logger.info(f"Client [{client_id}] disconnected from SSE stream")
                 break
-            message = await pubsub.get_message(ignore_subscribe_messages=True)
+            message = await pubsub.get_message(ignore_subscribe_messages=True) # receive messages from pubsub
             if message and message["type"] == "message":
                 # logger.info(f"Stream received message from Redis sub: {message['data']}")
                 data = message["data"].decode("utf-8")
@@ -88,7 +84,14 @@ async def notification_stream(request: Request, client_id: str):
         logger.info(f"Client [{client_id}] SSE stream cancelled")
         raise
     finally:
-        redis.decrement_key(do_current_clients_count_key)
+        active_clients_count = redis.decrement_key(do_current_clients_count_key)
+        data = {
+            "type": "client",
+            "active": active_clients_count,
+            "client": client_id,
+            "timestamp": asyncio.get_event_loop().time(),
+        }
+        await aioredis.publish("notifications", data)
         await pubsub.unsubscribe("notifications")
 
 

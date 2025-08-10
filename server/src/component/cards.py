@@ -31,6 +31,10 @@ class Cards:
         else:
             logger.error(f"Unknown source/mode: {mode}. Expected 'remote', 'local', or 'download'.")
 
+    def ping(self) -> bool:
+        logger.info("Cards component is alive")
+        return True
+
     def missing_cards(self, local_cards: dict, expected_filter_data: dict) -> list[str]:
         import instances
         redis = instances.redis

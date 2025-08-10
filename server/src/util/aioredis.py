@@ -36,6 +36,16 @@ class AioRedis:
                 logger.error(f"Error closing AioRedis connection: {str(e)}")
                 self.aioredis_client = None  # Still set client to None to avoid reusing a potentially broken connection
 
+    async def ping(self) -> bool:
+        client = await self.get_client()
+        try:
+            await client.ping()
+            logger.info("AioRedis connection is alive")
+            return True
+        except aioredis.ConnectionError:
+            logger.error("AioRedis connection is down")
+            return False
+
     async def publish(self, channel, message: Union[str, dict]) -> int:
         """Publish a message to a Redis channel"""
         if isinstance(message, dict):

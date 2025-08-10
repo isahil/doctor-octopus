@@ -38,6 +38,15 @@ class RedisClient:
         except Exception as e:
             self.logger.error(f"Error closing Redis connection: {e}")
 
+    def ping(self) -> bool:
+        try:
+            self.redis_client.ping()
+            self.logger.info("Redis connection is alive")
+            return True
+        except redis.ConnectionError:
+            self.logger.error("Redis connection is down")
+            return False
+
     def set(self, key, value):
         self.redis_client.set(key, value)
 
@@ -92,7 +101,7 @@ class RedisClient:
         result = self.redis_client.hgetall(cards_cache_key)
         return result
 
-    def refresh_redis_client_metrics(self) -> None:
+    def refresh_redis_client_metrics(self) -> tuple[int, int, int]:
         lifetime_clients_count_key = self.config.do_lifetime_clients_count_key
         max_active_client_key = self.config.do_max_concurrent_clients_key
         active_clients_count_key = self.config.do_current_clients_count_key
@@ -111,7 +120,8 @@ class RedisClient:
             if max_active_clients_count != active_clients_count:
                 self.set(max_active_client_key, active_clients_count)
                 self.logger.info(f"DO max active clients count - {max_active_clients_count}")
-    
+        return active_clients_count, max_active_clients_count, int(str(lifetime_do_client_count))
+
     def reset_redis_client_metrics(self) -> None:
         self.logger.info("Resetting Redis client metrics")
         self.set(self.config.do_current_clients_count_key, 0)

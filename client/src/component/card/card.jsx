@@ -18,12 +18,12 @@ function Card({ card, index, filter, setAlert }) {
     environment,
     app,
     duration,
-  } = stats // scoreboard values to display
+  } = stats // scoreboard values
   const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected
-  const date = new Date(startTime) // convert startTime to a Date object
-  const formatted_date_time = date.toLocaleString() // adjust formatting as needed
-  const run_url = ci?.run_url ?? ""
+  const date = new Date(startTime)
+  const formatted_date_time = date.toLocaleString() // formatting
+  const run_url = ci?.run_url ?? "" // GitHub Action run URL
   const sdet = ci?.sdet ?? ""
 
   const handle_view_report_click = async () => {

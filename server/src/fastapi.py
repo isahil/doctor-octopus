@@ -183,7 +183,13 @@ async def health_check():
         for state in states:
             if hasattr(instances.fastapi_app.state, state):
                 try:
-                    result = await getattr(instances.fastapi_app.state, state).ping()
+                    result = False
+                    if state == "redis":
+                        result = instances.redis.ping()
+                    elif state == "aioredis":
+                        result = await instances.aioredis.ping()
+                    elif state == "cards":
+                        result = getattr(instances.fastapi_app.state, state).ping()
                     health_data["services"][state] = "healthy" if result else "unhealthy"
                 except Exception as e:
                     logger.warning(f"{state} health check failed: {str(e)}")
