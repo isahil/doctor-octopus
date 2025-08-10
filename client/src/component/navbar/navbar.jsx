@@ -6,14 +6,14 @@ export default function NavBar({ source, toggle_source }) {
     <header className="header">
       <div className="header-content">
         <nav className="navigation-tabs">
+          <NavLink to="/" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
+            Reports
+          </NavLink>
           <NavLink
             to="/the-lab"
             className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
           >
-            Lab
-          </NavLink>
-          <NavLink to="/" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-            Reports
+            Fixme
           </NavLink>
         </nav>
 
