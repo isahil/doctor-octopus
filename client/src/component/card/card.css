@@ -144,11 +144,12 @@ button:hover {
 }
 
 .github-icon-button:hover .github-icon {
-  color: #f1c40f;
+  color: cyan;
+  transform: scale(1.2);
 }
 
 .golden .github-icon {
-  color: cyan;
+  color: white;
 }
 
 @media screen and (max-width: 1500px) {

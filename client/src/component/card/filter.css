@@ -3,12 +3,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.3em;
+  margin: 0 0.5rem;
 }
 
 .options-wrapper:hover .option-wrapper {
   display: block;
   opacity: 0.7;
   transition: opacity 0.3s ease;
+  z-index: 100;
 }
 
 .options-wrapper:hover .option-wrapper:has(input[type="radio"]:checked) {
@@ -33,18 +35,19 @@
 
 .options-wrapper:hover {
   z-index: 10;
+  background-color: rgba(26, 26, 46, 0.9);
 }
 
 .options-wrapper input[type="radio"]:focus {
   outline: 0;
-  box-shadow: 0 0 0 4px #b5c9fc;
+  box-shadow: 0 0 0 4px rgba(77, 157, 224, 0.5);
 }
 
 .option-wrapper {
   display: none;
 }
 
-.option-wrapper input[type="radio"]:checked ~ .option {
+.option-wrapper input[type="radio"]:checked~.option {
   display: flex;
 }
 
@@ -61,53 +64,58 @@
   white-space: nowrap;
 }
 
-.options-wrapper input[type="radio"]:hover + span {
+.options-wrapper input[type="radio"]:hover+span {
   transform: scale(0.95);
-  box-shadow: 0 0 0 0.08em white;
+  box-shadow: 0 0 0 0.08em rgba(255, 255, 255, 0.5);
 }
 
-.options-wrapper input[type="radio"] + span {
+.options-wrapper input[type="radio"]+span {
   width: 47px;
 }
 
-.options-wrapper input[type="radio"]:checked + .option span {
-  box-shadow: 0 0 0 0.05em cyan;
+.options-wrapper input[type="radio"]:checked+.option span {
+  box-shadow: none;
   z-index: 1;
-  color: cyan;
+  color: white;
+  background: linear-gradient(90deg, #4d9de0 0%, #ab5449 100%);
 }
 
-.options-wrapper input[type="radio"]:checked + .option .filter {
-  color: cyan;
-  box-shadow: 0 0 0 0.05em cyan;
-  border: solid 0.05em white;
-  border-radius: 0.1em;
+.options-wrapper input[type="radio"]:checked+.option .filter {
+  color: white;
+  background-color: rgba(77, 157, 224, 0.8);
+  /* Match NavBar blue */
+  border: none;
+  border-radius: 4px;
 }
 
 .options-wrapper label span {
   display: block;
   cursor: pointer;
-  background-color: black;
-  padding: 0.1em 0.75em;
+  background-color: #1a1a2e;
+  padding: 0.35em 0.75em;
   position: relative;
   margin-left: 0.3em;
-  border: var(--octopus-gray) solid 0.1em;
-  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
   text-align: center;
-  transition: background-color 0.5s ease;
-  min-width: 55px;
+  transition: all 0.2s ease;
+  min-width: 45px;
+  font-size: 0.9rem;
+  border-radius: 4px;
 }
 
 .options-wrapper:hover label span {
-  border-radius: 0.1em;
-  border: solid 0.1em white;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .options-wrapper label:first-child span {
-  border-radius: 0.1em 0 0 0.1em;
+  border-radius: 4px;
 }
 
 .options-wrapper label:last-child span {
-  border-radius: 0 0.1em 0.1em 0;
+  border-radius: 4px;
 }
 
 .option-wrapper .text {
@@ -119,15 +127,18 @@
   flex-direction: row;
   align-items: center;
   gap: 0.5em;
+  transition: transform 0.2s ease;
 }
 
 .option:hover {
   margin-top: 0.2em;
+  transform: translateY(1.5px);
 }
 
 .option:hover .text {
   display: block;
   width: 45px;
   margin-top: 0.2em;
-  box-shadow: 0 0 0 0.08em white;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
 }
