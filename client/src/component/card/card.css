@@ -138,8 +138,12 @@ button:hover {
   transform: scale(1.2);
 }
 
-.golden .github-icon {
+.github-icon {
   color: white;
+}
+
+.golden .github-icon {
+  color: var(--octopus-golden);
 }
 
 @media screen and (max-width: 1500px) {

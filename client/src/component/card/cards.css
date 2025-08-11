@@ -91,7 +91,7 @@
 .cards-header .total {
   color: cyan;
   font-size: 14px;
-  width: auto;
+  /* width: auto; */
   font-weight: bold;
 }
 
@@ -99,9 +99,8 @@
   width: 22px;
   cursor: pointer;
   top: 8px;
-  left: 5px;
+  left: 50px;
   position: absolute;
-  margin-left: 135px;
 }
 
 .refresh-button:hover {
@@ -111,7 +110,7 @@
 .filter-wrapper {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
 }
 
 .day-filters-wrapper,
@@ -119,7 +118,9 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
+  position: absolute;
+  top: 7px;
 }
 
 .filter-label {
@@ -132,27 +133,11 @@
 }
 
 .env-filters-wrapper {
-  top: 7px;
   left: 180px;
-  position: absolute;
 }
 
 .day-filters-wrapper {
-  top: 7px;
-  left: 250px;
-  position: absolute;
-}
-
-.env-filters-wrapper {
-  top: 7px;
-  left: 190px;
-  position: absolute;
-}
-
-.day-filters-wrapper {
-  top: 7px;
   left: 300px;
-  position: absolute;
 }
 
 .source {
@@ -345,5 +330,23 @@
   100% {
     transform: scale(1);
     opacity: 0.15;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-label {
+    display: none;
+  }
+
+  .filter-wrapper {
+    gap: 2px;
+  }
+
+  .env-filters-wrapper {
+    left: 100px;
+  }
+
+  .day-filters-wrapper {
+    left: 170px;
   }
 }
