@@ -37,7 +37,7 @@ const Cards = () => {
         const max = data?.max ?? null
         const lifetime = data?.lifetime ?? null
         const timestamp = data?.timestamp ?? null
-        console.log(`Active clients: ${active} | max : ${max} | lifetime: ${lifetime} | timestamp: ${timestamp}`)
+        console.log(`Active clients: ${active} | max : ${max} | lifetime: ${lifetime} | timestamp: ${timestamp ? new Date(timestamp) : 'N/A'}`)
         setAlert((prev) => ({ ...prev, active_clients: active }))
       }
     }

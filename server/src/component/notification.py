@@ -1,6 +1,7 @@
 import asyncio
 import instances
 import src.component.remote as remote_module
+from datetime import datetime
 from fastapi.requests import Request
 from redis.asyncio.client import PubSub
 from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
@@ -23,7 +24,7 @@ async def notify_s3_object_updates():
                     "type": "s3",
                     "count": current_total_s3_objects,
                     "previous": initial_total_s3_objects,
-                    "timestamp": asyncio.get_event_loop().time(),
+                    "timestamp": datetime.now().timestamp(),
                 }
 
                 initial_total_s3_objects = current_total_s3_objects

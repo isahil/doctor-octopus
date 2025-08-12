@@ -64,8 +64,9 @@ class Cards:
         missing_cards = []
         
         def process_environment_cache(env):
-            expected_filter_data["environment"] = env
-            return self.missing_cards(local_cards, expected_filter_data)
+            expected_filter_data_c = expected_filter_data.copy()
+            expected_filter_data_c["environment"] = env
+            return self.missing_cards(local_cards, expected_filter_data_c)
 
         with ThreadPoolExecutor() as executor:
             cards_missing_per_environment = list(executor.map(process_environment_cache, environments_to_check))
