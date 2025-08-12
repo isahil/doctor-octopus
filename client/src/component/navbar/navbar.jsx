@@ -5,6 +5,19 @@ import { github_icon, grafana_icon } from "../../util/icons"
 
 const { VITE_GITHUB_LINK, VITE_GRAFANA_LINK } = import.meta.env
 
+const external_links = [
+  {
+    url: VITE_GITHUB_LINK,
+    label: "GitHub Actions",
+    icon: github_icon(20, 20),
+  },
+  {
+    url: VITE_GRAFANA_LINK,
+    label: "Grafana Dashboard",
+    icon: grafana_icon(20, 20),
+  },
+]
+
 const NavBar = () => {
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -15,19 +28,6 @@ const NavBar = () => {
     // { path: "/settings", label: "Settings", icon: "⚙️" },
   ]
 
-  const external_links = [
-    {
-      url: VITE_GITHUB_LINK,
-      label: "GitHub Repository",
-      icon: github_icon(20, 20)
-    },
-    {
-      url: VITE_GRAFANA_LINK,
-      label: "Grafana Dashboard",
-      icon: grafana_icon(20, 20)
-    },
-  ]
-
   const toggle_menu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
@@ -36,7 +36,7 @@ const NavBar = () => {
     <header className="header">
       <div className="header-content">
         <div className="logo-container">
-          <img src="/img/favicon-2.ico" alt="Doctor Octopus Logo" className="logo" />
+          {/* <img src="/img/favicon-2.ico" alt="Doctor Octopus Logo" className="logo" /> */}
           <h1>Doctor Octopus</h1>
         </div>
 

@@ -334,6 +334,10 @@
 }
 
 @media (max-width: 768px) {
+  .cards-header {
+    top: 46px;
+  }
+
   .filter-label {
     display: none;
   }
@@ -348,5 +352,9 @@
 
   .day-filters-wrapper {
     left: 170px;
+  }
+
+  .new-pulse {
+    right: 55px;
   }
 }
