@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 from config import max_local_dirs, test_reports_redis_cache_name, test_environments
 from src.component.validation import validate
@@ -39,9 +39,10 @@ class Cards:
         import instances
         redis = instances.redis
         reports_cache_key = f"{test_reports_redis_cache_name}:{expected_filter_data.get('environment')}" # trading-app-reports:qa
-        missing_cards = []
+        _missing_cards = []
 
         cached_cards = redis.get_all_cached_cards(reports_cache_key)
+        logger.info(f"Cached cards length in Redis key - {reports_cache_key}: {len(cached_cards.keys()) if isinstance(cached_cards, dict) else 0}")
         if cached_cards and isinstance(cached_cards, dict):
             for cached_card_date, cached_card_value in cached_cards.items():
                 cached_card_date = cached_card_date.decode("utf-8")
@@ -52,16 +53,16 @@ class Cards:
                 if error:
                     continue
                 if cached_card_date not in local_cards:
-                    missing_cards.append(cached_card_s3_root_dir)
+                    _missing_cards.append(cached_card_s3_root_dir)
         else:
             logger.info("No cached cards found in Redis.")
-        return missing_cards
+        return _missing_cards
 
     def download_missing_cards(self, expected_filter_data: dict) -> None:
-        """Download the missing cards from S3 to cache them on the server"""
-        local_cards = get_all_local_cards(expected_filter_data) or {}
-        environments_to_check = [expected_filter_data.get("environment")] if expected_filter_data.get("environment") else test_environments
-        missing_cards = []
+        """Download the missing cards from S3 to cache them on the server in parallel using threads"""
+        local_cards = get_all_local_cards(expected_filter_data)
+        missing_cards_in_envs = []
+        envs_to_check = [expected_filter_data.get("environment")] if expected_filter_data.get("environment") else test_environments
         
         def process_environment_cache(env):
             expected_filter_data_c = expected_filter_data.copy()
@@ -69,15 +70,21 @@ class Cards:
             return self.missing_cards(local_cards, expected_filter_data_c)
 
         with ThreadPoolExecutor() as executor:
-            cards_missing_per_environment = list(executor.map(process_environment_cache, environments_to_check))
+            cards_missing_per_environment = list(executor.map(process_environment_cache, envs_to_check))
             
         # Flatten the list of lists into a single list
-        for card in cards_missing_per_environment:
-            missing_cards.extend(card)
-        logger.info(f"Missing cards to download on the server: {missing_cards}")
+        for missing_cards_in_env in cards_missing_per_environment:
+            missing_cards_in_envs.extend(missing_cards_in_env)
+        logger.info(f"Missing cards to download on the server: {missing_cards_in_envs}")
 
         with ThreadPoolExecutor() as executor:
-            executor.map(download_s3_folder, missing_cards)
+            futures = [executor.submit(download_s3_folder, card) for card in missing_cards_in_envs]
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.error(f"Error downloading card: {e}", exc_info=True)
+            executor.map(download_s3_folder, missing_cards_in_envs)
 
     def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""

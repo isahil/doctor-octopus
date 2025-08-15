@@ -96,8 +96,8 @@ class RedisClient:
             return None
 
     def get_all_cached_cards(self, cards_cache_key: str):
-        self.logger.info(f"Getting all cached cards for: {cards_cache_key}")
         result = self.redis_client.hgetall(cards_cache_key)
+        self.logger.info(f"Cache size for key - {cards_cache_key}: {len(result if isinstance(result, dict) else {})}")
         return result
 
     def refresh_redis_client_metrics(self) -> tuple[int, int, int]:
