@@ -6,19 +6,23 @@
   "type": "module",
   "scripts": {
     "client": "cd client && npm run dev",
+    "fixme": "cd server && FIXME_MODE=true bash start.sh util",
     "format": "prettier --write .",
     "lint": "npx eslint .",
-    "fixme": "cd server && FIXME_MODE=true bash start.sh util",
+    "log": "sh utils/log.sh",
+    "prompt":"sh utils/prompt.sh",
+    "pull": "git stash && git checkout main && git pull",
     "notification": "cd server && bash start.sh util",
+    "restart": "npm run stop && npm run start-prod",
     "server": "cd server && bash start.sh main true",
     "server:noinit": "cd server && bash start.sh main false",
     "start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main true\"",
-    "start-prod": "bash start.sh",
+    "start-prod": "bash utils/start.sh",
     "setup": "sh utils/setup-app.sh",
     "setup:lite": "sh utils/setup-app.sh lite",
     "setup:all": "sh utils/setup-app.sh all",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "stop": "bash stop.sh"
+    "stop": "bash utils/stop.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
