@@ -1,16 +1,16 @@
 import json
-import os
 import redis
 from datetime import datetime, timedelta
 from typing import Union
+from src.utils.env_loader import get_redis_host, get_redis_port
 
-redis_host = os.getenv("SDET_REDIS_HOST", "localhost")
-redis_port = os.getenv("SDET_REDIS_PORT", 6379)
+redis_host = get_redis_host()
+redis_port = get_redis_port()
 
 
 class RedisClient:
     import config
-    from src.util.logger import logger
+    from src.utils.logger import logger
 
     redis_client: redis.StrictRedis
 

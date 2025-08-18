@@ -6,10 +6,9 @@ from typing import Union
 import redis as _redis
 from config import test_reports_dir, test_reports_redis_cache_name
 from src.component.validation import validate
-from src.util.s3 import S3
-from src.util.logger import logger
-import src.util.redis as redis_module
-import instances
+from src.utils.s3 import S3
+from src.utils.logger import logger
+import src.utils.redis as redis_module
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 
@@ -75,6 +74,8 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
+    import instances
+
     redis: redis_module.RedisClient = instances.redis
     redis_client: _redis.StrictRedis = instances.redis.redis_client
 

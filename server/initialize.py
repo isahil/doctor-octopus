@@ -1,27 +1,19 @@
 import asyncio
-import os
-import platform
+from src.utils.env_loader import get_os_name, set_env_variable
+from src.utils.helper import performance_log
+from src.utils.logger import logger
 from src.component import cards as cards_module
-from src.util.helper import performance_log
-from src.util.logger import logger
-
 
 @performance_log
 async def server_initialization():
+    """Data setup initialization steps for Redis cache and the static server"""
+    set_env_variable("SERVER_MODE", "setup")
     import instances
 
-    os.environ["SERVER_MODE"] = "setup"
-    os_name = platform.system()
+    os_name = get_os_name()
+    set_env_variable("OS_NAME", os_name)
+    
     logger.info(f"Server is running on {os_name} OS")
-
-    if os_name == "Windows":
-        os.environ["OS_NAME"] = "Windows"
-    elif os_name == "Darwin":
-        os.environ["OS_NAME"] = "Mac"
-    elif os_name == "Linux":
-        os.environ["OS_NAME"] = "Linux"
-    else:
-        logger.info("Unknown OS")
 
     cards = cards_module.Cards()
     await cards.actions({"day": 30, "source": "remote"})

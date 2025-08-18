@@ -32,12 +32,12 @@ if [ "$SERVER_MODE" = "main" ]; then
 
     echo "[$(date)] Running main server"
     python server.py
-elif [ "$SERVER_MODE" = "util" ]; then
-    echo "[$(date)] Running util server"
-    python server-util.py
+elif [ "$SERVER_MODE" = "fixme" ]; then
+    echo "[$(date)] Running fixme server"
+    python server-fixme.py
 else
     echo "[$(date)] Unknown server mode: $SERVER_MODE"
-    echo "[$(date)] Supported modes: 'main', 'util'"
+    echo "[$(date)] Supported modes: 'main', 'fixme'"
     exit 1
 fi
 

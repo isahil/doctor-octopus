@@ -3,10 +3,11 @@ import os
 import asyncio
 import shutil
 from typing import Union
-from config import local_dir, test_reports_dir
-from src.util.executor import is_port_open, open_port_on_local, run_a_command_on_local
-from src.util.date import less_or_eqaul_to_date_time
-from src.util.logger import logger
+from src.utils.env_loader import local_dir
+from src.utils.executor import is_port_open, open_port_on_local, run_a_command_on_local
+from src.utils.date import less_or_eqaul_to_date_time
+from src.utils.logger import logger
+from config import test_reports_dir
 
 server_host = os.environ.get("MAIN_SERVER_HOST", "")
 reporter_port = os.environ.get("REPORTER_SERVER_PORT", 9323)  # default port for playwright show-report

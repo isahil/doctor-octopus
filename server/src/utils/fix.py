@@ -1,6 +1,6 @@
 import asyncio
 from socketio import AsyncServer
-from src.util.logger import logger
+from src.utils.logger import logger
 
 
 class Application:

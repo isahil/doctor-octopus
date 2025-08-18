@@ -4,8 +4,8 @@ from config import max_local_dirs, test_reports_redis_cache_name, test_environme
 from src.component.validation import validate
 from src.component.local import get_all_local_cards, cleanup_old_test_report_directories
 from src.component.remote import download_s3_folder, get_all_s3_cards
-from src.util.helper import performance_log
-from src.util.logger import logger
+from src.utils.helper import performance_log
+from src.utils.logger import logger
 
 
 class Cards:
@@ -42,7 +42,6 @@ class Cards:
         _missing_cards = []
 
         cached_cards = redis.get_all_cached_cards(reports_cache_key)
-        logger.info(f"Cached cards length in Redis key - {reports_cache_key}: {len(cached_cards.keys()) if isinstance(cached_cards, dict) else 0}")
         if cached_cards and isinstance(cached_cards, dict):
             for cached_card_date, cached_card_value in cached_cards.items():
                 cached_card_date = cached_card_date.decode("utf-8")

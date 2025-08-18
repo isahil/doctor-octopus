@@ -1,15 +1,13 @@
+# This is the entry point of the util server process
 import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
-os.environ["SERVER_MODE"] = "util"
+os.environ["SERVER_MODE"] = "fixme"
+from src.utils.env_loader import get_fixme_server_port, get_node_env
 from instances import fastapi_app, socketio_app
 from src.fastapi import router as fastapi_router
 
-fixme = os.environ.get("FIXME_MODE", "")
-fixme_server_port = int(os.environ.get("FIXME_SERVER_PORT", ""))
-notification_server_port = int(os.environ.get("NOTIFICATION_SERVER_PORT", ""))
-util_server_port = fixme_server_port if fixme == "true" else notification_server_port
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -19,13 +17,15 @@ fastapi_app.add_middleware(
     allow_headers=["*"],
 )
 fastapi_app.include_router(fastapi_router)
-if fixme == "true":
-    fastapi_app.mount("/ws/socket.io", socketio_app)
+fastapi_app.mount("/ws/socket.io", socketio_app)
 
 if __name__ == "__main__":
+    fixme_server_port = get_fixme_server_port()
+    node_env = get_node_env()
     uvicorn.run(
-        "server-util:fastapi_app",
+        "server-fixme:fastapi_app",
         host="0.0.0.0",
-        port=util_server_port,
+        port=fixme_server_port,
         lifespan="on",
+        reload=(node_env != "production"),
     )

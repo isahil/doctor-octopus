@@ -1,10 +1,11 @@
 import asyncio
 from fastapi import FastAPI
 from socketio import AsyncServer
-from config import node_env, the_lab_log_file_name, the_lab_log_file_path, do_current_clients_count_key
-from src.util.streamer import start_streaming_log_file, stop_streaming_log_file
-from src.util.logger import logger
-from src.util.executor import create_command, run_a_command_on_local
+from src.utils.env_loader import get_node_env
+from src.utils.streamer import start_streaming_log_file, stop_streaming_log_file
+from src.utils.logger import logger
+from src.utils.executor import create_command, run_a_command_on_local
+from config import the_lab_log_file_name, do_current_clients_count_key
 
 
 class WebSocketServer:
@@ -25,6 +26,7 @@ class WebSocketServer:
 
     async def connect(self, sid, environ, auth=None, namespace="/"):
         do_clients_count = self.instances.redis.get(do_current_clients_count_key)
+        node_env = get_node_env()
 
         logger.info(f"\tConnected to W.S. client... [{sid}] | Connection #{do_clients_count}")
         await self.sio.emit(
@@ -78,6 +80,7 @@ class WebSocketServer:
         command_task = asyncio.create_task(
             run_a_command_on_local(f"{command} >> logs/{the_lab_log_file_name}")
         )  # start background task to run the command
+        the_lab_log_file_path: str = self.fastapi_app.state.the_lab_log_file_path
 
         await start_streaming_log_file(self.sio, sid, subscription, the_lab_log_file_path)
         await command_task

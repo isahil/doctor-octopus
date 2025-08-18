@@ -1,4 +1,4 @@
-from src.util.date import less_or_eqaul_to_date_time
+from src.utils.date import less_or_eqaul_to_date_time
 
 
 def build_validation_rules():

@@ -1,6 +1,6 @@
 import os
 import boto3
-from src.util.logger import logger
+from src.utils.logger import logger
 
 aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
 aws_bucket_region = os.environ.get("AWS_BUCKET_REGION")

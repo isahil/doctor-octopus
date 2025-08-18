@@ -22,7 +22,7 @@ kill_processes_on_port() {
 # Call the function for application ports to kill
 kill_processes_on_port 3000 "client"
 kill_processes_on_port 8000 "server-main"
-kill_processes_on_port 8001 "server-notification"
-kill_processes_on_port 8002 "server-fixme"
+kill_processes_on_port 8001 "server-fixme"
+# kill_processes_on_port 8001 "server-notification"
 
 echo "[$(date)] Done killing all the running processes!"

@@ -1,25 +1,26 @@
 import asyncio
-import instances
-import src.component.remote as remote_module
 from datetime import datetime
 from fastapi.requests import Request
 from redis.asyncio.client import PubSub
+import instances
+from src.component import remote
+from src.component.cards import Cards
+from src.utils.logger import logger
 from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
-from src.util.logger import logger
 
 
 async def notify_s3_object_updates():
     """Update the total number of S3 objects and emit an alert if the count increases"""
     try:
         aioredis = instances.aioredis
-        cards = instances.fastapi_app.state.cards if hasattr(instances.fastapi_app, "state") else None
-        initial_total_s3_objects = remote_module.total_s3_objects()
+        cards = Cards()
+        initial_total_s3_objects = remote.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
 
         while True:
-            current_total_s3_objects = remote_module.total_s3_objects()
+            current_total_s3_objects = remote.total_s3_objects()
             if current_total_s3_objects > initial_total_s3_objects:
-                logger.info(f"new alert: {current_total_s3_objects}")
+                logger.info(f"NEW alert: {current_total_s3_objects} 🔔")
                 data = {
                     "type": "s3",
                     "count": current_total_s3_objects,
@@ -29,11 +30,10 @@ async def notify_s3_object_updates():
 
                 initial_total_s3_objects = current_total_s3_objects
 
-                if cards:
-                    await cards.actions({"day": 1, "source": "remote"})
-                    await cards.actions({"day": 1, "source": "download"})
-                    await aioredis.publish("notifications", data) # publish messages to pubsub
-                    await cards.actions({"day": 1, "source": "cleanup"})
+                await cards.actions({"day": 1, "source": "remote"})
+                await cards.actions({"day": 1, "source": "download"})
+                await aioredis.publish("notifications", data) # publish messages to pubsub
+                await cards.actions({"day": 1, "source": "cleanup"})
                 # if instances.sio:
                 #     await instances.sio.emit("alert", {"new_alert": True})
             await asyncio.sleep(notification_frequency_time)
@@ -89,7 +89,7 @@ async def notification_stream(request: Request, client_id: str):
             "type": "client",
             "active": int(str(active_clients_count)),
             "client": client_id,
-            # "timestamp": asyncio.get_event_loop().time(),
+            "timestamp": asyncio.get_event_loop().time(),
         }
         await aioredis.publish("notifications", data)
         await pubsub.unsubscribe("notifications")

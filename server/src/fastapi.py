@@ -4,9 +4,9 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
-from src.util.executor import create_command, run_a_command_on_local
+from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
-from src.util.logger import logger
+from src.utils.logger import logger
 import src.component.remote as remote
 import src.component.notification as notification
 

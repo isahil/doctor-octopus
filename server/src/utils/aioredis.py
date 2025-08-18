@@ -2,7 +2,7 @@ import redis.asyncio as aioredis
 from redis.asyncio.client import PubSub
 import json
 from typing import Union
-from src.util.logger import logger
+from src.utils.logger import logger
 
 
 class AioRedis:

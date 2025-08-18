@@ -1,8 +1,9 @@
 import asyncio
 import platform
 import subprocess
-from config import local_dir, the_doc_log_file_name
-from src.util.logger import logger
+from src.utils.env_loader import local_dir
+from src.utils.logger import logger
+from config import the_doc_log_file_name
 
 
 async def open_port_on_local(port: int) -> None:

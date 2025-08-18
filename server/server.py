@@ -1,4 +1,4 @@
-# This is the entry point of the server application
+# This is the entry point of the main server process
 import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,10 +6,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 os.environ["SERVER_MODE"] = "main"
+from src.utils.env_loader import get_main_server_port, get_node_env
 from instances import fastapi_app
 from src.fastapi import router as fastapi_router
-
-main_server_port = int(os.environ.get("MAIN_SERVER_PORT", ""))
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -20,11 +19,11 @@ fastapi_app.add_middleware(
 )
 fastapi_app.add_middleware(GZipMiddleware, minimum_size=1000)
 fastapi_app.include_router(fastapi_router)
-# fastapi_app.mount("/ws/socket.io", socketio_app)
-fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="playwright-report")
+fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="Test Reports")
 
 if __name__ == "__main__":
-    node_env = os.environ.get("NODE_ENV", "")
+    main_server_port = get_main_server_port()
+    node_env = get_node_env()
     workers = 1
     uvicorn.run(
         "server:fastapi_app",

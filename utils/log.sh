@@ -3,8 +3,8 @@
 lines=${1:-10}
 # Get the directory where the script is located
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-directory="$script_dir"
 root=".."
+directory="$( cd "$script_dir/.." && pwd )"
 # If the script is in a subdirectory, adjust accordingly
 # Example: directory="$( cd "$script_dir/.." && pwd )"
 options=("server" "client" "notification")
@@ -27,4 +27,4 @@ else
     exit 1
 fi
 
-tail -f -n $lines $directory/$root/logs/$LOG_TYPE.log
+tail -f -n $lines $directory/logs/$LOG_TYPE.log

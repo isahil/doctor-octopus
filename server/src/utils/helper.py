@@ -1,5 +1,5 @@
 import time
-from src.util.logger import logger
+from src.utils.logger import logger
 
 
 def performance_log(func):

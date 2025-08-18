@@ -1,7 +1,7 @@
 import os
 import aiofiles
 import asyncio
-from src.util.logger import logger
+from src.utils.logger import logger
 
 
 stream_tasks = {}
