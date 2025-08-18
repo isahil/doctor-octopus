@@ -25,5 +25,7 @@ echo "[$(date)] Notification server started with PID: [$NOTIFICATION_PID]"
 echo "[$(date)] Client server started with PID: [$CLIENT_PID]" > logs/client.log
 echo "[$(date)] Main server started with PID: [$SERVER_PID]" > logs/server.log
 echo "[$(date)] Notification server started with PID: [$NOTIFICATION_PID]" > logs/notification.log
-
+echo $CLIENT_PID > logs/client.pid
+echo $SERVER_PID > logs/server.pid
+echo $NOTIFICATION_PID > logs/notification.pid
 echo "[$(date)] All background processes started!"
