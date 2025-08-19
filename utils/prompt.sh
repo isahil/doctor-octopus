@@ -1,8 +1,9 @@
 
 scripts_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 parent_dir="$(cd "$scripts_dir/.." && pwd)"
-echo "Scripts directory: $scripts_dir"
-echo "Parent directory: $parent_dir"
+# echo "Scripts directory: $scripts_dir"
+# echo "Parent directory: $parent_dir"
+
 options=("1. commands" "2. logs" "3. exit")
 echo "Choose an option to run:"
 for option in "${options[@]}"; do
@@ -22,7 +23,7 @@ case $option in
         case $cmd in
             "1")
                 echo "Starting...[npm run start]"
-                npm run start-prod
+                npm run start:prod
                 break
                 ;;
             "2")
@@ -32,7 +33,7 @@ case $option in
                 ;;
             "3")
                 echo "Restarting...[npm run restart]"
-                npm run restart
+                npm run restart:prod
                 break
                 ;;
             "4")

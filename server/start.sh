@@ -35,6 +35,9 @@ if [ "$SERVER_MODE" = "main" ]; then
 elif [ "$SERVER_MODE" = "fixme" ]; then
     echo "[$(date)] Running fixme server"
     python server-fixme.py
+elif [ "$SERVER_MODE" = "notification" ]; then
+    echo "[$(date)] Running notification service"
+    python src/component/notification.py
 else
     echo "[$(date)] Unknown server mode: $SERVER_MODE"
     echo "[$(date)] Supported modes: 'main', 'fixme'"
