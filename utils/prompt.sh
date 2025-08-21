@@ -1,8 +1,6 @@
 
 scripts_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 parent_dir="$(cd "$scripts_dir/.." && pwd)"
-# echo "Scripts directory: $scripts_dir"
-# echo "Parent directory: $parent_dir"
 
 options=("1. commands" "2. logs" "3. exit")
 echo "Choose an option to run:"
@@ -14,12 +12,12 @@ read -p "Choose the option to run (1-2): " option
 
 case $option in
   1)
-    commands=("1. start" "2. stop" "3. restart" "4. setup" "5. pull" "6. exit")
+    commands=("1. start" "2. stop" "3. restart" "4. restart:server" "5. restart:notification" "6. restart:fixme" "7. setup" "8. pull" "9. exit")
     echo "Choose a command to run:"
     for cmd in "${commands[@]}"; do
         echo "  $cmd"
     done
-    read -p "Choose the option to run (1-6): " cmd
+    read -p "Choose the option to run (1-9): " cmd
         case $cmd in
             "1")
                 echo "Starting...[npm run start]"
@@ -37,16 +35,31 @@ case $option in
                 break
                 ;;
             "4")
+                echo "Restarting...[npm run restart]"
+                npm run restart:prod
+                break
+                ;;
+            "5")
+                echo "Restarting...[npm run restart]"
+                npm run restart:prod
+                break
+                ;;
+            "6")
+                echo "Restarting...[npm run restart]"
+                npm run restart:prod
+                break
+                ;;
+            "7")
                 echo "Setting up...[npm run setup]"
                 npm run setup
                 break
                 ;;
-            "5")
+            "8")
                 echo "Pulling...[npm run pull]"
                 npm run pull
                 break
                 ;;
-            "6")
+            "9")
                 echo "Exiting..."
                 exit 0
                 ;;
