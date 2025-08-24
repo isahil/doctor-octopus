@@ -16,6 +16,7 @@ server/.venv/
 *.pid
 
 # test reports
+test_reports/*
 playwright/test_reports/*
 playwright/test-results/*
 playwright/playwright-report/*
