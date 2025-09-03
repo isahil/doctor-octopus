@@ -1,14 +1,14 @@
 {
-  "name": "playwright",
+  "name": "client-playwright",
   "version": "1.0.0",
-  "description": "test project",
+  "description": "Doctor Octopus Client Tests",
   "main": "index.js",
   "type": "module",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "node utils/runner.js",
+    "test": "node client/utils/runner.js",
     "api:smoke": "npm test api:smoke",
     "api:sanity": "npm test api:sanity",
     "api:regression": "npm test api:regression",

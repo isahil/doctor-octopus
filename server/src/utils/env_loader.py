@@ -63,7 +63,7 @@ def get_app_name():
 
 
 def get_fixme_mode():
-    return get_env_variable("FIXME_MODE", "false").lower() == "true"
+    return get_env_variable("FIXME_MODE", "false") == "true"
 
 
 def get_fixme_server_port():

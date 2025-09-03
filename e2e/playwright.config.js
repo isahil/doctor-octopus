@@ -1,11 +1,11 @@
 import dotenv from "dotenv";
-import { get_est_date_time } from "./utils";
+import { get_est_date_time } from "./client/utils";
 dotenv.config({ path: ".env" });
 
 const { TEST_REPORTS_DIR = `./test_reports/${get_est_date_time()}` } =
   process.env;
 const config = {
-  testDir: "tests",
+  testDir: "client/tests",
   timeout: 30000,
   retries: 1,
   use: {

@@ -84,13 +84,3 @@ if ! python3 -m venv --help &> /dev/null || ! command_exists pip; then
         exit 1
     fi
 fi
-
-echo "git: $(git --version)"
-echo "node: $(node --version)"
-echo "npm: $(npm --version)"
-echo "python3: $(python3 --version)"
-echo "pip3: $(pip3 --version)"
-echo "python: $(python --version)"
-echo "pip: $(pip --version)"
-echo "venv: $(python3 -m venv --help | head -n 1)"
-echo "Git, venv and Node.js $NODE_VERSION are installed."

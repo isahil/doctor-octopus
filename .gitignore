@@ -3,6 +3,7 @@
 .env
 test.*
 # cache
+**/__pycache__
 *.pyc
 # dependencies
 node_modules/
@@ -16,10 +17,10 @@ server/.venv/
 *.pid
 
 # test reports
-playwright/test_reports/*
-playwright/test-results/*
-playwright/playwright-report/*
-playwright/logs/*.log
+**/test_reports
+**/test-results/*
+**/playwright-report
+**/logs
 
 server/test_reports/*
 server/doctor_octopus.egg-info/*

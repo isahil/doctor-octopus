@@ -10,41 +10,38 @@ if [ -z "$SERVER_MODE" ]; then
     SERVER_MODE="main"
 fi
 
-OS_NAME=$(uname)
-echo "[$(date)] OS: $OS_NAME"
-
-if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
-    echo "[$(date)] Linux .venv activation"
-    source $HOME/venv/bin/activate
-else
-    echo "[$(date)] Windows .venv activation"
-    source $HOME/venv/Scripts/Activate
-fi
+# OS_NAME=$(uname)
+# echo "[$(date)] OS: $OS_NAME"
+# if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
+#     echo "[$(date)] Linux .venv activation"
+#     source $HOME/venv/bin/activate
+# else
+#     echo "[$(date)] Windows .venv activation"
+#     source $HOME/venv/Scripts/Activate
+# fi
 
 if [ "$SERVER_MODE" = "main" ]; then
-    echo "[$(date)] Started setting up the app environment"
 
     if [ "$INITIALIZE" = "true" ]; then
         echo "[$(date)] Initializing the app environment"
-        python initialize.py
+        poetry run python3 initialize.py
     fi
-    echo "[$(date)] Finished setting up the app environment"
 
     echo "[$(date)] Running main server"
-    python server.py
+    poetry run python3 server.py
 elif [ "$SERVER_MODE" = "fixme" ]; then
     echo "[$(date)] Running fixme server"
-    python server-fixme.py
+    poetry run python3 server-fixme.py
 elif [ "$SERVER_MODE" = "notification" ]; then
     echo "[$(date)] Running notification service"
-    python src/component/notification.py
+    poetry run python3 src/component/notification.py
 else
     echo "[$(date)] Unknown server mode: $SERVER_MODE"
     echo "[$(date)] Supported modes: 'main', 'fixme'"
     exit 1
 fi
 
-# alternative way to run the server
+# Alternative way to run the server
 # if [ "$NODE_ENV" = "dev" ]; then
 #     uvicorn server:fastapi_app --host 0.0.0.0 --port 8000 --workers 1 --reload
 # else
