@@ -45,7 +45,7 @@ jobs:
           cache: "npm"
       - name: Install Playwright Dependencies
         run: |
-          cd playwright
+          cd e2e
           npm ci
           npx playwright install
       - name: Run Playwright Tests
