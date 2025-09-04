@@ -56,7 +56,7 @@ jobs:
           AWS_SDET_BUCKET_SECRET_ACCESS_KEY: ${{ secrets.AWS_SDET_BUCKET_SECRET_ACCESS_KEY }}
         run: |
           pwd
-          cd playwright
+          cd e2e
           if [[ "${{ inputs.test_suite }}" == "Smoke" ]]; then
             ENVIRONMENT=qa APP=clo npm run api:smoke
           elif [[ "${{ inputs.test_suite }}" == "Sanity" ]]; then
