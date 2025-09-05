@@ -9,17 +9,45 @@
 # https://github.com/docker/awesome-compose
 services:
   app:
+    container_name: doctor-octopus-dev
     build:
       context: .
       dockerfile: Dockerfile
     env_file:
       - .env
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
     ports:
       - "3000:3000"  # Client
       - "8000:8000"  # Main server
       - "8001:8001"  # FixMe server
+    # command: npm run start:prod true
+    develop:
+      watch:
+        # Rebuild on Dockerfile changes
+        - action: rebuild
+          path: ./Dockerfile
+        # Rebuild on dependency file changes
+        - action: rebuild
+          path: ./server/pyproject.toml
+        - action: rebuild
+          path: ./client/package.json
+        # Sync source code changes
+        - action: sync
+          path: ./utils
+          target: /app/utils
+        - action: sync
+          path: ./server
+          target: /app/server
+          ignore:
+            - .venv
+            - __pycache__
+            - "*.pyc"
+        - action: sync
+          path: ./client
+          target: /app/client
+          ignore:
+            - node_modules
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
