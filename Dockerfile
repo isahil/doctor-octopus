@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     && curl -sSL 'https://install.python-poetry.org' | python - \
-    # build-essential \
     # Cleaning cache:
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
@@ -34,7 +33,6 @@ RUN mkdir -p logs server/test_reports e2e/logs e2e/test_reports
 RUN --mount=type=bind,source=client/package.json,target=client/package.json \
     --mount=type=bind,source=client/package-lock.json,target=client/package-lock.json \
     --mount=type=cache,target=/root/.npm \
-    --mount=type=cache,target=/app/client/node_modules \
     cd client && npm ci --omit=dev
 
 COPY server/readme.md server/server.py ./server/
