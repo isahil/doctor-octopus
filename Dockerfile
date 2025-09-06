@@ -6,19 +6,16 @@
 
 FROM python:3.9-slim
 
-ENV NODE_ENV=production \
-    # poetry:
-    POETRY_VIRTUALENVS_CREATE=false \
-    POETRY_CACHE_DIR=root/.local/share/pypoetry
+ENV NODE_ENV=production
 
-# Install system dependencies
+# System dependencies
 RUN apt-get update && apt-get install -y \
     bash \
     curl \
     nodejs \
     npm \
-    # build-essential \
     && curl -sSL 'https://install.python-poetry.org' | python - \
+    # build-essential \
     # Cleaning cache:
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
@@ -32,19 +29,22 @@ WORKDIR /app
 RUN mkdir -p logs server/test_reports e2e/logs e2e/test_reports
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a bind mounts to package.json and package-lock.json to avoid having to copy them into this layer.
-# Leverage a cache mount to /root/.npm to speed up subsequent builds.
+# Leverage a bind mount to avoid having to copy them into the layer.
+# Leverage a cache mount to speed up subsequent builds.
 RUN --mount=type=bind,source=client/package.json,target=client/package.json \
     --mount=type=bind,source=client/package-lock.json,target=client/package-lock.json \
     --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/app/client/node_modules \
     cd client && npm ci --omit=dev
 
 COPY server/readme.md server/server.py ./server/
 
-RUN --mount=type=bind,source=server/pyproject.toml,target=server/pyproject.toml \
+RUN --mount=type=bind,source=server/test_reports,target=/app/server/test_reports \
+    --mount=type=cache,target=root/.local/share/pypoetry \
+    --mount=type=bind,source=server/pyproject.toml,target=server/pyproject.toml \
     --mount=type=bind,source=server/poetry.lock,target=server/poetry.lock \
-    --mount=type=cache,target=$POETRY_CACHE_DIR \
     cd server && \
+    poetry config virtualenvs.create false && \
     poetry install --no-interaction --no-ansi
 
 # Copy the source files into the image.
@@ -55,7 +55,6 @@ SHELL ["/bin/bash", "-c"]
 # Run the application as a non-root user.
 # USER node
 
-# Expose the ports that the application listens on.
 EXPOSE 3000 8000 8001
 
 # Run the application.

@@ -8,6 +8,7 @@
     "client": "cd client && npm run dev",
     "fixme": "cd server && bash start.sh fixme false",
     "format": "prettier --write .",
+    "healthcheck": "curl --fail http://localhost:8000/health || exit 1",
     "lint": "npx eslint .",
     "log": "bash utils/log.sh",
     "notification": "cd server && bash start.sh notification",
