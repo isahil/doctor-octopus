@@ -14,33 +14,76 @@ From the root of the Doctor-Octopus project directory execute the following comm
 
 ## Start
 
-Run the following command on the terminal to start the app on `http://localhost:2222`
+Run the following command on the terminal to start the
 
 1 - `npm start`
+
+The app will be available at http://localhost:3000.
 
 project folder structure
 
 ```
-doctor-octopus
-├─ server
-│ ├─ src
-│ │ └─ ...
-│ ├─ pyproject.toml
-│ └─ ...
-├─ client
+DOCTOR-OCTOPUS
+├─ client [FRONTEND]
 │ ├─ src
 │ │ └─ ...
 │ ├─ package.json
-│ └─ ...
+│ │
+├─ e2e [TESTS]
+│ │
+│ ├─ server
+│ ├─ client
+│ ├─ package.json
+│ ├─ pyproject.toml
+│ │
+├─ server [BACKEND]
+│ ├─ src
+│ │ └─ ...
+│ ├─ pyproject.toml
+│ │
 ├─ package.json
-└─ README.md
+└─ readme.md
 ```
 
 ## Key Tech Stacks
 
-- **FastAPI**: server/back-end using Python.
+- **FastAPI**: server/back-end REST API using Python.
 - **React**: client/front-end using JavaScript.
-- **SocketIO**: communicates between the client & the server to execute test suites on the server and then stream the logs in to the integrated xterm terminal.
+- **SocketIO**: Streams the logs to the integrated XTerm terminal.
 - **AWS S3**: remote repository where the test reports are stored.
+- **Redis**: cache db for test report cards.
+
+
+## Docker: 
+
+### Building & running the Doctor Octopus app in a container
+
+Start the application by running:
+
+1. Using compose
+`docker compose up --build`.
+
+2. Using a specific image tag
+`docker run -p 3000:3000 -p 8000:8000 --env-file=./.env app:tag`
+
+The app will be available at http://localhost:3000.
+
+### Deploying the app to the cloud
+
+First, build the image, e.g.: `docker build -t app:tag .`.
+
+Then, push it to registry, e.g. `docker push myregistry.com/myapp`.
+
+Consult Docker's [getting started](https://docs.docker.com/go/get-started-sharing/)
+docs for more detail on building and pushing.
+
+### References
+* [FastAPI Guide](https://fastapi.tiangolo.com/tutorial/first-steps/)
+* [ReactJS Guide](https://react.dev/reference/react)
+* [Playwright Guide](https://playwright.dev/docs/intro)
+* [PyTest Guide](https://docs.pytest.org/en/stable/)
+* [Redis Guide](https://redis.io/docs/latest/develop/clients/redis-py/)
+* [Docker Guide](https://docs.docker.com/go/dockerfile-reference/)
+
 
 Developer: **IMRAN SAHIL**
