@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     nodejs \
     npm \
+    lsof \
     && curl -sSL 'https://install.python-poetry.org' | python - \
     # Cleaning cache:
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
