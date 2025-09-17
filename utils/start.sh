@@ -93,8 +93,8 @@ nohup npm run server >> logs/server.log 2>&1 &
 SERVER_PID=$!
 if save_pid_with_validation "$SERVER_PID" "server"; then
     echo "[$(date)] The main server's parent process started. [$SERVER_PID]"
-    server_pids=$(lsof -ti:8000)
-    echo "[$(date)] Main server actual process PID(s) on port 8000: $server_pids"
+    server_pids=$(lsof -ti:8000 | tr '\n' ',')
+    echo "[$(date)] Main server actual process PID(s) on port 8000: ($server_pids)"
 else
     echo "[$(date)] Failed to start server service"
     client_pid=$(get_service_pid "client")

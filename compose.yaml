@@ -17,6 +17,7 @@ services:
       - "8001:8001"  # FixMe
     volumes:
       - ./server/test_reports:/app/server/test_reports # Persist test_reports from host to container
+      - ./logs:/app/logs
     depends_on:
       - redis
     # command: npm run start:prod true

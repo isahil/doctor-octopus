@@ -38,8 +38,7 @@ RUN --mount=type=bind,source=client/package.json,target=client/package.json \
 
 COPY server/readme.md server/server.py ./server/
 
-RUN --mount=type=bind,source=server/test_reports,target=/app/server/test_reports \
-    --mount=type=cache,target=root/.local/share/pypoetry \
+RUN --mount=type=cache,target=root/.local/share/pypoetry \
     --mount=type=bind,source=server/pyproject.toml,target=server/pyproject.toml \
     --mount=type=bind,source=server/poetry.lock,target=server/poetry.lock \
     cd server && \
