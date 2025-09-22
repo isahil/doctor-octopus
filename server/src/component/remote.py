@@ -142,7 +142,9 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
                     os.makedirs(local_dir_path)
 
                 S3.download_file(object_key, local_reports_dir_card_rel_path, bucket_name)
-            time.sleep(rate_limit_wait_time)
+
+        # logger.info(f"S3 download folder batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit_wait_time} seconds to avoid rate limiting.")
+        # time.sleep(rate_limit_wait_time)
 
     logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir
