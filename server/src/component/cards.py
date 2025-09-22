@@ -79,7 +79,8 @@ class Cards:
         # Flatten the list of lists into a single list
         for missing_cards_in_env in cards_missing_per_environment:
             missing_cards_in_envs.extend(missing_cards_in_env)
-        logger.info(f"Missing cards to download on the server total: {len(missing_cards_in_envs)} -> {missing_cards_in_envs}")
+        total_batches = (len(missing_cards_in_envs) + rate_limit_batch_size - 1) // rate_limit_batch_size
+        logger.info(f"Missing cards to download on the server total: {len(missing_cards_in_envs)} in {total_batches} batches -> {missing_cards_in_envs}")
 
         for i in range(0, len(missing_cards_in_envs), rate_limit_batch_size):  # Process in batches of value for rate_limit_batch_size
             batch = missing_cards_in_envs[i:i + rate_limit_batch_size]

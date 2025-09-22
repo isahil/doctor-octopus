@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-import time
 from typing import Union
 import redis as _redis
 from config import test_reports_dir, test_reports_redis_cache_name, rate_limit_batch_size, rate_limit_wait_time
@@ -142,7 +141,6 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
                     os.makedirs(local_dir_path)
 
                 S3.download_file(object_key, local_reports_dir_card_rel_path, bucket_name)
-
         # logger.info(f"S3 download folder batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit_wait_time} seconds to avoid rate limiting.")
         # time.sleep(rate_limit_wait_time)
 
