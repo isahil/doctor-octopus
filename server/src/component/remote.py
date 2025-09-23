@@ -1,4 +1,5 @@
 import asyncio
+import time
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -42,7 +43,7 @@ def format_s3_object_filter_data(obj):
     }
 
 
-async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
+async def get_all_s3_cards(expected_filter_data: dict, rate_limit=0) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
 
     s3_objects = S3.list_all_s3_objects()
@@ -76,7 +77,9 @@ async def get_all_s3_cards(expected_filter_data: dict) -> list[dict]:
 
         batch_results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in batch])
         all_results.extend([result for result in batch_results if result is not None])
-        await asyncio.sleep(rate_limit_wait_time)  # 200ms between batches
+        if rate_limit > 0:
+            logger.info(f"S3 fetch batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting.")
+            time.sleep(rate_limit)
 
     return all_results
 
@@ -110,7 +113,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
         return None
 
 
-def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
+def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit=0) -> str:
     """
     Given a root_dir path for a folder in an S3 bucket, download all
     the objects inside root_dir to local, maintaining the same folder
@@ -141,8 +144,10 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name) -> str:
                     os.makedirs(local_dir_path)
 
                 S3.download_file(object_key, local_reports_dir_card_rel_path, bucket_name)
-        # logger.info(f"S3 download folder batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit_wait_time} seconds to avoid rate limiting.")
-        # time.sleep(rate_limit_wait_time)
+        
+            if rate_limit > 0:
+                logger.info(f"S3 download folder batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting.")
+                time.sleep(rate_limit)
 
     logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir

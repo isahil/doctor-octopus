@@ -48,8 +48,8 @@ class Cards:
             for cached_card_date, cached_card_value in cached_cards.items():
                 cached_card_date = cached_card_date.decode("utf-8")
                 cached_card_value = json.loads(cached_card_value.decode("utf-8"))
-                cached_card_s3_root_dir = cached_card_value.get("filter_data", {}).get("s3_root_dir", "")
-                cached_card_filter_data = cached_card_value.get("filter_data")
+                cached_card_filter_data = cached_card_value.get("filter_data", {})
+                cached_card_s3_root_dir = cached_card_filter_data.get("s3_root_dir", "")
                 error = validate(cached_card_filter_data, expected_filter_data)
                 if error:
                     continue
@@ -59,7 +59,7 @@ class Cards:
             logger.info(f"No cards found in Redis cache w. filter: {expected_filter_data}.")
         return _missing_cards
 
-    def download_missing_cards(self, expected_filter_data: dict) -> None:
+    def download_missing_cards(self, expected_filter_data: dict, rate_limit = rate_limit_wait_time) -> None:
         """
         Download the missing cards from S3 and cache them on the server using two levels of parallelism:
         (1) per environment, and (2) per batch of cards, both utilizing threads.
@@ -73,14 +73,11 @@ class Cards:
             return self.missing_cards(local_cards, expected_filter_data_c)
 
         with ThreadPoolExecutor() as executor:
-            cards_missing_per_environment = list(executor.map(process_environment_cache, envs_to_check))
-            
-        missing_cards_in_envs = []
-        # Flatten the list of lists into a single list
-        for missing_cards_in_env in cards_missing_per_environment:
-            missing_cards_in_envs.extend(missing_cards_in_env)
+            cards_missing_per_environment = list(executor.map(process_environment_cache, envs_to_check)) # [[], [], []]
+        missing_cards_in_envs = sum(cards_missing_per_environment, []) # Flatten the list of lists into a single list []
+
         total_batches = (len(missing_cards_in_envs) + rate_limit_batch_size - 1) // rate_limit_batch_size
-        logger.info(f"Missing cards to download on the server total: {len(missing_cards_in_envs)} in {total_batches} batches -> {missing_cards_in_envs}")
+        logger.info(f"Missing cards to download: {len(missing_cards_in_envs)} total in {total_batches} batches -> {missing_cards_in_envs}")
 
         for i in range(0, len(missing_cards_in_envs), rate_limit_batch_size):  # Process in batches of value for rate_limit_batch_size
             batch = missing_cards_in_envs[i:i + rate_limit_batch_size]
@@ -93,8 +90,8 @@ class Cards:
                         future.result()
                     except Exception as e:
                         logger.error(f"Error downloading card: {e}", exc_info=True)
-            logger.info(f"Missing cards batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit_wait_time} seconds to avoid rate limiting.")
-            time.sleep(rate_limit_wait_time)
+            logger.info(f"Downloaded batch {i//rate_limit_batch_size + 1} successfully ✅ Rate limiting wait time {rate_limit}s...")
+            time.sleep(rate_limit)
 
     def get_cards_from_cache(self, expected_filter_data: dict) -> list[dict]:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
