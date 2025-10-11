@@ -1,9 +1,4 @@
 # syntax=docker/dockerfile:1
-
-# The Dockerfile reference guide at https://docs.docker.com/go/dockerfile-reference/
-
-# ARG POETRY_VERSION=2.1.4
-
 FROM python:3.9-slim
 
 ENV NODE_ENV=production
@@ -15,45 +10,60 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     lsof \
-    && curl -sSL 'https://install.python-poetry.org' | python - \
-    # Cleaning cache:
+    && curl -sSL 'https://install.python-poetry.org' | POETRY_HOME=/opt/poetry python - \
+    # Clean caches:
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Path to poetry must be added to PATH
-ENV PATH="$PATH:/root/.local/bin"
+# Use system-wide poetry installation
+ENV PATH="/opt/poetry/bin:$PATH"
 
 WORKDIR /app
 
-RUN mkdir -p logs server/test_reports e2e/logs e2e/test_reports
+# Create 'doctor' user and group EARLY
+RUN groupadd -r doctor && useradd -r -g doctor -m -d /home/doctor doctor
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a bind mount to avoid having to copy them into the layer.
-# Leverage a cache mount to speed up subsequent builds.
+# Create directories with proper ownership from the start
+RUN mkdir -p logs server/test_reports e2e/logs e2e/test_reports \
+    && chown -R doctor:doctor /app
+
+# Install client dependencies AS ROOT (for now) but fix cache location
 RUN --mount=type=bind,source=client/package.json,target=client/package.json \
     --mount=type=bind,source=client/package-lock.json,target=client/package-lock.json \
-    --mount=type=cache,target=/root/.npm \
-    cd client && npm ci --omit=dev
+    --mount=type=cache,target=/tmp/.npm \
+    cd client && npm ci --omit=dev --cache /tmp/.npm
 
-COPY server/readme.md server/server.py ./server/
+# Copy server files with proper ownership
+COPY --chown=doctor:doctor server/readme.md server/server.py ./server/
 
-RUN --mount=type=cache,target=root/.local/share/pypoetry \
+# Install Python dependencies AS ROOT but use accessible cache location
+RUN --mount=type=cache,target=/tmp/poetry-cache \
     --mount=type=bind,source=server/pyproject.toml,target=server/pyproject.toml \
     --mount=type=bind,source=server/poetry.lock,target=server/poetry.lock \
     cd server && \
-    poetry config virtualenvs.create false && \
+    poetry config cache-dir /tmp/poetry-cache && \
+    poetry config virtualenvs.create true && \
+    poetry config virtualenvs.in-project true && \
+    poetry config virtualenvs.path /app/server/.venv && \
     poetry install --no-interaction --no-ansi
 
-# Copy the source files into the image.
-COPY . .
+# Copy source files with proper ownership
+COPY --chown=doctor:doctor . .
 
+# Fix any permission issues that might have occurred
+RUN chown -R doctor:doctor /app
+
+# Test Python packages are installed correctly in venv
+RUN /app/server/.venv/bin/python -c "import fastapi; print('FastAPI installed successfully')"
+
+
+# Use bash as default shell
 SHELL ["/bin/bash", "-c"]
 
-# Run the application as a non-root user.
-# USER node
+# Switch to non-root user
+USER doctor
 
 EXPOSE 3000 8000 8001
 
-# Run the application.
 CMD npm run start:prod true
