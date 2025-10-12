@@ -5,7 +5,11 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 import redis as _redis
-from config import test_reports_dir, test_reports_redis_cache_name, rate_limit_batch_size, rate_limit_wait_time
+from config import (
+    test_reports_dir,
+    test_reports_redis_cache_name,
+    rate_limit_file_batch_size,
+)
 from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
@@ -43,7 +47,7 @@ def format_s3_object_filter_data(obj):
     }
 
 
-async def get_all_s3_cards(expected_filter_data: dict, rate_limit=0) -> list[dict]:
+async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
 
     s3_objects = S3.list_all_s3_objects()
@@ -68,19 +72,9 @@ async def get_all_s3_cards(expected_filter_data: dict, rate_limit=0) -> list[dic
                 "root_dir": received_card_filter_data["s3_root_dir"],
             }
 
-    all_results = []
-    card_items = list(final_cards_pool.items())
-
-    for i in range(0, len(card_items), rate_limit_batch_size):
-        batch = card_items[i:i + rate_limit_batch_size]
-        logger.info(f"Processing batch {i//rate_limit_batch_size + 1} with {len(batch)} items")
-
-        batch_results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in batch])
-        all_results.extend([result for result in batch_results if result is not None])
-        if rate_limit > 0:
-            logger.info(f"S3 fetch batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting.")
-            time.sleep(rate_limit)
-
+    report_cards = list(final_cards_pool.items())
+    batch_results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in report_cards])
+    all_results = [result for result in batch_results if result is not None]
     return all_results
 
 
@@ -113,41 +107,59 @@ async def process_card(card_tuple) -> Union[dict, None]:
         return None
 
 
+def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) -> list[str]:
+    """
+    Given a root_dir path for a folder in an S3 bucket, find all
+    the objects inside root_dir and return a list of object keys if
+    the folder exists in the S3 bucket.
+    """
+    s3_objects = S3.list_all_s3_objects(bucket_name)
+    folder = []
+    for obj in s3_objects:
+        object_key = obj["Key"]
+        if object_key.startswith(s3_root_dir):
+            folder.append(object_key)
+
+    return folder
+
+
 def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit=0) -> str:
     """
     Given a root_dir path for a folder in an S3 bucket, download all
     the objects inside root_dir to local, maintaining the same folder
     structure as in S3 bucket.
     """
-    s3_objects = S3.list_all_s3_objects(bucket_name)
-    test_report_dir = ""
+    # s3_objects = S3.list_all_s3_objects(bucket_name)
+    s3_report_dir_objects = find_s3_report_dir_objects(s3_root_dir, bucket_name)
+    test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
 
-    for i in range(0, len(s3_objects), rate_limit_batch_size):
-        batch = s3_objects[i:i + rate_limit_batch_size]
-        for obj in batch:
-            object_key = obj["Key"]
+    def create_local_report_dir(relative_path: str) -> str:
+        download_dir_root_path: str = "./"
+        reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
+        local_reports_dir_path = os.path.join(
+            reports_dir_path, test_report_dir
+        )  # "./test_reports/4-28-2025_10-01-41_AM"
+        local_report_dir_rel_path = os.path.join(local_reports_dir_path, relative_path)
 
-            if object_key.startswith(s3_root_dir):
-                # Construct the local relative path from the object_key
-                relative_path_parts = object_key[len(s3_root_dir) :].lstrip("/")
-                test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Remove the test report root dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
+        local_report_sub_dir_path = os.path.dirname(local_report_dir_rel_path)
+        if not os.path.exists(local_report_sub_dir_path):
+            os.makedirs(local_report_sub_dir_path, exist_ok=True)
+        return local_report_dir_rel_path
 
-                download_dir_root_path: str = "./"
-                reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
-                local_reports_dir_path = os.path.join(
-                    reports_dir_path, test_report_dir
-                )  # "./test_reports/4-28-2025_10-01-41_AM"
-                local_reports_dir_card_rel_path = os.path.join(local_reports_dir_path, relative_path_parts)
+    for i in range(0, len(s3_report_dir_objects), rate_limit_file_batch_size):
+        object_batch = s3_report_dir_objects[i : i + rate_limit_file_batch_size]
+        for object_key in object_batch:
+            # Transform the S3 object key into a local relative path by removing the s3_root_dir prefix and any leading slash.
+            # For example, 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM/some_folder/some_file.ext'
+            # becomes 'some_folder/some_file.ext' for local storage.
+            relative_path_parts = object_key[len(s3_root_dir) :].lstrip("/")
+            local_report_card_dir_rel_path = create_local_report_dir(relative_path_parts)
+            S3.download_file(object_key, local_report_card_dir_rel_path, bucket_name)
 
-                local_dir_path = os.path.dirname(local_reports_dir_card_rel_path)
-                if not os.path.exists(local_dir_path):
-                    os.makedirs(local_dir_path)
-
-                S3.download_file(object_key, local_reports_dir_card_rel_path, bucket_name)
-        
             if rate_limit > 0:
-                logger.info(f"S3 download folder batch {i//rate_limit_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting.")
+                logger.info(
+                    f"S3 download folder batch {i // rate_limit_file_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting."
+                )
                 time.sleep(rate_limit)
-
     logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir

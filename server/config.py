@@ -29,7 +29,8 @@ notification_frequency_time: int = 10  # frequency of S3 notifications update in
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
 rate_limit_wait_time: float = 3  # seconds to wait between S3 downloads to avoid rate limiting
-rate_limit_batch_size: int = 10  # number of S3 objects to download in a batch before waiting
+rate_limit_folder_batch_size: int = 5  # number of S3 folders to download in a batch before waiting
+rate_limit_file_batch_size: int = 20  # number of S3 objects to download in a batch before waiting
 
 __all__ = [
     "do_lifetime_clients_count_key",

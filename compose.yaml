@@ -19,6 +19,7 @@ services:
       - ./logs:/app/logs
       - ./server/test_reports:/app/server/test_reports # Persist test_reports from host to container
       # - test_reports:/app/server/test_reports # Persist test_reports in a named volume
+      - /etc/localtime:/etc/localtime:ro # Sync container time with host time
     depends_on:
       - redis
     # command: npm run start:prod true
