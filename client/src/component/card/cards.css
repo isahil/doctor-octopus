@@ -112,10 +112,10 @@
   gap: 10px;
 }
 
+.environment-filters-wrapper,
 .day-filters-wrapper,
-.env-filters-wrapper,
 .app-filters-wrapper,
-.suites-filters-wrapper {
+.protocol-filters-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -132,7 +132,7 @@
   order: 2;
 }
 
-.env-filters-wrapper {
+.environment-filters-wrapper {
   left: 150px;
 }
 
@@ -144,7 +144,7 @@
   left: 350px;
 }
 
-.suites-filters-wrapper {
+.protocol-filters-wrapper {
   left: 460px;
 }
 
@@ -355,7 +355,7 @@
     gap: 2px;
   }
 
-  .env-filters-wrapper {
+  .environment-filters-wrapper {
     left: 60px;
   }
 
@@ -367,7 +367,7 @@
     left: 140px;
   }
 
-  .suites-filters-wrapper {
+  .protocol-filters-wrapper {
     left: 180px;
   }
 

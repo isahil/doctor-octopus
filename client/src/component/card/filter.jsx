@@ -12,7 +12,7 @@ const Filters = ({ filter_config, filters, setFilter }) => {
   return (
     <div className="options-wrapper">
       {options
-        // .sort((a, b) => (a[name] === filters[name] ? -1 : b[name] === filters[name] ? 1 : 0))
+        .sort((a, b) => (a[name] === filters[name] ? -1 : b[name] === filters[name] ? 1 : 0))
         .map((option, i) => {
           return (
             <label key={i} className="option-wrapper">
@@ -26,7 +26,6 @@ const Filters = ({ filter_config, filters, setFilter }) => {
               ></input>
               <div className="option">
                 <span className={`filter ${name}-${option}`}>{option}</span>
-                {/* <span className="text">{name}</span> */}
               </div>
             </label>
           )

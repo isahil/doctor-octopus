@@ -1,5 +1,4 @@
 .options-wrapper {
-  /* position: relative; */
   display: flex;
   flex-direction: column;
   gap: 0.3em;
@@ -9,7 +8,7 @@
 .options-wrapper:hover .option-wrapper {
   display: block;
   opacity: 0.7;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.05s ease;
   z-index: 100;
 }
 

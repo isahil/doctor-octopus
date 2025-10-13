@@ -4,7 +4,7 @@ import "./cards.css"
 import Filters from "./filter"
 import config from "../../config.json"
 import { to_roman_numeral } from "../../util/helper"
-const { day_filter_config, env_filter_config, app_filter_config, suites_filter_config } = config
+const { filters: filters_config } = config
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 const Cards = () => {
@@ -14,13 +14,15 @@ const Cards = () => {
   const [filters, setFilters] = useState({
     source: "remote",
     day: 1,
-    env: "qa",
-    app: "clo",
-    suites: "ui",
+    environment: "all",
+    app: "all",
+    protocol: "all",
   })
   const [alert, setAlert] = useState({ new: false, opening: false, active_clients: 0 })
   const [eventSource, setEventSource] = useState(null)
   const clientCountRef = useRef(null)
+
+  const filters_list = Object.values(filters_config)
 
   const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
 
@@ -72,8 +74,8 @@ const Cards = () => {
     setTotalCards(0)
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
-    const { source, env, day, app, suites } = filters
-    const url = `${server_url}/cards/?source=${source}&day=${day}&env=${env}&app=${app}&suites=${suites}`
+    const { source, environment, day, app, protocol } = filters
+    const url = `${server_url}/cards/?source=${source}&day=${day}&environment=${environment}&app=${app}&protocol=${protocol}`
     const request = await fetch(url)
     const response = await request.json()
     if (!request.ok) {
@@ -127,28 +129,14 @@ const Cards = () => {
           />
         </div>
         <div className="filters-wrapper">
-          <div className="env-filters-wrapper">
-            <Filters filter_config={env_filter_config} filters={filters} setFilter={setFilters} />
-            <span className="filter-label">{env_filter_config.name}</span>
-          </div>
-
-          <div className="day-filters-wrapper">
-            <Filters filter_config={day_filter_config} filters={filters} setFilter={setFilters} />
-            <span className="filter-label">{day_filter_config.name}</span>
-          </div>
-          <div className="app-filters-wrapper">
-            <Filters filter_config={app_filter_config} filters={filters} setFilter={setFilters} />
-            <span className="filter-label">{app_filter_config.name}</span>
-          </div>
-
-          <div className="suites-filters-wrapper">
-            <Filters
-              filter_config={suites_filter_config}
-              filters={filters}
-              setFilter={setFilters}
-            />
-            <span className="filter-label">{suites_filter_config.name}</span>
-          </div>
+          {filters_list.map((filter_config, index) => {
+            return (
+              <div key={index} className={`${filter_config.name}-filters-wrapper`}>
+                <Filters filter_config={filter_config} filters={filters} setFilter={setFilters} />
+                <span className="filter-label">{filter_config.label}</span>
+              </div>
+            )
+          })}
         </div>
 
         <div className="total">{totalCards} cards</div>
