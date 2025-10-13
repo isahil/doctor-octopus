@@ -99,7 +99,7 @@ class Cards:
             0, len(missing_cards_in_envs), rate_limit_folder_batch_size
         ):  # Process in batches of value set for rate_limit_folder_batch_size
             cards_folders_batch = missing_cards_in_envs[i : i + rate_limit_folder_batch_size]
-            logger.info(f"Downloading cards files batch {i // rate_limit_folder_batch_size + 1} with {len(cards_folders_batch)} cards")
+            logger.info(f"Downloading cards folder batch {i // rate_limit_folder_batch_size + 1} with {len(cards_folders_batch)} cards")
 
             with ThreadPoolExecutor() as executor:
                 futures = [executor.submit(download_s3_folder, card_root_dir) for card_root_dir in cards_folders_batch]
@@ -109,7 +109,7 @@ class Cards:
                     except Exception as e:
                         logger.error(f"Error downloading card: {e}", exc_info=True)
             logger.info(
-                f"Downloaded cards_folder_batch {i // rate_limit_folder_batch_size + 1} successfully ✅ Rate limiting wait time {rate_limit_wait}s..."
+                f"Downloaded cards folder batch {i // rate_limit_folder_batch_size + 1} successfully ✅ Rate limiting wait time {rate_limit_wait}s..."
             )
             time.sleep(rate_limit_wait)
 

@@ -7,20 +7,20 @@ def build_validation_rules():
         "environment": [
             {"is_valid": equal_value},
         ],
+        "day": [{"is_valid": less_or_eqaul_to_date_time}],
         "app": [
             {"is_valid": equal_value},
         ],
         "protocol": [
             {"is_valid": equal_value},
         ],
-        "day": [{"is_valid": less_or_eqaul_to_date_time}],
     }
     return validation_rules
 
 
 def equal_value(received, expected):
-    """Return True if the value is valid, otherwise False"""
-    return received == expected
+    """Return True if the value is valid or 'all', otherwise False"""
+    return received == expected or expected == "all"
 
 
 def validate_field(received_value, expected_value, validations):
@@ -42,7 +42,7 @@ def validate(received_data, expected_data):
         expected_value,
     ) in (
         expected_data.items()
-    ):  # key = "environment", "app", "protocol" | value = [{'is_valid': <function is_valid at 0x7f8b1c1f3d30>}]
+    ):  # key = "environment" | "app" | "protocol", value = [{'is_valid': <function is_valid at 0x7f8b1c1f3d30>}]
         # logger.info(f"expected_key: {expected_key} | expected_value: {expected_value}")
         if expected_key == "source":
             continue

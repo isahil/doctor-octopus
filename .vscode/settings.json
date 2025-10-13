@@ -4,5 +4,6 @@
 	"[python]": {
 		"editor.defaultFormatter": "charliermarsh.ruff"
 	},
-	"github-actions.workflows.pinned.workflows": [".github/workflows/dr-ci.yml"]
+	"github-actions.workflows.pinned.workflows": [".github/workflows/dr-ci.yml"],
+	"python-envs.pythonProjects": []
 }

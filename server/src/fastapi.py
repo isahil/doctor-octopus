@@ -21,21 +21,33 @@ async def get_all_cards(
         description="Retrieve all the HTML & JSON reports from the source",
         example="remote",
     ),
+    env: str = Query(
+        "qa",
+        title="Environment",
+        description="Test environment to filter the reports by",
+        example="qa",
+    ),
     day: int = Query(
         ...,
         title="Day",
         description="Filter the reports age based on the given day number",
         example=3,
     ),
-    environment: str = Query(
-        "qa",
-        title="Environment",
-        description="Test environment to filter the reports by",
-        example="qa",
+    app: str = Query(
+        "all",
+        title="App",
+        description="Application to filter the reports by",
+        example="clo,loan",
+    ),
+    suites: str = Query(
+        "all",
+        title="Suites",
+        description="Suites to filter the reports by",
+        example="ui,api",
     ),
 ):
     """Get available report cards based on the source requested"""
-    expected_filter_data = {"environment": environment, "day": day, "source": source}
+    expected_filter_data = {"source": source, "environment": env, "day": day, "app": app, "protocol": suites}
     logger.info(f"Getting all cards with filter data: {expected_filter_data}")
     cards = instances.fastapi_app.state.cards
     if cards:

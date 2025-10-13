@@ -38,10 +38,10 @@ def format_s3_object_filter_data(obj):
 
     return {
         "object_name": object_name,
-        "day": path_parts[5],
-        "protocol": path_parts[4],
-        "environment": path_parts[3],
         "app": path_parts[2],
+        "environment": path_parts[3],
+        "protocol": path_parts[4],
+        "day": path_parts[5],
         "file_type": "json",
         "s3_root_dir": "/".join(path_parts[:6]),
     }
