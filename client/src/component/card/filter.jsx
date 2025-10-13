@@ -1,7 +1,7 @@
 import "./filter.css"
 
-const Filters = ({ filter_conf, filter, setFilter }) => {
-  const { name, options } = filter_conf
+const Filters = ({ filter_config, filters, setFilter }) => {
+  const { name, options } = filter_config
 
   const handle_filter_change = (e) => {
     const { value } = e.target
@@ -10,19 +10,19 @@ const Filters = ({ filter_conf, filter, setFilter }) => {
   }
 
   return (
-    <div className={`${name} options-wrapper`}>
+    <div className="options-wrapper">
       {options
-        .sort((a, b) => (a[name] === filter[name] ? -1 : b[name] === filter[name] ? 1 : 0))
+        // .sort((a, b) => (a[name] === filters[name] ? -1 : b[name] === filters[name] ? 1 : 0))
         .map((option, i) => {
           return (
-            <label key={i} className={`${name} option-wrapper`}>
+            <label key={i} className="option-wrapper">
               <input
                 key={i}
                 type="radio"
                 name={`${name}-${option}`}
                 value={option}
                 onChange={handle_filter_change}
-                checked={filter[name] == option}
+                checked={filters[name] == option}
               ></input>
               <div className="option">
                 <span className={`filter ${name}-${option}`}>{option}</span>

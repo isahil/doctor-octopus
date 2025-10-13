@@ -1,16 +1,20 @@
 {
   "name": "App Configurations & Options",
   "version": "1.0.0",
-  "day_filter_conf": {
+  "day_filter_config": {
     "name": "day",
-    "options": ["1", "2", "3", "5", "10", "15", "30"]
+    "options": ["1", "2", "3", "5", "10", "15", "30", "60", "120"]
   },
-  "environment_filter_conf": {
-    "name": "environment",
-    "options": ["dev", "qa", "uat", "sit"]
+  "env_filter_config": {
+    "name": "env",
+    "options": ["all", "dev", "qa", "uat", "sit", "prod"]
   },
-  "app_filter_conf": {
+  "app_filter_config": {
     "name": "app",
-    "options": ["loan", "clo"]
+    "options": ["all", "loan", "clo"]
+  },
+  "suites_filter_config": {
+    "name": "suites",
+    "options": ["all","ui", "api", "fix", "e2e", "perf"]
   }
 }

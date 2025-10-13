@@ -4,14 +4,20 @@ import "./cards.css"
 import Filters from "./filter"
 import config from "../../config.json"
 import { to_roman_numeral } from "../../util/helper"
-const { day_filter_conf, environment_filter_conf } = config
+const { day_filter_config, env_filter_config, app_filter_config, suites_filter_config } = config
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 const Cards = () => {
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [filters, setFilters] = useState({ source: "remote", day: 1, environment: "qa" })
+  const [filters, setFilters] = useState({
+    source: "remote",
+    day: 1,
+    env: "qa",
+    app: "clo",
+    suites: "ui",
+  })
   const [alert, setAlert] = useState({ new: false, opening: false, active_clients: 0 })
   const [eventSource, setEventSource] = useState(null)
   const clientCountRef = useRef(null)
@@ -37,7 +43,9 @@ const Cards = () => {
         const max = data?.max ?? null
         const lifetime = data?.lifetime ?? null
         // const timestamp = data?.timestamp ?? null
-        console.log(`Active clients: ${active} | max : ${max} | lifetime: ${lifetime} | timestamp: ${new Date().toLocaleString()}`)
+        console.log(
+          `Active clients: ${active} | max : ${max} | lifetime: ${lifetime} | timestamp: ${new Date().toLocaleString()}`
+        )
         setAlert((prev) => ({ ...prev, active_clients: active }))
       }
     }
@@ -64,8 +72,8 @@ const Cards = () => {
     setTotalCards(0)
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
-    const { source, day, environment } = filters
-    const url = `${server_url}/cards/?source=${source}&day=${day}&environment=${environment}`
+    const { source, env, day, app, suites } = filters
+    const url = `${server_url}/cards/?source=${source}&day=${day}&env=${env}&app=${app}&suites=${suites}`
     const request = await fetch(url)
     const response = await request.json()
     if (!request.ok) {
@@ -118,20 +126,28 @@ const Cards = () => {
             onClick={get_cards_from_api}
           />
         </div>
-        <div className="filter-wrapper">
-          {filters.source != "local" && (
-            <div className="env-filters-wrapper">
-              <Filters
-                filter_conf={environment_filter_conf}
-                filter={filters}
-                setFilter={setFilters}
-              />
-              <span className="filter-label">ENV</span>
-            </div>
-          )}
+        <div className="filters-wrapper">
+          <div className="env-filters-wrapper">
+            <Filters filter_config={env_filter_config} filters={filters} setFilter={setFilters} />
+            <span className="filter-label">{env_filter_config.name}</span>
+          </div>
+
           <div className="day-filters-wrapper">
-            <Filters filter_conf={day_filter_conf} filter={filters} setFilter={setFilters} />
-            <span className="filter-label">{filters["day"] == 1 ? "day" : "days"}</span>
+            <Filters filter_config={day_filter_config} filters={filters} setFilter={setFilters} />
+            <span className="filter-label">{day_filter_config.name}</span>
+          </div>
+          <div className="app-filters-wrapper">
+            <Filters filter_config={app_filter_config} filters={filters} setFilter={setFilters} />
+            <span className="filter-label">{app_filter_config.name}</span>
+          </div>
+
+          <div className="suites-filters-wrapper">
+            <Filters
+              filter_config={suites_filter_config}
+              filters={filters}
+              setFilter={setFilters}
+            />
+            <span className="filter-label">{suites_filter_config.name}</span>
           </div>
         </div>
 
