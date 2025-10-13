@@ -1,0 +1,77 @@
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+services:
+  app:
+    container_name: doctor-octopus-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+    ports:
+      - "3000:3000"  # Client
+      - "8000:8000"  # Main
+      - "8001:8001"  # FixMe
+    volumes:
+      - ./logs:/app/logs
+      - ./server/test_reports:/app/server/test_reports # Persist test_reports from host to container
+      # - test_reports:/app/server/test_reports # Persist test_reports in a named volume
+      - /etc/localtime:/etc/localtime:ro # Sync container time with host time
+    depends_on:
+      - redis
+    # command: npm run start:prod true
+    healthcheck:
+      test: ["CMD", "npm", "run", "healthcheck"]
+      interval: 900s
+      timeout: 5s
+      retries: 5
+    develop:
+      watch:
+        # Rebuild on Dockerfile changes
+        - action: rebuild
+          path: ./Dockerfile
+        # Rebuild on dependency file changes
+        - action: rebuild
+          path: ./server/pyproject.toml
+        - action: rebuild
+          path: ./client/package.json
+        # Sync source code changes
+        - action: sync
+          path: ./utils
+          target: /app/utils
+        - action: sync
+          path: ./server
+          target: /app/server
+          ignore:
+            - .venv
+            - __pycache__
+            - "*.pyc"
+        - action: sync
+          path: ./client
+          target: /app/client
+          ignore:
+            - node_modules
+
+
+  redis: 
+    image: redis:alpine
+    container_name: doctor-octopus-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes # override enables Redis's Append Only File (AOF) persistence for better durability
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+  test_reports:
+

@@ -25,6 +25,7 @@ if __name__ == "__main__":
     main_server_port = get_main_server_port()
     node_env = get_node_env()
     workers = 1
+
     uvicorn.run(
         "server:fastapi_app",
         host="0.0.0.0",
