@@ -77,7 +77,7 @@ class RedisClient:
     def it_has_been_cached(self, key, value):
         client = self.get_client()
         client.lpush(key, value)
-        client.expire(key, self.seconds_until_midnight(self.config.redis_cache_expiry_days))  # Set expiry in seconds
+        client.expire(key, self.seconds_until_midnight(self.config.redis_cache_ttl))  # Set expiry in seconds
 
     def create_card_cache(self, cards_cache_key: str, card_cache_field: str, card_cache_value: str) -> None:
         was_set = self.redis_client.hsetnx(cards_cache_key, card_cache_field, card_cache_value)

@@ -1,3 +1,4 @@
+from src.utils.logger import logger
 from src.utils.date import less_or_eqaul_to_date_time
 
 
@@ -28,6 +29,7 @@ def validate_field(received_value, expected_value, validations):
         valid = validation["is_valid"]  # is_valid = True, False
         is_valid = valid(received_value, expected_value)  # is_valid = True, False
         if not is_valid:
+            logger.debug(f"Validation failed, received: {received_value} | expected: {expected_value}")
             error = f"Expected: {expected_value}, Received: {received_value}"
             return error
     return None
@@ -40,14 +42,12 @@ def validate(received_data, expected_data):
     for (
         expected_key,
         expected_value,
-    ) in (
-        expected_data.items()
-    ):  # key = "environment" | "app" | "protocol", value = [{'is_valid': <function is_valid at 0x7f8b1c1f3d30>}]
+    ) in expected_data.items():
         # logger.info(f"expected_key: {expected_key} | expected_value: {expected_value}")
         if expected_key == "source":
             continue
-        received_value = received_data.get(expected_key)  # received = "qa", "clo", "api"
-        validations = validation_rules[expected_key]  # validations = [{'is_valid': <function is_valid>}]
+        received_value = received_data.get(expected_key)  # "qa", "clo", "api"
+        validations = validation_rules[expected_key]  # [{'is_valid': <function is_valid>}]
         error = validate_field(received_value, expected_value, validations)
         if error:
             return error

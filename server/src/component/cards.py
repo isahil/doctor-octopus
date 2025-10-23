@@ -3,7 +3,7 @@ import json
 import time
 from config import (
     max_local_dirs,
-    test_reports_redis_cache_name,
+    test_reports_redis_key,
     test_environments,
     rate_limit_folder_batch_size,
     rate_limit_wait_time,
@@ -47,7 +47,7 @@ class Cards:
 
         redis = instances.redis
         environment = expected_filter_data.get("environment", "")
-        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"  # trading-app-reports:qa
+        reports_cache_key = f"{test_reports_redis_key}:{environment}"  # trading-app-reports:qa
         _missing_cards = []
 
         cached_cards = redis.get_all_cached_cards(reports_cache_key)
@@ -56,7 +56,9 @@ class Cards:
                 cached_card_date = cached_card_date.decode("utf-8")
                 cached_card_value = json.loads(cached_card_value.decode("utf-8"))
                 cached_card_filter_data = cached_card_value.get("filter_data", {})
-                cached_card_s3_root_dir = cached_card_filter_data.get("s3_root_dir", "") # 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM'
+                cached_card_s3_root_dir = cached_card_filter_data.get(
+                    "s3_root_dir", ""
+                )  # 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM'
                 error = validate(cached_card_filter_data, expected_filter_data)
                 if error:
                     continue
@@ -88,7 +90,7 @@ class Cards:
         )  # Flatten the list of lists into a single list []
 
         def calculate_total_batches(total_items, batch_size):
-            return ((total_items + batch_size - 1) // batch_size)
+            return (total_items + batch_size - 1) // batch_size
 
         total_batches = calculate_total_batches(len(missing_cards_in_envs), rate_limit_folder_batch_size)
         logger.info(
@@ -99,7 +101,9 @@ class Cards:
             0, len(missing_cards_in_envs), rate_limit_folder_batch_size
         ):  # Process in batches of value set for rate_limit_folder_batch_size
             cards_folders_batch = missing_cards_in_envs[i : i + rate_limit_folder_batch_size]
-            logger.info(f"Downloading cards folder batch {i // rate_limit_folder_batch_size + 1} with {len(cards_folders_batch)} cards")
+            logger.info(
+                f"Downloading cards folder batch {i // rate_limit_folder_batch_size + 1} with {len(cards_folders_batch)} cards"
+            )
 
             with ThreadPoolExecutor() as executor:
                 futures = [executor.submit(download_s3_folder, card_root_dir) for card_root_dir in cards_folders_batch]
@@ -117,7 +121,7 @@ class Cards:
         """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
         environment = expected_filter_data.get("environment", "")
         day = int(expected_filter_data.get("day", ""))
-        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"
+        reports_cache_key = f"{test_reports_redis_key}:{environment}"
         filtered_cards: list[dict] = []
 
         if self.environment != environment or self.day < day:
@@ -132,6 +136,7 @@ class Cards:
                     received_filter_data = received_card_data.get("filter_data")
                     error = validate(received_filter_data, expected_filter_data)
                     if error:
+                        # logger.warning(f"Card filter data validation failed: {error}")
                         continue
                     filtered_cards.append(received_card_data)
         elif self.environment == environment and self.day == day:

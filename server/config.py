@@ -1,23 +1,15 @@
 import os
-# from dotenv import load_dotenv
-
-# load_dotenv(".env", verbose=False, override=True)
-# local_dir: str = os.environ.get(
-#     "LOCAL_DIRECTORY", "../../"
-# )  # path to the local project directory where tests need to be run from
-# load_dotenv(f"{local_dir}.env", verbose=False)
-# load_dotenv(f"{local_dir}.dotenv/.{environment}", verbose=False)
 
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
-test_reports_redis_cache_name = "trading-apps-reports"
 
-do_current_clients_count_key = "DO:current_clients_count"
-do_lifetime_clients_count_key = "DO:lifetime_clients_count"
-do_max_concurrent_clients_key = "DO:max_concurrent_clients_count"
-redis_instance_key: str = "DO:redis_instance_count"
-aioredis_instance_key: str = "DO:aioredis_instance_count"
-redis_cache_expiry_days: int = 30  # number of days to keep the Redis cache
+test_reports_redis_key = "doctor-octopus:trading-apps-reports"
+do_current_clients_count_key = "doctor-octopus:stats:current_clients_count"
+do_lifetime_clients_count_key = "doctor-octopus:stats:lifetime_clients_count"
+do_max_concurrent_clients_key = "doctor-octopus:stats:max_concurrent_clients_count"
+redis_instance_key: str = "doctor-octopus:stats:redis_instance_count"
+aioredis_instance_key: str = "doctor-octopus:stats:aioredis_instance_count"
+redis_cache_ttl: int = 60  # Redis cache Time To Live (TTL) in days
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
 
@@ -39,9 +31,9 @@ __all__ = [
     "max_local_dirs",
     "test_environments",
     "test_reports_dir",
-    "test_reports_redis_cache_name",
+    "test_reports_redis_key",
     "the_lab_log_file_name",
     "the_doc_log_file_name",
     "pubsub_frequency_time",
-    "redis_cache_expiry_days",
+    "redis_cache_ttl",
 ]  # export the variables

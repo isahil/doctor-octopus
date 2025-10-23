@@ -7,7 +7,7 @@ from typing import Union
 import redis as _redis
 from config import (
     test_reports_dir,
-    test_reports_redis_cache_name,
+    test_reports_redis_key,
     rate_limit_file_batch_size,
 )
 from src.component.validation import validate
@@ -88,7 +88,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
     try:
         object_name = card_value["filter_data"].get("object_name")
         environment = card_value["filter_data"].get("environment", "")
-        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"  # e.g. trading-apps-reports:qa
+        reports_cache_key = f"{test_reports_redis_key}:{environment}"  # e.g. trading-apps-reports:qa
         if not object_name:
             return None
 

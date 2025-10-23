@@ -53,7 +53,7 @@ async def get_all_cards(
     if cards:
         cards = cards.get_cards_from_cache(expected_filter_data)
         if len(cards) == 0:
-            logger.info("No cards found in redis cache.")
+            logger.error("No cards found in redis cache.")
             return JSONResponse(
                 content={
                     "error": "No cards found in redis cache.",
