@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
+import config
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
@@ -47,12 +48,18 @@ async def get_all_cards(
     ),
 ):
     """Get available report cards based on the source requested"""
-    expected_filter_data = {"source": source, "environment": environment, "day": day, "app": app, "protocol": protocol}
-    logger.info(f"Getting all cards with filter data: {expected_filter_data}")
-    cards = instances.fastapi_app.state.cards
-    if cards:
-        cards = cards.get_cards_from_cache(expected_filter_data)
-        if len(cards) == 0:
+    cache_environments = config.test_environments if environment == "all" else [environment]
+    cards_instance = instances.fastapi_app.state.cards
+    if cards_instance:
+        all_cards = []
+        for cache_environment in cache_environments:
+            expected_filter_data = {"source": source, "environment": cache_environment, "day": day, "app": app, "protocol": protocol}
+            logger.info(f"Getting all cards with filter data: {expected_filter_data}")
+            fetched_cards = cards_instance.get_cards_from_cache(expected_filter_data)
+            if fetched_cards:
+                all_cards.extend(fetched_cards)
+        
+        if len(all_cards) == 0:
             logger.error("No cards found in redis cache.")
             return JSONResponse(
                 content={
@@ -65,7 +72,7 @@ async def get_all_cards(
         return JSONResponse(
             content={
                 "message": "Cards retrieved successfully",
-                "cards": cards,
+                "cards": all_cards,
             },
             status_code=200,
         )
