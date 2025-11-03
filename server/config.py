@@ -3,12 +3,13 @@ import os
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
 
-test_reports_redis_key = "doctor-octopus:trading-apps-reports"
-do_current_clients_count_key = "doctor-octopus:stats:current_clients_count"
-do_lifetime_clients_count_key = "doctor-octopus:stats:lifetime_clients_count"
-do_max_concurrent_clients_key = "doctor-octopus:stats:max_concurrent_clients_count"
-redis_instance_key: str = "doctor-octopus:stats:redis_instance_count"
-aioredis_instance_key: str = "doctor-octopus:stats:aioredis_instance_count"
+root_redis_key: str = "doctor-octopus"
+test_reports_redis_key = f"{root_redis_key}:trading-apps-reports"
+do_current_clients_count_key = f"{root_redis_key}:stats:current_clients_count"
+do_lifetime_clients_count_key = f"{root_redis_key}:stats:lifetime_clients_count"
+do_max_concurrent_clients_key = f"{root_redis_key}:stats:max_concurrent_clients_count"
+redis_instance_key: str = f"{root_redis_key}:stats:redis_instance_count"
+aioredis_instance_key: str = f"{root_redis_key}:stats:aioredis_instance_count"
 redis_cache_ttl: int = 60  # Redis cache Time To Live (TTL) in days
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
