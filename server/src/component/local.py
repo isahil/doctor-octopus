@@ -86,7 +86,6 @@ async def process_card(card_tuple) -> Union[dict, None]:
                     with open(file_path, encoding="utf-8") as j_report:
                         card_value["json_report"] = json.load(j_report)
                         del card_value["json_report"]["suites"]  # remove suites from the report to reduce report size
-                        # redis.create_reports_cache(test_reports_redis_cache_name, card_date, json.dumps(card_value))
                     return card_value
     except (KeyError, json.JSONDecodeError):
         logger.info(f"Error processing card: {card_date}")

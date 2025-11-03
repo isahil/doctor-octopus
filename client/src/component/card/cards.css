@@ -91,7 +91,6 @@
 .cards-header .total {
   color: cyan;
   font-size: 14px;
-  /* width: auto; */
   font-weight: bold;
 }
 
@@ -107,14 +106,16 @@
   transform: rotate(180deg) scale(1.2);
 }
 
-.filter-wrapper {
+.filters-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
+.environment-filters-wrapper,
 .day-filters-wrapper,
-.env-filters-wrapper {
+.app-filters-wrapper,
+.protocol-filters-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -126,18 +127,25 @@
 .filter-label {
   color: var(--octopus-green);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   text-transform: uppercase;
   order: 2;
-  /* Makes the label appear after the filter */
 }
 
-.env-filters-wrapper {
-  left: 180px;
+.environment-filters-wrapper {
+  left: 150px;
 }
 
 .day-filters-wrapper {
-  left: 300px;
+  left: 250px;
+}
+
+.app-filters-wrapper {
+  left: 350px;
+}
+
+.protocol-filters-wrapper {
+  left: 460px;
 }
 
 .source {
@@ -336,6 +344,7 @@
 @media (max-width: 768px) {
   .cards-header {
     top: 46px;
+    padding: 10px 5px;
   }
 
   .filter-label {
@@ -346,15 +355,27 @@
     gap: 2px;
   }
 
-  .env-filters-wrapper {
-    left: 100px;
+  .environment-filters-wrapper {
+    left: 60px;
   }
 
   .day-filters-wrapper {
-    left: 170px;
+    left: 100px;
+  }
+
+  .app-filters-wrapper {
+    left: 140px;
+  }
+
+  .protocol-filters-wrapper {
+    left: 180px;
   }
 
   .new-pulse {
-    right: 55px;
+    right: 30px;
+  }
+
+  .source {
+    right: 60px;
   }
 }

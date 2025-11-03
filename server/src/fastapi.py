@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
+import config
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
@@ -11,61 +12,6 @@ import src.component.remote as remote
 import src.component.notification as notification
 
 router = APIRouter()
-
-
-@router.get("/cards/", response_class=JSONResponse, status_code=200)
-async def get_all_cards(
-    source: str = Query(
-        ...,
-        title="Source",
-        description="Retrieve all the HTML & JSON reports from the source",
-        example="remote",
-    ),
-    day: int = Query(
-        ...,
-        title="Day",
-        description="Filter the reports age based on the given day number",
-        example=3,
-    ),
-    environment: str = Query(
-        "qa",
-        title="Environment",
-        description="Test environment to filter the reports by",
-        example="qa",
-    ),
-):
-    """Get available report cards based on the source requested"""
-    expected_filter_data = {"environment": environment, "day": day, "source": source}
-    logger.info(f"Getting all cards with filter data: {expected_filter_data}")
-    cards = instances.fastapi_app.state.cards
-    if cards:
-        cards = cards.get_cards_from_cache(expected_filter_data)
-        if len(cards) == 0:
-            logger.info("No cards found in redis cache.")
-            return JSONResponse(
-                content={
-                    "error": "No cards found in redis cache.",
-                    "cards": [],
-                },
-                status_code=200,
-            )
-
-        return JSONResponse(
-            content={
-                "message": "Cards retrieved successfully",
-                "cards": cards,
-            },
-            status_code=200,
-        )
-    else:
-        logger.info("Cards class not found in app state.")
-        return JSONResponse(
-            content={
-                "message": "Cards class instance not found in app state.",
-                "cards": [],
-            },
-            status_code=500,
-        )
 
 
 @router.get("/card", response_class=PlainTextResponse, status_code=200)
@@ -95,7 +41,86 @@ async def get_a_card(
     return f"{mount_path}/index.html"
 
 
-@router.get("/reload-cache/", response_class=JSONResponse, status_code=200)
+@router.get("/cards", response_class=JSONResponse, status_code=200)
+async def get_all_cards(
+    source: str = Query(
+        ...,
+        title="Source",
+        description="Retrieve all the HTML & JSON reports from the source",
+        example="remote",
+    ),
+    environment: str = Query(
+        "qa",
+        title="Environment",
+        description="Test environment to filter the reports by",
+        example="qa",
+    ),
+    day: int = Query(
+        ...,
+        title="Day",
+        description="Filter the reports age based on the given day number",
+        example=3,
+    ),
+    app: str = Query(
+        "all",
+        title="App",
+        description="Application to filter the reports by",
+        example="clo,loan",
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports by",
+        example="ui,api",
+    ),
+):
+    """Get available report cards based on the source requested"""
+    cache_environments = config.test_environments if environment == "all" else [environment]
+    cards_instance = instances.fastapi_app.state.cards
+    if cards_instance:
+        all_cards = []
+        for cache_environment in cache_environments:
+            expected_filter_data = {
+                "source": source,
+                "environment": cache_environment,
+                "day": day,
+                "app": app,
+                "protocol": protocol,
+            }
+            logger.info(f"Getting all cards with filter data: {expected_filter_data}")
+            fetched_cards = cards_instance.get_cards_from_cache(expected_filter_data)
+            if fetched_cards:
+                all_cards.extend(fetched_cards)
+
+        if len(all_cards) == 0:
+            logger.error("No cards found in redis cache.")
+            return JSONResponse(
+                content={
+                    "error": "No cards found in redis cache.",
+                    "cards": [],
+                },
+                status_code=200,
+            )
+
+        return JSONResponse(
+            content={
+                "message": "Cards retrieved successfully",
+                "cards": all_cards,
+            },
+            status_code=200,
+        )
+    else:
+        logger.info("Cards class not found in app state.")
+        return JSONResponse(
+            content={
+                "message": "Cards class instance not found in app state.",
+                "cards": [],
+            },
+            status_code=500,
+        )
+
+
+@router.get("/cache-reload", response_class=JSONResponse, status_code=200)
 async def reload_cards_cache(
     source: str = Query(
         ...,
@@ -120,6 +145,36 @@ async def reload_cards_cache(
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards = instances.fastapi_app.state.cards
     await cards.actions(expected_filter_data)
+
+
+@router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)
+async def invalidate_redis_cache(
+    pattern: str = Query(
+        title="Pattern",
+        description="Regex pattern to match the Redis keys for invalidation",
+        example="doctor-octopus:trading-apps-reports:qa*",
+    ),
+):
+    logger.info(f"Invalidating Redis cache with pattern: {pattern}")
+    redis_client = instances.redis.get_client()
+
+    cursor = 0
+    keys_to_delete = []
+    while True:
+        cursor, keys = redis_client.scan(cursor=cursor, match=pattern, count=100, type="string")  # type: ignore
+        string_keys = [key.decode("utf-8") if isinstance(key, bytes) else key for key in keys]
+        logger.info(f"Scanning Redis: cursor={cursor}, found {len(string_keys)} keys")
+        keys_to_delete.extend(string_keys)
+        if cursor == 0:
+            break
+    if keys_to_delete:
+        logger.info(f"Found {len(keys_to_delete)} keys to delete. {keys_to_delete}")
+        redis_client.delete(*keys_to_delete)
+        message = f"Deleted {len(keys_to_delete)} keys from Redis cache."
+    else:
+        message = "No keys found matching the pattern."
+    logger.info(message)
+    return JSONResponse(content={"message": message, "total": len(keys_to_delete), "pattern": pattern}, status_code=200)
 
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)

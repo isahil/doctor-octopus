@@ -7,7 +7,7 @@ from typing import Union
 import redis as _redis
 from config import (
     test_reports_dir,
-    test_reports_redis_cache_name,
+    test_reports_redis_key,
     rate_limit_file_batch_size,
 )
 from src.component.validation import validate
@@ -38,10 +38,10 @@ def format_s3_object_filter_data(obj):
 
     return {
         "object_name": object_name,
-        "day": path_parts[5],
-        "protocol": path_parts[4],
-        "environment": path_parts[3],
         "app": path_parts[2],
+        "environment": path_parts[3],
+        "protocol": path_parts[4],
+        "day": path_parts[5],
         "file_type": "json",
         "s3_root_dir": "/".join(path_parts[:6]),
     }
@@ -88,7 +88,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
     try:
         object_name = card_value["filter_data"].get("object_name")
         environment = card_value["filter_data"].get("environment", "")
-        reports_cache_key = f"{test_reports_redis_cache_name}:{environment}"  # e.g. trading-apps-reports:qa
+        reports_cache_key = f"{test_reports_redis_key}:{environment}"  # e.g. trading-apps-reports:qa
         if not object_name:
             return None
 

@@ -6,7 +6,7 @@ load_dotenv(".env", verbose=False, override=True)
 
 
 def get_local_dir():
-    return os.environ.get("LOCAL_DIRECTORY", "../../")
+    return os.environ.get("LOCAL_DIRECTORY", "../../octopus-tests/")
 
 
 local_dir = get_local_dir()  # path to the local project directory where tests need to be run from
