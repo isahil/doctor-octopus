@@ -14,7 +14,34 @@ import src.component.notification as notification
 router = APIRouter()
 
 
-@router.get("/cards/", response_class=JSONResponse, status_code=200)
+@router.get("/card", response_class=PlainTextResponse, status_code=200)
+async def get_a_card(
+    source: str = Query(
+        ...,
+        title="Source",
+        description="Source of the html report file to be retrieved",
+        example="local/remote",
+    ),
+    root_dir: str = Query(
+        None,
+        title="S3 Root Directory",
+        description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
+        example="2021-09-01T14:00:00",
+    ),
+):
+    test_report_dir = os.path.basename(root_dir)
+    local_r_directories = local_report_directories()
+
+    if source == "remote" and test_report_dir not in local_r_directories:
+        logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
+        test_report_dir = remote.download_s3_folder(root_dir)
+    else:
+        logger.info(f"Card available in local: {test_report_dir}")
+    mount_path = f"/test_reports/{test_report_dir}"
+    return f"{mount_path}/index.html"
+
+
+@router.get("/cards", response_class=JSONResponse, status_code=200)
 async def get_all_cards(
     source: str = Query(
         ...,
@@ -53,12 +80,18 @@ async def get_all_cards(
     if cards_instance:
         all_cards = []
         for cache_environment in cache_environments:
-            expected_filter_data = {"source": source, "environment": cache_environment, "day": day, "app": app, "protocol": protocol}
+            expected_filter_data = {
+                "source": source,
+                "environment": cache_environment,
+                "day": day,
+                "app": app,
+                "protocol": protocol,
+            }
             logger.info(f"Getting all cards with filter data: {expected_filter_data}")
             fetched_cards = cards_instance.get_cards_from_cache(expected_filter_data)
             if fetched_cards:
                 all_cards.extend(fetched_cards)
-        
+
         if len(all_cards) == 0:
             logger.error("No cards found in redis cache.")
             return JSONResponse(
@@ -87,34 +120,7 @@ async def get_all_cards(
         )
 
 
-@router.get("/card", response_class=PlainTextResponse, status_code=200)
-async def get_a_card(
-    source: str = Query(
-        ...,
-        title="Source",
-        description="Source of the html report file to be retrieved",
-        example="local/remote",
-    ),
-    root_dir: str = Query(
-        None,
-        title="S3 Root Directory",
-        description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
-        example="2021-09-01T14:00:00",
-    ),
-):
-    test_report_dir = os.path.basename(root_dir)
-    local_r_directories = local_report_directories()
-
-    if source == "remote" and test_report_dir not in local_r_directories:
-        logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
-        test_report_dir = remote.download_s3_folder(root_dir)
-    else:
-        logger.info(f"Card available in local: {test_report_dir}")
-    mount_path = f"/test_reports/{test_report_dir}"
-    return f"{mount_path}/index.html"
-
-
-@router.get("/reload-cache/", response_class=JSONResponse, status_code=200)
+@router.get("/cache-reload", response_class=JSONResponse, status_code=200)
 async def reload_cards_cache(
     source: str = Query(
         ...,
@@ -139,6 +145,36 @@ async def reload_cards_cache(
     expected_filter_data = {"environment": environment, "day": day, "source": source}
     cards = instances.fastapi_app.state.cards
     await cards.actions(expected_filter_data)
+
+
+@router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)
+async def invalidate_redis_cache(
+    pattern: str = Query(
+        title="Pattern",
+        description="Regex pattern to match the Redis keys for invalidation",
+        example="doctor-octopus:trading-apps-reports:qa*",
+    ),
+):
+    logger.info(f"Invalidating Redis cache with pattern: {pattern}")
+    redis_client = instances.redis.get_client()
+
+    cursor = 0
+    keys_to_delete = []
+    while True:
+        cursor, keys = redis_client.scan(cursor=cursor, match=pattern, count=100, type="string")  # type: ignore
+        string_keys = [key.decode("utf-8") if isinstance(key, bytes) else key for key in keys]
+        logger.info(f"Scanning Redis: cursor={cursor}, found {len(string_keys)} keys")
+        keys_to_delete.extend(string_keys)
+        if cursor == 0:
+            break
+    if keys_to_delete:
+        logger.info(f"Found {len(keys_to_delete)} keys to delete. {keys_to_delete}")
+        redis_client.delete(*keys_to_delete)
+        message = f"Deleted {len(keys_to_delete)} keys from Redis cache."
+    else:
+        message = "No keys found matching the pattern."
+    logger.info(message)
+    return JSONResponse(content={"message": message, "total": len(keys_to_delete), "pattern": pattern}, status_code=200)
 
 
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)
