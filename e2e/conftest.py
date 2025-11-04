@@ -1,7 +1,8 @@
 import pytest
 
 @pytest.fixture(scope="session")
-def setup_teardown_fixture():
+def setup_teardown():
     print("Setting up the fixture")
-    yield "Hello, World!"
+    server_endpoint = "http://localhost:8000"
+    yield server_endpoint
     print("Tearing down the fixture")
