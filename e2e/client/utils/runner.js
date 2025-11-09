@@ -48,4 +48,5 @@ const upload_report = async (code) => {
 	process.exit(code ?? 1);
 };
 
-spawn_child_process(`npx playwright test --project=${test_script_name}`);
+const command = `npx playwright test --project=${test_script_name}`
+spawn_child_process(command, upload_report);
