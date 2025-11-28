@@ -1,5 +1,5 @@
 import { test, expect } from "playwright/test";
-import { list_objects } from "../utils/S3";
+import { list_objects } from "../../utils/S3";
 
 test("S3 Bucket Connection Test", async () => {
   console.log("Running S3 List test...");
