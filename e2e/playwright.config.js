@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { get_est_date_time } from "./client/utils";
 dotenv.config({ path: ".env" });
+import { get_est_date_time } from "./client/utils";
 
 const { TEST_REPORTS_DIR = `./test_reports/${get_est_date_time()}` } =
   process.env;
@@ -23,17 +23,14 @@ const config = {
     {
       name: "api:smoke",
       testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
     },
     {
       name: "api:sanity",
       testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
     },
     {
       name: "api:regression",
       testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
     },
     {
       name: "ui:smoke",

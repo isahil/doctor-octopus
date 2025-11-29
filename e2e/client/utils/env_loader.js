@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config({ path: [".env", "../.env"] });
 import is_ci from "is-ci";
-import fs from "fs";
 import { get_est_date_time } from "./index.js";
+import { ensure_dir } from "./fs_helper.js";
 
 export const get_environment = () => {
 	const { ENVIRONMENT } = process.env;
@@ -25,11 +25,9 @@ export const get_test_reports_dir = () => {
 	const full_test_reports_dir = `./${test_reports_dir}/${report_dir}`;
 	const dir_exists = process.env["TEST_REPORTS_DIR"];
 	if (!dir_exists) {
-		if (!fs.existsSync(full_test_reports_dir)) {
-			fs.mkdirSync(full_test_reports_dir, { recursive: true });
-		}
+		ensure_dir(full_test_reports_dir);
 		process.env["TEST_REPORTS_DIR"] = full_test_reports_dir;
-		console.log(`Created test reports directory at: ${full_test_reports_dir}`);
+		console.log(`Ensured reports directory at: ${full_test_reports_dir}`);
 	}
 	return full_test_reports_dir;
 };
