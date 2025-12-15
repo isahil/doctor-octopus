@@ -32,6 +32,31 @@ export const get_test_reports_dir = () => {
 	return full_test_reports_dir;
 };
 
+export const get_db_username = () => {
+	const { DB_USER } = process.env;
+	return DB_USER;
+}
+
+export const get_db_password = () => {
+	const { DB_PASSWORD } = process.env;
+	return DB_PASSWORD;
+}
+
+export const get_db_host = () => {
+	const { DB_HOST } = process.env;
+	return DB_HOST;
+}
+
+export const get_db_port = () => {
+	const { DB_PORT } = process.env;
+	return DB_PORT;
+}
+
+export const get_db_name = () => {
+	const { DB_NAME } = process.env;
+	return DB_NAME;
+}
+
 export const get_aws_sdet_bucket_name = () => {
 	const { AWS_SDET_BUCKET_NAME } = process.env;
 	return AWS_SDET_BUCKET_NAME;
