@@ -33,6 +33,10 @@ const config = {
       testMatch: "test-example.spec.js",
     },
     {
+      name: "db:smoke",
+      testMatch: "db/*.spec.js",
+    },
+    {
       name: "ui:smoke",
       testMatch: "test-example.spec.js",
       use: { browserName: "chromium" },
