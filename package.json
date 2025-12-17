@@ -11,7 +11,7 @@
     "healthcheck": "curl --fail http://localhost:8000/health || exit 1",
     "lint": "npx eslint .",
     "log": "bash utils/log.sh",
-    "notification": "cd server && bash start.sh notification",
+    "notification": "cd server && bash start.sh notification false",
     "prompt":"bash utils/prompt.sh",
     "pull": "git stash && git checkout main && git pull",
     "restart": "npm run stop && npm run start",
