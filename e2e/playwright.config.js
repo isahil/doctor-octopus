@@ -22,34 +22,34 @@ const config = {
   projects: [
     {
       name: "api:smoke",
-      testMatch: "test-example.spec.js",
+      testMatch: "unit/test-example.spec.js",
     },
     {
       name: "api:sanity",
-      testMatch: "test-example.spec.js",
+      testMatch: "unit/test-example.spec.js",
     },
     {
       name: "api:regression",
-      testMatch: "test-example.spec.js",
+      testMatch: "unit/test-example.spec.js",
     },
     {
       name: "ui:smoke",
-      testMatch: "test-example.spec.js",
+      testMatch: "unit/test-example.spec.js",
       use: { browserName: "chromium" },
     },
     {
       name: "ui:sanity",
-      testMatch: "test-example.spec.js",
+      testMatch: "unit/test-example.spec.js",
       use: { browserName: "chromium" },
     },
     {
       name: "ui:regression",
-      testMatch: "test-example.spec.js",
+      testMatch: "unit/test-example.spec.js",
       use: { browserName: "chromium" },
     },
     {
       name: "s3:smoke",
-      testMatch: "s3.spec.js",
+      testMatch: "unit/s3.spec.js",
     },
   ],
 };
