@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "[$(date)] Stopping Doctor Octopus services..."
+services=("notification" "server" "client" "fixme")  # Stops in reverse order
 
 # Function to safely stop a service
 stop_service() {
@@ -76,7 +77,6 @@ stop_service() {
 }
 
 # Stop all services
-services=("notification" "server" "client")  # Stop in reverse order
 stopped_count=0
 failed_count=0
 
@@ -105,7 +105,7 @@ done
 
 # Show final status
 echo "[$(date)] Final process check:"
-for service in client server notification; do
+for service in "${services[@]}"; do
     if [ -f "logs/${service}.pid" ]; then
         pid=$(cat "logs/${service}.pid")
         if kill -0 "$pid" 2>/dev/null; then

@@ -17,8 +17,8 @@ class Application:
             message = f"FixMe: {timeout}"
             logger.info(f"Broadcast: {message}")
             await self.sio.emit("fixme", message)
-            timeout += 10
-            await asyncio.sleep(10)
+            timeout += 30
+            await asyncio.sleep(30)
 
     def broadcast(self, message):
         if hasattr(self, "sio"):

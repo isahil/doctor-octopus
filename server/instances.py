@@ -24,7 +24,7 @@ if server_mode != "setup" and server_mode is not None:
 
     sio: AsyncServer = AsyncServer(
         async_mode="asgi",
-        cors_allowed_origins=["*"],
+        cors_allowed_origins="*",
         logger=True if debug == "true" else False,
         client_manager=AsyncRedisManager(redis_url),
     )
