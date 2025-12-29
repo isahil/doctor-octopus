@@ -97,7 +97,12 @@ export const get_github_actor = () => {
 	return GITHUB_ACTOR;
 };
 
+/**
+ * Get debug mode from environment variables.
+ * - ACTIONS_STEP_DEBUG is set to "1" (GitHub Actions)
+ * - RUNNER_DEBUG is set to "1" (GitHub Actions)
+ * @returns Returns True if any of the above conditions are met, otherwise False.
+ */
 export const gh_actions_debug_mode = () => {
-	if (is_ci) return false;
 	return process.env["ACTIONS_STEP_DEBUG"] === "1" || process.env["RUNNER_DEBUG"] === "1";
 };

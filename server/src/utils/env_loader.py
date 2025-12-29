@@ -67,7 +67,7 @@ def get_fixme_mode():
 
 
 def get_fixme_server_port():
-    return int(get_env_variable("FIXME_SERVER_PORT", 8001))
+    return int(get_env_variable("FIXME_SERVER_PORT", "8001"))
 
 
 def get_fix_side():
@@ -83,7 +83,11 @@ def get_fix_counter():
 
 
 def get_debug_mode():
-    return get_env_variable("DEBUG", "false") == "true"
+    """Get debug mode from environment variables. Returns True if any of the below conditions are met, otherwise False.
+    - ACTIONS_STEP_DEBUG is set to "1" (GitHub Actions)
+    - RUNNER_DEBUG is set to "1" (GitHub Actions)
+    """
+    return get_env_variable("ACTIONS_STEP_DEBUG") == "1" or get_env_variable("RUNNER_DEBUG") == "1"
 
 
 def get_aws_sdet_bucket_name():
@@ -100,6 +104,7 @@ def get_aws_sdet_bucket_access_key_id():
 
 def get_aws_sdet_bucket_secret_access_key():
     return get_env_variable("AWS_SDET_BUCKET_SECRET_ACCESS_KEY")
+
 
 def get_aws_session_token():
     return get_env_variable("AWS_SESSION_TOKEN")
