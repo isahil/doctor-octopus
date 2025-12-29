@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const csv_data_path = path.join(__dirname, "Electric_Vehicle_Population_Data.csv");
+const csv_data_path = path.join(__dirname, "../../../data/Electric_Vehicle_Population_Data.csv");
 
 const integer_fields = ["model_year", "electric_range", "base_msrp", "legislative_district", "dol_vehicle_id"];
 const float_fields = ["census_tract_2020"];
@@ -33,7 +33,7 @@ const sanitizeRecord = (record) => {
   return cleaned;
 };
 
-test.describe("Database Tests", () => {
+test.describe("Create An Electric Vehicle PostgresDB Table and Insert Data", () => {
   test("Connect to PostgreSQL and run a simple query", async () => {
     const result = await sql`SELECT * FROM electric_vehicle LIMIT 5;`;
     console.log("DB Query Result before INSERT sample:", JSON.stringify(result));
