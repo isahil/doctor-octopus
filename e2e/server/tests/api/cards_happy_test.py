@@ -1,9 +1,9 @@
 import pytest
 import requests
 
-@pytest.mark.smoke
-@pytest.mark.sanity
-@pytest.mark.regression
+@pytest.mark.api_smoke
+@pytest.mark.api_sanity
+@pytest.mark.api_regression
 def test_get_cards_with_all_filters(setup_teardown):
     """Test /cards endpoint with all filter combinations"""
     server_endpoint = setup_teardown

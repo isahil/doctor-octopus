@@ -1,7 +1,6 @@
 import pytest
 import sys
 import json
-import asyncio
 from pathlib import Path
 from unittest.mock import patch, MagicMock, AsyncMock
 
@@ -27,6 +26,7 @@ from src.component.remote import (  # type: ignore  # noqa: E402
 )
 
 
+@pytest.mark.unit_regression
 class TestTotalS3Objects:
     """Test the total_s3_objects function"""
 
@@ -56,6 +56,7 @@ class TestTotalS3Objects:
 
         assert result == 5
 
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.S3.list_all_s3_objects")
     def test_total_objects_single_object(self, mock_list_objects):
         """Test count of single object in S3 bucket"""
@@ -66,9 +67,12 @@ class TestTotalS3Objects:
         assert result == 1
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestFormatS3ObjectFilterData:
     """Test the format_s3_object_filter_data function"""
 
+    @pytest.mark.unit_smoke
     def test_format_valid_report_json_object(self):
         """Test formatting valid report.json S3 object"""
         obj = {"Key": "trading-apps/test_reports/loan/qa/ui/12-31-2025_08-30-00_AM/report.json"}
@@ -134,6 +138,8 @@ class TestFormatS3ObjectFilterData:
         assert result is None
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestGetAllS3Cards:
     """Test the get_all_s3_cards async function"""
 
@@ -150,6 +156,7 @@ class TestGetAllS3Cards:
 
         assert result == []
 
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.S3.list_all_s3_objects")
     @patch("src.component.remote.validate")
     @patch("src.component.remote.process_card")
@@ -188,17 +195,19 @@ class TestGetAllS3Cards:
         assert isinstance(result, list)
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestProcessCard:
     """Test the process_card async function"""
 
-    
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.S3.get_a_s3_object")
     @patch("src.component.remote.json.loads")
     async def test_process_card_success(self, mock_json_loads, mock_s3_get):
         """Test successful card processing"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis
+        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
         mock_redis.redis_client.hexists.return_value = False
 
         mock_json_loads.return_value = {
@@ -228,7 +237,7 @@ class TestProcessCard:
         """Test processing card with missing object_name"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis
+        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
 
         card_tuple = (
             "12-31-2025_08-30-00_AM",
@@ -251,7 +260,7 @@ class TestProcessCard:
         """Test processing card with JSON decode error"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis
+        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
         mock_redis.redis_client.hexists.return_value = False
 
         mock_json_loads.side_effect = json.JSONDecodeError("msg", "doc", 0)
@@ -275,7 +284,7 @@ class TestProcessCard:
         """Test processing card that already exists in cache"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis
+        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
         mock_redis.redis_client.hexists.return_value = True  # Card exists in cache
 
         card_tuple = (
@@ -293,6 +302,8 @@ class TestProcessCard:
         assert result is None
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestFindS3ReportDirObjects:
     """Test the find_s3_report_dir_objects function"""
 
@@ -305,6 +316,7 @@ class TestFindS3ReportDirObjects:
 
         assert result == []
 
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.S3.list_all_s3_objects")
     def test_find_report_dir_objects_matching_prefix(self, mock_list):
         """Test finding objects with matching prefix"""
@@ -324,6 +336,7 @@ class TestFindS3ReportDirObjects:
         assert f"{s3_root_dir}/suites/test1.json" in result
         assert "other/path/file.txt" not in result
 
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.S3.list_all_s3_objects")
     def test_find_report_dir_objects_no_matching(self, mock_list):
         """Test finding objects when no files match the root directory"""
@@ -351,6 +364,8 @@ class TestFindS3ReportDirObjects:
         mock_list.assert_called_once_with("custom-bucket")
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestDownloadS3Folder:
     """Test the download_s3_folder function"""
 
@@ -392,6 +407,7 @@ class TestDownloadS3Folder:
         assert result == "empty_dir"
         mock_download.assert_not_called()
 
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.find_s3_report_dir_objects")
     @patch("src.component.remote.S3.download_file")
     @patch("os.makedirs")
@@ -439,6 +455,7 @@ class TestDownloadS3Folder:
         assert result == "report_date"
         assert mock_download.call_count == 3
 
+    @pytest.mark.unit_smoke
     @patch("src.component.remote.find_s3_report_dir_objects")
     @patch("src.component.remote.S3.download_file")
     @patch("os.makedirs")

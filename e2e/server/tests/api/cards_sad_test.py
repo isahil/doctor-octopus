@@ -1,9 +1,9 @@
 import pytest
 import requests
 
-@pytest.mark.smoke
-@pytest.mark.sanity
-@pytest.mark.regression
+@pytest.mark.api_smoke
+@pytest.mark.api_sanity
+@pytest.mark.api_regression
 def test_cards_endpoint_error_handling(setup_teardown):
     """Test /cards endpoint error handling"""
     server_endpoint = setup_teardown

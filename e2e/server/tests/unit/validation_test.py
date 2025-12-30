@@ -5,7 +5,7 @@ from pathlib import Path
 # Add server src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / "server"))
 
-from src.component.validation import ( # type: ignore
+from src.component.validation import (  # type: ignore
     equal_value,
     validate_field,
     validate,
@@ -13,13 +13,16 @@ from src.component.validation import ( # type: ignore
 )
 
 
+@pytest.mark.unit_regression
 class TestEqualValue:
     """Test the equal_value function"""
 
+    @pytest.mark.unit_smoke
     def test_equal_value_exact_match(self):
         """Test when received and expected values match exactly"""
         assert equal_value("qa", "qa") is True
 
+    @pytest.mark.unit_smoke
     def test_equal_value_different_values(self):
         """Test when received and expected values don't match"""
         assert equal_value("qa", "sit") is False
@@ -46,12 +49,14 @@ class TestEqualValue:
 class TestValidateField:
     """Test the validate_field function"""
 
+    @pytest.mark.unit_smoke
     def test_validate_field_passes(self):
         """Test validation passes for matching values"""
         validations = [{"is_valid": equal_value}]
         result = validate_field("qa", "qa", validations)
         assert result is None
 
+    @pytest.mark.unit_smoke
     def test_validate_field_fails(self):
         """Test validation fails for non-matching values"""
         validations = [{"is_valid": equal_value}]
@@ -66,8 +71,10 @@ class TestValidateField:
         result = validate_field("loan", "all", validations)
         assert result is None
 
+    @pytest.mark.unit_smoke
     def test_validate_field_multiple_validations(self):
         """Test with multiple validation rules"""
+
         def always_true(val, expected):
             return True
 
@@ -81,6 +88,7 @@ class TestValidateField:
         result = validate_field("any", "any", validations)
         assert result is not None
 
+    @pytest.mark.unit_smoke
     def test_validate_field_error_message_format(self):
         """Test that error message has the correct format"""
         validations = [{"is_valid": equal_value}]
@@ -88,22 +96,24 @@ class TestValidateField:
         assert result == "Expected: expected_val, Received: received_val"
 
 
+@pytest.mark.unit_regression
 class TestBuildValidationRules:
     """Test the build_validation_rules function"""
 
     def test_build_validation_rules_structure(self):
         """Test that validation rules have correct structure"""
         rules = build_validation_rules()
-        
+
         assert "environment" in rules
         assert "day" in rules
         assert "app" in rules
         assert "protocol" in rules
 
+    @pytest.mark.unit_smoke
     def test_build_validation_rules_contains_validators(self):
         """Test that each rule contains validators"""
         rules = build_validation_rules()
-        
+
         for key, validators in rules.items():
             assert isinstance(validators, list)
             assert len(validators) > 0
@@ -112,9 +122,11 @@ class TestBuildValidationRules:
                 assert callable(validator["is_valid"])
 
 
+@pytest.mark.unit_regression
 class TestValidate:
     """Test the validate function"""
 
+    @pytest.mark.unit_smoke
     def test_validate_all_fields_match(self):
         """Test validation passes when all fields match"""
         received = {
@@ -180,6 +192,7 @@ class TestValidate:
         result = validate(received, expected)
         assert result is None
 
+    @pytest.mark.unit_smoke
     def test_validate_app_mismatch(self):
         """Test validation returns error on app field mismatch"""
         received = {

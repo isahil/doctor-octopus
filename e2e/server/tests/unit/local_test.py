@@ -18,6 +18,8 @@ from src.component.local import (  # type: ignore  # noqa: E402
 )
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestLocalReportDirectories:
     """Test the local_report_directories function"""
 
@@ -55,6 +57,8 @@ class TestLocalReportDirectories:
         assert result[0] == "12-31-2025_08-30-00_AM"
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestGetAllLocalCards:
     """Test the get_all_local_cards function"""
 
@@ -69,6 +73,7 @@ class TestGetAllLocalCards:
 
         assert result == {}
 
+    @pytest.mark.unit_smoke
     @patch("src.component.local.local_report_directories")
     @patch("src.component.local.less_or_eqaul_to_date_time")
     def test_get_all_local_cards_single_valid(self, mock_date_check, mock_get_dirs):
@@ -159,6 +164,8 @@ class TestGetAllLocalCards:
             get_all_local_cards({"day": "invalid"})
 
 
+@pytest.mark.unit_regression
+@pytest.mark.unit_sanity
 class TestCleanupOldTestReportDirectories:
     """Test the cleanup_old_test_report_directories function"""
 
@@ -183,6 +190,7 @@ class TestCleanupOldTestReportDirectories:
 
         assert result is True
 
+    @pytest.mark.unit_smoke
     @patch("src.component.local.logger")
     @patch("src.component.local.os")
     def test_cleanup_fewer_dirs_than_max(self, mock_os, mock_logger):
@@ -243,7 +251,7 @@ class TestCleanupOldTestReportDirectories:
 
         assert result is False
 
-
+    @pytest.mark.unit_smoke
     @patch("src.component.local.logger")
     @patch("src.component.local.shutil.rmtree")
     @patch("src.component.local.os")

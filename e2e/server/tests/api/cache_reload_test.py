@@ -2,9 +2,9 @@ import pytest
 import requests
 
 
-@pytest.mark.smoke
-@pytest.mark.sanity
-@pytest.mark.regression
+@pytest.mark.api_smoke
+@pytest.mark.api_sanity
+@pytest.mark.api_regression
 def test_cache_reload_happy_path(setup_teardown):
 	"""Ensure /cache-reload accepts valid params and returns 200."""
 	server_endpoint = setup_teardown
@@ -22,7 +22,7 @@ def test_cache_reload_happy_path(setup_teardown):
 	assert "application/json" in response.headers.get("content-type", ""), "Expected JSON response"
 
 
-@pytest.mark.regression
+@pytest.mark.api_regression
 def test_cache_reload_negative_paths(setup_teardown):
 	"""Validate error responses when required params are missing or invalid."""
 	server_endpoint = setup_teardown

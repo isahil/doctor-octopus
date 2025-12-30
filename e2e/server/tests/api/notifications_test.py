@@ -2,9 +2,9 @@ import pytest
 import requests
 
 
-@pytest.mark.smoke
-@pytest.mark.sanity
-@pytest.mark.regression
+@pytest.mark.api_smoke
+@pytest.mark.api_sanity
+@pytest.mark.api_regression
 def test_notifications_stream_happy_path(setup_teardown):
     """Validate the SSE stream connects and returns the initial event payload"""
     server_endpoint = setup_teardown
@@ -28,7 +28,7 @@ def test_notifications_stream_happy_path(setup_teardown):
         assert any("data:" in line for line in received_lines), "Missing data payload in stream"
 
 
-@pytest.mark.regression
+@pytest.mark.api_regression
 def test_notifications_endpoint_negative_paths(setup_teardown):
     """Ensure invalid notification requests are handled gracefully"""
     server_endpoint = setup_teardown
