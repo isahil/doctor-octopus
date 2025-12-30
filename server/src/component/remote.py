@@ -13,15 +13,10 @@ from config import (
 from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
+from src.utils.env_loader import get_aws_sdet_bucket_name
 import src.utils.redis as redis_module
 
-aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
-
-
-def get_a_s3_card_html_report(html) -> bytes:
-    card = S3.get_a_s3_object(html)
-    return card
-
+aws_bucket_name = get_aws_sdet_bucket_name()
 
 def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
