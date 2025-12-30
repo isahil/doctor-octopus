@@ -14,7 +14,7 @@ import {
 	get_github_actor,
 } from "./env_loader.js";
 
-export const upload_report = async (code, { test_suite, json_report, full_test_reports_dir }) => {
+export const upload_report = async (code, { test_suite, json_report, full_test_reports_dir, runner }) => {
 	const test_reports_dir = "test_reports";
 	const environment = get_environment();
 	const product = get_product();
@@ -22,7 +22,6 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	const aws_sdet_bucket_name = get_aws_sdet_bucket_name();
 	// Changing the report pattern can break report cards feature
 	const test_protocol = test_suite.split(":")[0];
-	// const full_test_reports_dir = get_test_reports_dir();
 	const report_dir = full_test_reports_dir.split("/").pop();
 	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${report_dir}`;
 	json_report = json_report ?? `${full_test_reports_dir}/report.json`;
@@ -31,7 +30,7 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	// Add meta data below
 	const os_username = os.userInfo().username;
 	const git_branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
-	report_card["stats"] ??= {}; // PyTest report may not have stats object
+	report_card["stats"] ??= {};
 	report_card["stats"]["git_branch"] = git_branch;
 	report_card["stats"]["username"] = os_username;
 	report_card["stats"]["environment"] = environment;
@@ -41,6 +40,7 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	report_card["stats"]["app"] = product;
 	report_card["stats"]["product"] = product;
 	report_card["stats"]["test_suite"] = test_suite;
+	report_card["stats"]["runner"] = runner;
 
 	if (is_ci) {
 		const run_id = get_github_run_id(); // e.g., 1234567890

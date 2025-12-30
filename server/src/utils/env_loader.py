@@ -1,6 +1,9 @@
 import os
 import platform
 from dotenv import load_dotenv
+from datetime import datetime
+from pathlib import Path
+from config import test_reports_dir
 
 load_dotenv(".env", verbose=False, override=True)
 
@@ -35,6 +38,10 @@ def get_server_mode():
     return get_env_variable("SERVER_MODE")
 
 
+def get_main_server_host():
+    return get_env_variable("MAIN_SERVER_HOST", "localhost")
+
+
 def get_main_server_port():
     value = get_env_variable("MAIN_SERVER_PORT")
     if not value:
@@ -48,6 +55,24 @@ def get_redis_host():
 
 def get_redis_port():
     return int(get_env_variable("SDET_REDIS_PORT", 6379))
+
+
+def get_test_reports_dir():
+    """Get test reports directory, creating timestamped subdirectory if not already set"""
+    dir_exists = get_env_variable("TEST_REPORTS_DIR")
+    if dir_exists:
+        return dir_exists
+
+    # Format: MM-DD-YYYY_HH-MM-SS_AM/PM
+    report_dir = datetime.now().strftime("%m-%d-%Y_%I-%M-%S_%p")
+    full_test_reports_dir = f"./{test_reports_dir}/{report_dir}"
+
+    # Ensure directory exists
+    Path(full_test_reports_dir).mkdir(parents=True, exist_ok=True)
+    set_env_variable("TEST_REPORTS_DIR", full_test_reports_dir)
+    logger.info(f"Ensured reports directory at: {full_test_reports_dir}")
+
+    return full_test_reports_dir
 
 
 def get_node_env():

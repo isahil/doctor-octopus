@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 dotenv.config({ path: [".env", "../.env"] });
-import is_ci from "is-ci";
 import { get_est_date_time } from "./index.js";
 import { ensure_dir } from "./fs_helper.js";
 
@@ -21,41 +20,45 @@ export const get_app_name = () => {
 
 export const get_test_reports_dir = () => {
 	const test_reports_dir = "test_reports";
+	const dir_exists = process.env["TEST_REPORTS_DIR"];
+	if (dir_exists) {
+		return dir_exists;
+	}
+
 	const report_dir = `${get_est_date_time()}`;
 	const full_test_reports_dir = `./${test_reports_dir}/${report_dir}`;
-	const dir_exists = process.env["TEST_REPORTS_DIR"];
-	if (!dir_exists) {
-		ensure_dir(full_test_reports_dir);
-		process.env["TEST_REPORTS_DIR"] = full_test_reports_dir;
-		console.log(`Ensured reports directory at: ${full_test_reports_dir}`);
-	}
+
+	ensure_dir(full_test_reports_dir);
+	process.env["TEST_REPORTS_DIR"] = full_test_reports_dir;
+	console.log(`Ensured reports directory at: ${full_test_reports_dir}`);
+
 	return full_test_reports_dir;
 };
 
 export const get_db_username = () => {
 	const { DB_USER } = process.env;
 	return DB_USER;
-}
+};
 
 export const get_db_password = () => {
 	const { DB_PASSWORD } = process.env;
 	return DB_PASSWORD;
-}
+};
 
 export const get_db_host = () => {
 	const { DB_HOST } = process.env;
 	return DB_HOST;
-}
+};
 
 export const get_db_port = () => {
 	const { DB_PORT } = process.env;
 	return DB_PORT;
-}
+};
 
 export const get_db_name = () => {
 	const { DB_NAME } = process.env;
 	return DB_NAME;
-}
+};
 
 export const get_aws_sdet_bucket_name = () => {
 	const { AWS_SDET_BUCKET_NAME } = process.env;

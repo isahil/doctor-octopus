@@ -231,6 +231,7 @@ else
     echo "[$(date)] Services started successfully:"
     echo "  - Client: http://localhost:3000"
     echo "  - Server: http://localhost:8000"
+    echo "  - FixMe: http://localhost:8001"
     echo "[$(date)] Use 'npm run stop' to stop services"
     echo "[$(date)] Use 'npm run status' to check service status"
 
