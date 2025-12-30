@@ -64,5 +64,5 @@ jobs:
           elif [[ "${{ inputs.test_suite }}" == "Regression" ]]; then
             ENVIRONMENT=qa APP=loan npm run ui:regression
           else
-            ENVIRONMENT=qa APP=loan npm run s3:smoke  # Default to smoke tests
+            npm run unit:client
           fi

@@ -7,6 +7,7 @@ import {
 } from "./index.js";
 
 const test_suite = process.argv[2] ?? "";
+const runner = process.argv[3] ?? "playwright";
 const gh_actions_debug = gh_actions_debug_mode();
 const full_test_reports_dir = get_test_reports_dir();
 
@@ -15,8 +16,10 @@ const upload_report_directory = async (code) => {
 };
 
 const log_level = gh_actions_debug ? "LOG_LEVEL=trace" : "LOG_LEVEL=info";
-const command = log_level
-	? `${log_level} npx playwright test --project=${test_suite}`
-	: `npx playwright test --project=${test_suite}`;
+const runner_command =
+	runner.toLowerCase() === "pytest"
+		? `poetry run pytest ${test_suite} --html=${full_test_reports_dir}/index.html --json-report-file=${full_test_reports_dir}/report.json`
+		: `npx playwright test --project=${test_suite}`;
+const command = log_level ? `${log_level} ${runner_command}` : `${runner_command}`;
 
 spawn_child_process(command, upload_report_directory);

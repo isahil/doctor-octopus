@@ -27,16 +27,17 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${report_dir}`;
 	json_report = json_report ?? `${full_test_reports_dir}/report.json`;
 	const report_card = JSON.parse(fs.readFileSync(json_report, "utf-8"));
-	
+
 	// Add meta data below
 	const os_username = os.userInfo().username;
 	const git_branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+	report_card["stats"] ??= {}; // PyTest report may not have stats object
 	report_card["stats"]["git_branch"] = git_branch;
 	report_card["stats"]["username"] = os_username;
 	report_card["stats"]["environment"] = environment;
 	report_card["stats"]["protocol"] = test_protocol;
 	report_card["stats"]["test_reports_dir"] = test_reports_dir;
-    report_card["stats"]["app_name"] = app_name;
+	report_card["stats"]["app_name"] = app_name;
 	report_card["stats"]["app"] = product;
 	report_card["stats"]["product"] = product;
 	report_card["stats"]["test_suite"] = test_suite;
