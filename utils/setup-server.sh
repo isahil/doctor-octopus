@@ -84,3 +84,13 @@ if ! python3 -m venv --help &> /dev/null || ! command_exists pip; then
         exit 1
     fi
 fi
+
+echo "[$(date)] installing python poetry package manager using curl."
+curl -sSL 'https://install.python-poetry.org' | python -
+
+if [ ${PIPESTATUS[0]} -ne 0 ] || [ ${PIPESTATUS[1]} -ne 0 ]; then
+    echo "Poetry installer failed. Exiting."
+    exit 1
+else
+    echo "Poetry installed successfully."
+fi

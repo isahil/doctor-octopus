@@ -1,60 +1,57 @@
 import dotenv from "dotenv";
-import { get_est_date_time } from "./client/utils";
 dotenv.config({ path: ".env" });
+import { get_test_reports_dir } from "./client/utils";
 
-const { TEST_REPORTS_DIR = `./test_reports/${get_est_date_time()}` } =
-  process.env;
+const TEST_REPORTS_DIR = get_test_reports_dir();
+
 const config = {
-  testDir: "client/tests",
-  timeout: 30000,
-  retries: 1,
-  use: {
-    browserName: "chromium",
-    headless: true,
-    trace: "on-first-retry",
-  },
-  reporter: [
-    ["github"],
-    ["list"],
-    ["html", { outputFolder: TEST_REPORTS_DIR, open: "never" }],
-    ["json", { outputFile: `${TEST_REPORTS_DIR}/report.json` }],
-  ],
-  projects: [
-    {
-      name: "api:smoke",
-      testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
-    },
-    {
-      name: "api:sanity",
-      testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
-    },
-    {
-      name: "api:regression",
-      testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
-    },
-    {
-      name: "ui:smoke",
-      testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
-    },
-    {
-      name: "ui:sanity",
-      testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
-    },
-    {
-      name: "ui:regression",
-      testMatch: "test-example.spec.js",
-      use: { browserName: "chromium" },
-    },
-    {
-      name: "s3:smoke",
-      testMatch: "s3.spec.js",
-    },
-  ],
+	testDir: "client/tests",
+	timeout: 30000,
+	retries: 1,
+	use: {
+		browserName: "chromium",
+		headless: true,
+		trace: "on-first-retry",
+	},
+	reporter: [
+		["github"],
+		["list"],
+		["html", { outputFolder: TEST_REPORTS_DIR, open: "never" }],
+		["json", { outputFile: `${TEST_REPORTS_DIR}/report.json` }],
+	],
+	projects: [
+		{
+			name: "ui:smoke",
+			testMatch: "unit/test-example.spec.js",
+			use: { browserName: "chromium" },
+		},
+		{
+			name: "ui:sanity",
+			testMatch: "unit/test-example.spec.js",
+			use: { browserName: "chromium" },
+		},
+		{
+			name: "ui:regression",
+			testMatch: "unit/test-example.spec.js",
+			use: { browserName: "chromium" },
+		},
+		{
+			name: "unit:smoke",
+			testMatch: "unit/*.spec.js",
+		},
+		{
+			name: "unit:sanity",
+			testMatch: "unit/*.spec.js",
+		},
+		{
+			name: "unit:regression",
+			testMatch: "unit/*.spec.js",
+		},
+		{
+			name: "db",
+			testMatch: "db/*.spec.js",
+		},
+	],
 };
 
 export default config;

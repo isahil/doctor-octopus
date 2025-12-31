@@ -1,12 +1,18 @@
-import os
 import boto3
 from src.utils.logger import logger
+from src.utils.env_loader import (
+    get_aws_sdet_bucket_name,
+    get_aws_sdet_bucket_region,
+    get_aws_sdet_bucket_access_key_id,
+    get_aws_sdet_bucket_secret_access_key,
+    get_aws_session_token
+)
 
-aws_bucket_name = os.environ.get("AWS_SDET_BUCKET_NAME")
-aws_bucket_region = os.environ.get("AWS_BUCKET_REGION")
-aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
-aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
-aws_session_token = os.environ.get("AWS_SESSION_TOKEN")
+aws_bucket_name = get_aws_sdet_bucket_name()
+aws_bucket_region = get_aws_sdet_bucket_region()
+aws_access_key_id = get_aws_sdet_bucket_access_key_id()
+aws_secret_access_key = get_aws_sdet_bucket_secret_access_key()
+aws_session_token = get_aws_session_token()
 
 
 class S3Client:

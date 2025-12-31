@@ -12,16 +12,6 @@ if [ -z "$SERVER_MODE" ]; then
     SERVER_MODE="main"
 fi
 
-# OS_NAME=$(uname)
-# echo "[$(date)] OS: $OS_NAME"
-# if [ "$OS_NAME" = "Linux" ] || [ "$OS_NAME" = "Darwin" ]; then
-#     echo "[$(date)] Linux .venv activation"
-#     source $HOME/venv/bin/activate
-# else
-#     echo "[$(date)] Windows .venv activation"
-#     source $HOME/venv/Scripts/Activate
-# fi
-
 if [ "$SERVER_MODE" = "main" ]; then
 
     if [ "$INITIALIZE" = "true" ]; then

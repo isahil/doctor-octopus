@@ -1,8 +1,13 @@
 #!/bin/bash
-
 DEBUG=$1
 
 source ./utils/env-loader.sh
+
+services=("client" "server" "notification" "fixme")
+client_log_file="logs/client.log"
+server_log_file="logs/server.log"
+notification_log_file="logs/notification.log"
+fixme_log_file="logs/fixme.log"
 
 # PID management functions below
 cleanup_stale_pids() {
@@ -79,22 +84,24 @@ for process in client server notification; do
 done
 
 echo "[$(date)] Starting the client server..."
-nohup npm run client >> logs/client.log 2>&1 &
+nohup npm run client >> "$client_log_file" 2>&1 &
 CLIENT_PID=$!
 if save_pid_with_validation "$CLIENT_PID" "client"; then
     echo "[$(date)] The client service process started. [$CLIENT_PID]"
+    echo "[$(date)] Client logs at >> $client_log_file"
 else
     echo "[$(date)] Failed to start client service"
     exit 1
 fi
 
 echo "[$(date)] Starting the main server..."
-nohup npm run server >> logs/server.log 2>&1 &
+nohup npm run server >> "$server_log_file" 2>&1 &
 SERVER_PID=$!
 if save_pid_with_validation "$SERVER_PID" "server"; then
     echo "[$(date)] The main server's parent process started. [$SERVER_PID]"
     server_pids=$(lsof -ti:8000 | tr '\n' ',')
     echo "[$(date)] Main server actual process PID(s) on port 8000: ($server_pids)"
+    echo "[$(date)] Server logs at >> $server_log_file"
 else
     echo "[$(date)] Failed to start server service"
     client_pid=$(get_service_pid "client")
@@ -104,10 +111,11 @@ else
 fi
 
 echo "[$(date)] Starting the notification server..."
-nohup npm run notification >> logs/notification.log 2>&1 &
+nohup npm run notification >> "$notification_log_file" 2>&1 &
 NOTIFICATION_PID=$!
 if save_pid_with_validation "$NOTIFICATION_PID" "notification"; then
     echo "[$(date)] Notification service process started. [$NOTIFICATION_PID]"
+    echo "[$(date)] Notification logs at >> $notification_log_file"
 else
     echo "[$(date)] Failed to start notification service"
     client_pid=$(get_service_pid "client")
@@ -115,7 +123,17 @@ else
     [ -n "$client_pid" ] && kill "$client_pid" 2>/dev/null
     [ -n "$server_pid" ] && kill "$server_pid" 2>/dev/null
     # rm -f logs/client.pid logs/server.pid
-    # exit 1
+    exit 1
+fi
+
+echo "[$(date)] Starting the FIXME server..."
+nohup npm run fixme >> "$fixme_log_file" 2>&1 &
+FIXME_PID=$!
+if save_pid_with_validation "$FIXME_PID" "fixme"; then
+    echo "[$(date)] FIXME service process started. [$FIXME_PID]"
+    echo "[$(date)] FIXME logs at >> $fixme_log_file"
+else
+    echo "[$(date)] Failed to start FIXME service"
 fi
 
 echo "[$(date)] === Port Status ==="
@@ -145,7 +163,7 @@ if [ "$DEBUG" = "true" ]; then
         echo "[$(date)] Received shutdown signal, stopping services..."
         
         # Read PIDs and validate before killing
-        for service in client server notification; do
+        for service in "${services[@]}"; do
             pid_file="logs/${service}.pid"
             if [ -f "$pid_file" ]; then
                 pid=$(cat "$pid_file")
@@ -184,7 +202,7 @@ if [ "$DEBUG" = "true" ]; then
             # Check if all services are still running
             services_running=0
             
-            for service in client server notification; do
+            for service in "${services[@]}"; do
                 pid_file="logs/${service}.pid"
                 if [ -f "$pid_file" ]; then
                     pid=$(cat $pid_file)
@@ -213,6 +231,7 @@ else
     echo "[$(date)] Services started successfully:"
     echo "  - Client: http://localhost:3000"
     echo "  - Server: http://localhost:8000"
+    echo "  - FixMe: http://localhost:8001"
     echo "[$(date)] Use 'npm run stop' to stop services"
     echo "[$(date)] Use 'npm run status' to check service status"
 
