@@ -2,8 +2,9 @@ import os
 import platform
 from dotenv import load_dotenv
 from datetime import datetime
-from pathlib import Path
 from config import test_reports_dir
+from src.utils.file_helper import ensure_dir
+from src.utils.date_time_helper import get_est_date_time
 
 load_dotenv(".env", verbose=False, override=True)
 
@@ -58,17 +59,18 @@ def get_redis_port():
 
 
 def get_test_reports_dir():
-    """Get test reports directory, creating timestamped subdirectory if not already set"""
+    """Get test reports directory, creating timestamped subdirectory if not already set
+    sets and returns "./test_reports/12-30-2025_06-55-28_PM"
+    """
     dir_exists = get_env_variable("TEST_REPORTS_DIR")
     if dir_exists:
         return dir_exists
 
     # Format: MM-DD-YYYY_HH-MM-SS_AM/PM
-    report_dir = datetime.now().strftime("%m-%d-%Y_%I-%M-%S_%p")
+    report_dir = get_est_date_time()
     full_test_reports_dir = f"./{test_reports_dir}/{report_dir}"
 
-    # Ensure directory exists
-    Path(full_test_reports_dir).mkdir(parents=True, exist_ok=True)
+    ensure_dir(full_test_reports_dir)
     set_env_variable("TEST_REPORTS_DIR", full_test_reports_dir)
     logger.info(f"Ensured reports directory at: {full_test_reports_dir}")
 
