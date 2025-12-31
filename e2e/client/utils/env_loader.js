@@ -4,7 +4,7 @@ import { get_est_date_time } from "./index.js";
 import { ensure_dir } from "./fs_helper.js";
 
 export const get_environment = () => {
-	const { ENVIRONMENT } = process.env;
+	const { ENVIRONMENT = "qa" } = process.env;
 	return ENVIRONMENT;
 };
 

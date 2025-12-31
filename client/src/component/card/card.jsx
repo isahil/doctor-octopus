@@ -8,16 +8,16 @@ function Card({ card, index, filter, setAlert }) {
   const { json_report, root_dir } = card
   const { stats, ci } = json_report
   const {
-    expected,
-    flaky,
-    skipped,
-    unexpected,
-    startTime,
-    git_branch,
-    test_suite,
-    environment,
-    app,
-    duration,
+    expected = 0,
+    flaky = 0,
+    skipped = 0,
+    unexpected = 0,
+    startTime = "",
+    git_branch = "n_a",
+    test_suite = "n_a",
+    environment = "n_a",
+    app = "n_a",
+    duration = 0,
   } = stats // scoreboard values
   const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected

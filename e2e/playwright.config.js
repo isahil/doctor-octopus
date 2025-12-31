@@ -36,7 +36,15 @@ const config = {
 			use: { browserName: "chromium" },
 		},
 		{
-			name: "unit",
+			name: "unit:smoke",
+			testMatch: "unit/*.spec.js",
+		},
+		{
+			name: "unit:sanity",
+			testMatch: "unit/*.spec.js",
+		},
+		{
+			name: "unit:regression",
 			testMatch: "unit/*.spec.js",
 		},
 		{

@@ -14,6 +14,10 @@ import {
 	get_github_actor,
 } from "./env_loader.js";
 
+const delimeter = test_suite => {
+	return test_suite.includes(":") ? ":" : "_";
+}
+
 export const upload_report = async (code, { test_suite, json_report, full_test_reports_dir, runner }) => {
 	const test_reports_dir = "test_reports";
 	const environment = get_environment();
@@ -21,7 +25,7 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	const app_name = get_app_name();
 	const aws_sdet_bucket_name = get_aws_sdet_bucket_name();
 	// Changing the report pattern can break report cards feature
-	const test_protocol = test_suite.split(":")[0];
+	const test_protocol = test_suite.split(delimeter(test_suite))[0];
 	const report_dir = full_test_reports_dir.split("/").pop();
 	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${report_dir}`;
 	json_report = json_report ?? `${full_test_reports_dir}/report.json`;

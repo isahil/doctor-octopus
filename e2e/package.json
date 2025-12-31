@@ -16,7 +16,7 @@
     "perf:sanity": "echo \"Artillery sanity test started at $(date)\"",
     "perf:regression": "echo \"Artillery regression test started at $(date)\"",
     "unit": "npm run unit:client && npm run unit:server",
-    "unit:client": "npm test unit",
+    "unit:client": "npm test unit:regression playwright",
     "unit:server": "npm test unit_regression pytest",
     "ui:smoke": "npm test ui:smoke",
     "ui:sanity": "npm test ui:sanity",

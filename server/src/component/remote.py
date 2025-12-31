@@ -14,9 +14,11 @@ from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
+from src.utils.date_time_helper import convert_unix_to_iso8601_time
 import src.utils.redis as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
+
 
 def total_s3_objects() -> int:
     total = S3.list_all_s3_objects()
@@ -32,7 +34,7 @@ def format_s3_object_filter_data(obj):
         return None
 
     return {
-        "object_name": object_name, # 'trading-apps/test_reports/loan/qa/api/12-31-2025_08-30-00_AM/report.json'
+        "object_name": object_name,  # 'trading-apps/test_reports/loan/qa/api/12-31-2025_08-30-00_AM/report.json'
         "app": path_parts[2],
         "product": path_parts[2],
         "environment": path_parts[3],
@@ -90,19 +92,64 @@ async def process_card(card_tuple) -> Union[dict, None]:
 
         if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
-
-            del j_report["config"]  # remove config details from the report to reduce report size
-            del j_report["suites"]  # remove suites from the report to reduce report size
-            
+            j_report = process_json(j_report)
             card_value["json_report"] = j_report
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
         else:
             # logger.info(f"Card found in Redis cache: {card_date}")
             return None
-    except (KeyError, json.JSONDecodeError):
-        logger.info(f"Error processing card: {card_date}")
+    except (KeyError, json.JSONDecodeError) as e:
+        logger.info(f"Error processing card {card_date}: {type(e).__name__} - {str(e)}")
         return None
+
+
+def process_json(json_report: dict) -> dict:
+    """Process the JSON report to remove unnecessary details and normalize stats"""
+
+    runner = "unknown"
+
+    # Normalize stats object for pytest reports
+    if "stats" not in json_report:
+        json_report["stats"] = { "startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0 }
+
+    stats = json_report["stats"]
+    keys = list(json_report.keys())
+
+    if "config" in keys and "suites" in keys:
+        runner = "playwright"
+        del json_report["config"]
+        del json_report["suites"]
+
+    if "collectors" in keys and "tests" in keys:
+        runner = "pytest"
+        del json_report["collectors"]
+        del json_report["tests"]
+
+        # Transform summary data into stats with same key names
+        if "summary" in json_report:
+            summary = json_report["summary"]
+
+            # Copy summary fields to stats
+            for key, value in summary.items():
+                if key == "passed":
+                    stats["expected"] = value
+                elif key == "failed":
+                    stats["unexpected"] = value
+                elif key == "deselected":
+                    stats["skipped"] = value
+                else:
+                    stats[key] = value
+        else:
+            logger.info("No summary found in pytest json report to normalize stats.")
+        
+        # Convert Unix timestamp to ISO 8601 format
+        created_timestamp = json_report.get("created", "")
+        stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
+        stats["duration"] = json_report.get("duration", 0)
+
+    stats["runner"] = runner
+    return json_report
 
 
 def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) -> list[str]:
