@@ -28,7 +28,6 @@ def get_env_variable(var_name, default_value=None):
 
 def set_env_variable(var_name, value):
     os.environ[var_name] = value
-    logger.info(f"Set environment variable '{var_name}': {value}")
 
 
 def get_os_name():

@@ -32,8 +32,9 @@ def format_s3_object_filter_data(obj):
         return None
 
     return {
-        "object_name": object_name,
+        "object_name": object_name, # 'trading-apps/test_reports/loan/qa/api/12-31-2025_08-30-00_AM/report.json'
         "app": path_parts[2],
+        "product": path_parts[2],
         "environment": path_parts[3],
         "protocol": path_parts[4],
         "day": path_parts[5],
@@ -49,28 +50,28 @@ async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> lis
 
     # Process objects in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor() as executor:
-        formatted_cards_filter_data = list(filter(None, executor.map(format_s3_object_filter_data, s3_objects)))
+        received_cards = list(filter(None, executor.map(format_s3_object_filter_data, s3_objects)))
 
     # Group objects by report_dir_date. Do we need html_report key since json_report has the value?
-    final_cards_pool = {}  # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
-    for received_card_filter_data in formatted_cards_filter_data:
-        error = validate(received_card_filter_data, expected_filter_data)
+    cards_pool = {}  # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
+    for received_card in received_cards:
+        error = validate(received_card, expected_filter_data)
         if error:
             continue
 
-        report_dir_date = received_card_filter_data["day"]
-        if report_dir_date not in final_cards_pool:
-            final_cards_pool[report_dir_date] = {
-                "filter_data": received_card_filter_data,
+        report_dir_date = received_card["day"]
+        if report_dir_date not in cards_pool:
+            cards_pool[report_dir_date] = {
+                "filter_data": received_card,
                 "html_report": f"{report_dir_date}/index.html",
                 "json_report": {},
-                "root_dir": received_card_filter_data["s3_root_dir"],
+                "root_dir": received_card["s3_root_dir"],
             }
 
-    report_cards = list(final_cards_pool.items())
-    batch_results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in report_cards])
-    all_results = [result for result in batch_results if result is not None]
-    return all_results
+    report_cards = list(cards_pool.items())
+    processed_cards = await asyncio.gather(*[process_card(card_tuple) for card_tuple in report_cards])
+    finalized_cards = [processed_card for processed_card in processed_cards if processed_card is not None]
+    return finalized_cards
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
@@ -89,8 +90,10 @@ async def process_card(card_tuple) -> Union[dict, None]:
 
         if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
+
             del j_report["config"]  # remove config details from the report to reduce report size
             del j_report["suites"]  # remove suites from the report to reduce report size
+            
             card_value["json_report"] = j_report
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
