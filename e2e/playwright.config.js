@@ -10,7 +10,7 @@ const config = {
 	retries: 1,
 	use: {
 		browserName: "chromium",
-		headless: true,
+		headless: false,
 		trace: "on-first-retry",
 	},
 	reporter: [
@@ -22,17 +22,17 @@ const config = {
 	projects: [
 		{
 			name: "ui:smoke",
-			testMatch: "unit/test-example.spec.js",
+			testMatch: "ui/*.spec.js",
 			use: { browserName: "chromium" },
 		},
 		{
 			name: "ui:sanity",
-			testMatch: "unit/test-example.spec.js",
+			testMatch: "ui/*.spec.js",
 			use: { browserName: "chromium" },
 		},
 		{
 			name: "ui:regression",
-			testMatch: "unit/test-example.spec.js",
+			testMatch: "ui/*.spec.js",
 			use: { browserName: "chromium" },
 		},
 		{
