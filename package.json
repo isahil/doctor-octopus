@@ -36,7 +36,7 @@
     "stop:fixme": "bash utils/stop.sh fixme",
     "stop:server": "bash utils/stop.sh server",
     "stop:notification": "bash utils/stop.sh notification",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd e2e && sh e2e-pipeline.sh"
   },
   "repository": {
     "type": "git",

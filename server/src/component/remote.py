@@ -14,7 +14,7 @@ from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
-from src.utils.date_time_helper import convert_unix_to_iso8601_time
+from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_est_date_time, get_unix_time
 import src.utils.redis as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
@@ -111,7 +111,7 @@ def process_json(json_report: dict) -> dict:
 
     # Normalize stats object for pytest reports
     if "stats" not in json_report:
-        json_report["stats"] = { "startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0 }
+        json_report["stats"] = {"startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0}
 
     stats = json_report["stats"]
     keys = list(json_report.keys())
@@ -142,12 +142,16 @@ def process_json(json_report: dict) -> dict:
                     stats[key] = value
         else:
             logger.info("No summary found in pytest json report to normalize stats.")
-        
+
         # Convert Unix timestamp to ISO 8601 format
-        created_timestamp = json_report.get("created", "")
+        created_timestamp = json_report.get("created")
         stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
         stats["duration"] = json_report.get("duration", 0)
 
+    if not stats.get("startTime"):
+        time = convert_unix_to_iso8601_time(get_unix_time())
+        stats["startTime"] = time
+        logger.info(f"No startTime found in stats, setting to current time: {time}")
     stats["runner"] = runner
     return json_report
 
