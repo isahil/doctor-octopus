@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
-import { get_test_reports_dir } from "./client/utils";
+import { get_test_reports_dir, artillery_record_mode } from "./client/utils";
 
 const TEST_REPORTS_DIR = get_test_reports_dir();
+const record = artillery_record_mode();
 
 const config = {
 	testDir: "client/tests",
@@ -20,7 +21,7 @@ const config = {
 		["list"],
 		["html", { outputFolder: TEST_REPORTS_DIR, open: "never" }],
 		["json", { outputFile: `${TEST_REPORTS_DIR}/report.json` }],
-		["@artilleryio/playwright-reporter", { name: "Doctor Octopus UI Test Suite" }],
+		...(record ? [["@artilleryio/playwright-reporter", { name: "Doctor Octopus UI Test Suite" }]] : []),
 	],
 	projects: [
 		{
