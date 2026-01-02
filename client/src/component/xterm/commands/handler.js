@@ -55,7 +55,7 @@ export const command_handler = ({
       update_options_handler(1, "loan")
       update_options_handler(2, "fix")
       update_options_handler(3, "client")
-      terminal.write("\r\x1B[1;3;32m Doc:\x1B[1;3;37m Starting FixMe App...\x1B[0m\r")
+      terminal.write("\r\x1B[1;3;32m Doc:\x1B[1;3;37m Starting FixMe session...\x1B[0m\r")
       break
     case input === "exit":
       interactive_mode_status = false // disable interactive mode
