@@ -92,7 +92,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
 
         if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
-            j_report = process_json(j_report)
+            j_report = process_json(j_report, card_date)
             card_value["json_report"] = j_report
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
@@ -104,7 +104,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
         return None
 
 
-def process_json(json_report: dict) -> dict:
+def process_json(json_report: dict, card_date: str) -> dict:
     """Process the JSON report to remove unnecessary details and normalize stats"""
 
     runner = "unknown"
@@ -149,9 +149,10 @@ def process_json(json_report: dict) -> dict:
         stats["duration"] = json_report.get("duration", 0)
 
     if not stats.get("startTime"):
+        # TODO: Use the actual test start time if available
         time = convert_unix_to_iso8601_time(get_unix_time())
         stats["startTime"] = time
-        logger.info(f"No startTime found in stats, setting to current time: {time}")
+        logger.info(f"[{card_date}] has no startTime in stats, setting to current time: {time}")
     stats["runner"] = runner
     return json_report
 

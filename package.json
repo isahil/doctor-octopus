@@ -36,7 +36,7 @@
     "stop:fixme": "bash utils/stop.sh fixme",
     "stop:server": "bash utils/stop.sh server",
     "stop:notification": "bash utils/stop.sh notification",
-    "test": "cd e2e && sh e2e-pipeline.sh"
+    "test": "cd e2e && sh e2e_pipeline.sh"
   },
   "repository": {
     "type": "git",
