@@ -25,6 +25,9 @@ run_test() {
     echo ""
 }
 
+START_TIME=$(date +%s)
+echo "Doctor Octopus End-to-End Test Pipeline START TIME: [$(date)]"
+
 # Run tests in order
 run_test "unit:client" "npm run unit:client"
 run_test "unit:server" "npm run unit:server"
@@ -33,4 +36,7 @@ run_test "ui:regression" "npm run ui:regression"
 run_test "perf:cards" "npm run perf:cards"
 run_test "perf:fixme" "npm run perf:fixme"
 
-echo "Doctor Octopus End-to-End Test Pipeline Completed."
+END_TIME=$(date +%s)
+TIME_TAKEN=$(($END_TIME - $START_TIME))
+echo "Pipeline END TIME: [$(date)]"
+echo "Doctor Octopus End-to-End Test Pipeline Completed. Total TIME TAKEN: $TIME_TAKEN seconds"
