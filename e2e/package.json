@@ -12,9 +12,8 @@
     "api:smoke": "npm test api_smoke pytest",
     "api:sanity": "npm test api_sanity pytest",
     "api:regression": "npm test api_regression pytest",
-    "perf:smoke": "echo \"Artillery smoke test started at $(date)\"",
-    "perf:sanity": "echo \"Artillery sanity test started at $(date)\"",
-    "perf:regression": "echo \"Artillery regression test started at $(date)\"",
+    "perf:cards": "node perf/runner.js perf/cards.yml dev",
+    "perf:fixme": "node perf/runner.js perf/fixme.yml dev",
     "unit": "npm run unit:client && npm run unit:server",
     "unit:client": "npm test unit:regression playwright",
     "unit:server": "npm test unit_regression pytest",
@@ -33,6 +32,7 @@
     "postgres": "^3.4.7"
   },
   "devDependencies": {
+    "@artilleryio/playwright-reporter": "^1.1.3",
     "is-ci": "^4.1.0"
   }
 }

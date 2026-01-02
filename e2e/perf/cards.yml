@@ -6,16 +6,18 @@ config:
       phases:
         - name: Cards REST API performance tests
           duration: 60
-          arrivalRate: 100
+          rampTo: 100
+          arrivalRate: 2
 
 scenarios:
-  - name: "Cards API Scenario"
+  - name: "Cards - Fetch All Cards in 1 Day"
     flow:
       - get:
           url: "/cards?source=remote&day=1&environment=dev&app=loan&protocol=all"
           capture:
             - json: "$.cards.length"
               as: "cards_count"
-      - log: "Total number of cards: {{ cards_count }}"
-  
+          match:
+            status: 200
+      # - log: "Total number of cards: {{ cards_count }}"
         

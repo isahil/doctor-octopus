@@ -96,7 +96,7 @@ export const get_github_server_url = () => {
 };
 
 export const get_github_actor = () => {
-	const { GITHUB_ACTOR } = process.env;
+	const { GITHUB_ACTOR = "imran.sahil" } = process.env;
 	return GITHUB_ACTOR;
 };
 
@@ -108,4 +108,14 @@ export const get_github_actor = () => {
  */
 export const gh_actions_debug_mode = () => {
 	return process.env["ACTIONS_STEP_DEBUG"] === "1" || process.env["RUNNER_DEBUG"] === "1";
+};
+
+export const get_artillery_cloud_api_key = () => {
+	const { ARTILLERY_CLOUD_API_KEY } = process.env;
+	return ARTILLERY_CLOUD_API_KEY;
+};
+
+export const artillery_record_mode = () => {
+	const { ARTILLERY_RECORD_MODE = "false" } = process.env;
+	return ARTILLERY_RECORD_MODE.toLowerCase() === "true";
 };

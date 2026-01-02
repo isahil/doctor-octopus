@@ -6,9 +6,11 @@ const TEST_REPORTS_DIR = get_test_reports_dir();
 
 const config = {
 	testDir: "client/tests",
-	timeout: 30000,
+	workers: 3,
 	retries: 1,
 	use: {
+		actionTimeout: 5000,
+		baseURL: "http://localhost:3000",
 		browserName: "chromium",
 		headless: false,
 		trace: "on-first-retry",
@@ -18,6 +20,7 @@ const config = {
 		["list"],
 		["html", { outputFolder: TEST_REPORTS_DIR, open: "never" }],
 		["json", { outputFile: `${TEST_REPORTS_DIR}/report.json` }],
+		["@artilleryio/playwright-reporter", { name: "Doctor Octopus UI Test Suite" }],
 	],
 	projects: [
 		{

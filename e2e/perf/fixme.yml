@@ -1,0 +1,24 @@
+---
+config:
+    environments:
+        dev:
+            target: "ws://localhost:8001"
+            phases:
+                - name: FixMe Socket.IO performance tests
+                  duration: 30
+                  rampTo: 100
+                  arrivalRate: 10
+            socketio:
+                path: "/ws/socket.io"
+                transports: ["websocket"]
+
+scenarios:
+    - name: FixMe - Send An Order
+      engine: socketio # Enable the Socket.IO engine
+      flow:
+          - emit:
+                channel: "fixme"
+                data: '{"test":"data"}'
+            response:
+                channel: "fixme"
+                data: '{"test":"data"}' # FixMe channel will echo back the same data

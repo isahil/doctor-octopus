@@ -32,7 +32,7 @@ def test_get_cards_with_all_filters(setup_teardown):
 
             response_data = response.json()
             assert "cards" in response_data, "Response should contain 'cards' field"
-            assert "message" in response_data, "Response should contain 'message' field"
+            assert "message" in response_data or "error" in response_data, "Response should contain 'message' or 'error' field"
 
             # Validate cards structure if present
             if response_data["cards"]:

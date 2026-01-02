@@ -58,7 +58,7 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	// Write the updated report_card object back to the report.json file
 	fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2));
 
-	if (!is_ci) return process.exit(code ?? 1);
+	// if (!is_ci) return process.exit(code ?? 1);
 	await upload_directory(aws_sdet_bucket_name, full_test_reports_dir, s3_test_reports_dir);
 	process.exit(code ?? 1);
 };
