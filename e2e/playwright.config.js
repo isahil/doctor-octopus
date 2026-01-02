@@ -1,16 +1,19 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
-import { get_test_reports_dir } from "./client/utils";
+import { get_test_reports_dir, artillery_record_mode } from "./client/utils";
 
 const TEST_REPORTS_DIR = get_test_reports_dir();
+const record = artillery_record_mode();
 
 const config = {
 	testDir: "client/tests",
-	timeout: 30000,
+	workers: 3,
 	retries: 1,
 	use: {
+		actionTimeout: 5000,
+		baseURL: "http://localhost:3000",
 		browserName: "chromium",
-		headless: true,
+		headless: false,
 		trace: "on-first-retry",
 	},
 	reporter: [
@@ -18,21 +21,22 @@ const config = {
 		["list"],
 		["html", { outputFolder: TEST_REPORTS_DIR, open: "never" }],
 		["json", { outputFile: `${TEST_REPORTS_DIR}/report.json` }],
+		...(record ? [["@artilleryio/playwright-reporter", { name: "Doctor Octopus UI Test Suite" }]] : []),
 	],
 	projects: [
 		{
 			name: "ui:smoke",
-			testMatch: "unit/test-example.spec.js",
+			testMatch: "ui/*.spec.js",
 			use: { browserName: "chromium" },
 		},
 		{
 			name: "ui:sanity",
-			testMatch: "unit/test-example.spec.js",
+			testMatch: "ui/*.spec.js",
 			use: { browserName: "chromium" },
 		},
 		{
 			name: "ui:regression",
-			testMatch: "unit/test-example.spec.js",
+			testMatch: "ui/*.spec.js",
 			use: { browserName: "chromium" },
 		},
 		{

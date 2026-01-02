@@ -97,10 +97,10 @@ const FixMe = () => {
 
     order["453"] = [nopartyid_block] // add the required nopartyid block to the order
     if (order["6499"] === "Y") order["9690"] = [restrictions_block] // add only if restrictions set to "Y"
-    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m submit: ${JSON.stringify(order)}\r\n`)
+    terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m ${JSON.stringify(order)}\r\n`)
 
     sio.on("fixme", (data) => {
-      terminal.write(`\r\n ${JSON.stringify(data)} \r\n`)
+      terminal.write(`\r\n\x1B[1;3;33m server:\x1B[1;3;37m ${JSON.stringify(data)} \r\n`)
     })
     sio.emit("fixme", order) // send the data to the w.s. server
     // clear the order state after submitting

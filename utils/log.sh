@@ -7,7 +7,7 @@ root=".."
 directory="$( cd "$script_dir/.." && pwd )"
 # If the script is in a subdirectory, adjust accordingly
 # Example: directory="$( cd "$script_dir/.." && pwd )"
-options=("server" "client" "notification")
+options=("server" "client" "fixme" "notification")
 
 # Display options with numbers
 echo "Available log types:"

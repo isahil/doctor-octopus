@@ -38,7 +38,7 @@ cleanup_stale_pids() {
     return 1  # No valid PID found
 }
 
-# Function to save PID after validation
+# Function to save PID after validation. TODO: improve validation logic
 save_pid_with_validation() {
     local initial_pid=$1
     local service_name=$2
@@ -133,7 +133,16 @@ if save_pid_with_validation "$FIXME_PID" "fixme"; then
     echo "[$(date)] FIXME service process started. [$FIXME_PID]"
     echo "[$(date)] FIXME logs at >> $fixme_log_file"
 else
-    echo "[$(date)] Failed to start FIXME service"
+    # Check if the actual FIXME server is listening on port 8001
+    sleep 5  # Additional wait for server to start
+    if lsof -i :8001 >/dev/null 2>&1; then
+        FIXME_ACTUAL_PID=$(lsof -ti:8001 | head -1)
+        echo $FIXME_ACTUAL_PID > logs/fixme.pid
+        echo "[$(date)] FIXME service started successfully with actual PID: [$FIXME_ACTUAL_PID]"
+        echo "[$(date)] FIXME logs at >> $fixme_log_file"
+    else
+        echo "[$(date)] Failed to start FIXME service"
+    fi
 fi
 
 echo "[$(date)] === Port Status ==="

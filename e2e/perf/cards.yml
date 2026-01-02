@@ -1,0 +1,23 @@
+---
+config:
+  environments:
+    dev:
+      target: "http://localhost:8000"
+      phases:
+        - name: Cards REST API performance tests
+          duration: 60
+          rampTo: 100
+          arrivalRate: 2
+
+scenarios:
+  - name: "Cards - Fetch All Cards in 1 Day"
+    flow:
+      - get:
+          url: "/cards?source=remote&day=1&environment=dev&app=loan&protocol=all"
+          capture:
+            - json: "$.cards.length"
+              as: "cards_count"
+          match:
+            status: 200
+      # - log: "Total number of cards: {{ cards_count }}"
+        

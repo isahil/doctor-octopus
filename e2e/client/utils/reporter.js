@@ -12,6 +12,7 @@ import {
 	get_github_repository,
 	get_github_server_url,
 	get_github_actor,
+	artillery_record_mode
 } from "./env_loader.js";
 
 const delimeter = test_suite => {
@@ -24,6 +25,7 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	const product = get_product();
 	const app_name = get_app_name();
 	const aws_sdet_bucket_name = get_aws_sdet_bucket_name();
+	const record = artillery_record_mode();
 	// Changing the report pattern can break report cards feature
 	const test_protocol = test_suite.split(delimeter(test_suite))[0];
 	const report_dir = full_test_reports_dir.split("/").pop();
@@ -58,7 +60,7 @@ export const upload_report = async (code, { test_suite, json_report, full_test_r
 	// Write the updated report_card object back to the report.json file
 	fs.writeFileSync(json_report, JSON.stringify(report_card, null, 2));
 
-	if (!is_ci) return process.exit(code ?? 1);
+	if (!is_ci && !record) return process.exit(code ?? 1);
 	await upload_directory(aws_sdet_bucket_name, full_test_reports_dir, s3_test_reports_dir);
 	process.exit(code ?? 1);
 };

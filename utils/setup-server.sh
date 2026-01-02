@@ -68,6 +68,16 @@ if ! command_exists node || ! command_exists npm; then
     fi
 fi
 
+if ! command_exists artillery; then
+    echo "Artillery not found. Installing Artillery globally using npm..."
+    npm install -g artillery
+
+    if [ $? -ne 0 ]; then
+        echo "Failed to install Artillery. Exiting."
+        exit 1
+    fi
+fi
+
 
 if ! python3 -m venv --help &> /dev/null || ! command_exists pip; then
     echo "Python venv module is not installed!"

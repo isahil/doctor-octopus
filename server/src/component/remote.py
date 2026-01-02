@@ -14,7 +14,7 @@ from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
-from src.utils.date_time_helper import convert_unix_to_iso8601_time
+from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_est_date_time, get_unix_time
 import src.utils.redis as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
@@ -92,7 +92,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
 
         if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
-            j_report = process_json(j_report)
+            j_report = process_json(j_report, card_date)
             card_value["json_report"] = j_report
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
@@ -104,14 +104,14 @@ async def process_card(card_tuple) -> Union[dict, None]:
         return None
 
 
-def process_json(json_report: dict) -> dict:
+def process_json(json_report: dict, card_date: str) -> dict:
     """Process the JSON report to remove unnecessary details and normalize stats"""
 
     runner = "unknown"
 
     # Normalize stats object for pytest reports
     if "stats" not in json_report:
-        json_report["stats"] = { "startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0 }
+        json_report["stats"] = {"startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0}
 
     stats = json_report["stats"]
     keys = list(json_report.keys())
@@ -142,12 +142,17 @@ def process_json(json_report: dict) -> dict:
                     stats[key] = value
         else:
             logger.info("No summary found in pytest json report to normalize stats.")
-        
+
         # Convert Unix timestamp to ISO 8601 format
-        created_timestamp = json_report.get("created", "")
+        created_timestamp = json_report.get("created")
         stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
         stats["duration"] = json_report.get("duration", 0)
 
+    if not stats.get("startTime"):
+        # TODO: Use the actual test start time if available
+        time = convert_unix_to_iso8601_time(get_unix_time())
+        stats["startTime"] = time
+        logger.info(f"[{card_date}] has no startTime in stats, setting to current time: {time}")
     stats["runner"] = runner
     return json_report
 

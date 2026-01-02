@@ -5,5 +5,10 @@
 		"editor.defaultFormatter": "charliermarsh.ruff"
 	},
 	"github-actions.workflows.pinned.workflows": [".github/workflows/dr-ci.yml"],
-	"python-envs.pythonProjects": []
+	"python-envs.pythonProjects": [],
+	"yaml.schemas": {
+		"https://www.artillery.io/schema.json": [
+			"file:///Users/sahil/Dev/Projects/doctor-octopus/e2e/perf/cards.yml"
+		]
+	}
 }
