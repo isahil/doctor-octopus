@@ -1,0 +1,303 @@
+/* Artillery Performance Report Styles */
+
+/* Status Badge Styling */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.status-success {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.status-failed {
+    background-color: #fee2e2;
+    color: #7f1d1d;
+    border: 1px solid #fca5a5;
+}
+
+/* Metric Card Styling */
+.metric-card {
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 8px 0;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+tbody td {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+tbody td.font-semibold {
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Status Code Badge */
+.status-code-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-code-success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-code-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Header Styles */
+header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+header .header-container {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 16px 24px;
+}
+
+header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+header .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+header .header-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    font-size: 14px;
+}
+
+header .header-item span {
+    color: #6b7280;
+    display: block;
+    margin-bottom: 4px;
+}
+
+header .header-item p {
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+/* Main Content */
+main {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+section {
+    margin-bottom: 32px;
+}
+
+section h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+}
+
+/* Cards Grid */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Percentiles Grid */
+.percentiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 24px;
+}
+
+.percentile-item {
+    padding: 12px 0;
+}
+
+.percentile-item .label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.percentile-item .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* Error Table Styling */
+.error-table thead {
+    background-color: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+}
+
+.error-table tbody tr:hover {
+    background-color: #fef2f2;
+}
+
+.error-table td {
+    color: #991b1b;
+}
+
+.error-table td.error-count {
+    font-weight: 600;
+    color: #dc2626;
+}
+
+/* Container */
+.report-container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+/* Footer */
+footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 48px;
+    padding: 24px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header .header-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    main {
+        padding: 16px 12px;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .percentiles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .metric-value {
+        font-size: 20px;
+    }
+
+    thead th {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    tbody td {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    header .header-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .percentiles-grid {
+        grid-template-columns: 1fr;
+    }
+
+    section h2 {
+        font-size: 18px;
+    }
+
+    .metric-value {
+        font-size: 18px;
+    }
+
+    thead th {
+        font-size: 11px;
+    }
+
+    tbody td {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+}

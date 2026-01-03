@@ -32,7 +32,7 @@ export const get_test_reports_dir = () => {
 	process.env["TEST_REPORTS_DIR"] = full_test_reports_dir;
 	console.log(`Ensured reports directory at: ${full_test_reports_dir}`);
 
-	return full_test_reports_dir;
+	return full_test_reports_dir; // ./test_reports/1-2-2026_3-42-21_PM/
 };
 
 export const get_db_username = () => {
