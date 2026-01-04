@@ -3,6 +3,11 @@ dotenv.config({ path: [".env", "../.env"] });
 import { get_est_date_time } from "./index.js";
 import { ensure_dir } from "./fs_helper.js";
 
+export const get_client_url = () => {
+	const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = process.env;
+	return `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`;
+}
+
 export const get_environment = () => {
 	const { ENVIRONMENT = "qa" } = process.env;
 	return ENVIRONMENT;

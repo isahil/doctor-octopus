@@ -1,0 +1,22 @@
+---
+config:
+  environments:
+    dev:
+      target: "http://localhost:3000"
+      phases:
+        - name: Cards UI performance tests
+          duration: 1
+          rampTo: 1
+          arrivalRate: 1
+      processor: "../dist/perf/cards-processor.js"
+      engines:
+        playwright:
+          trace: true
+          launchOptions:
+            headless: false
+
+scenarios:
+  - name: "Cards - Fetch All Cards in 30 Day"
+    engine: playwright
+    testFunction: cards_filters_change
+        

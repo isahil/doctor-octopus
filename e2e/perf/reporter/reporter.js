@@ -9,6 +9,8 @@ import {
 	generate_errors_section,
 	generate_response_time_percentiles,
 	generate_intermediate_results,
+	generate_web_vitals,
+	generate_browser_metrics,
 } from "./index.js";
 import { ensure_dir } from "../../client/utils/fs_helper.js";
 
@@ -46,6 +48,8 @@ ${generate_summary_metrics(aggregate, responseTimeSummary, httpDownloadedBytes, 
 ${generate_HTTP_status_codes(aggregate, httpResponses)}
 ${generate_errors_section(aggregate)}
 ${generate_response_time_percentiles(responseTimeSummary)}
+${generate_web_vitals(aggregate.summaries)}
+${generate_browser_metrics(aggregate)}
 ${generate_intermediate_results(intermediate)}
     </main>
 ${get_HTML_footer()}`;
