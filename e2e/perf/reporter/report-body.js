@@ -1,4 +1,5 @@
-import { format_bytes } from "./index.js";
+import { format_bytes, generate_info_icon } from "./index.js";
+import explanations from "./explanations.json" with { type: "json" };
 
 /**
  * Generate summary metrics section
@@ -18,7 +19,10 @@ export function generate_summary_metrics(
 	return `
       <!-- Summary Metrics -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">Summary Metrics</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Summary Metrics</h2>
+          ${generate_info_icon(explanations.summary_metrics.description)}
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <!-- Virtual Users -->
           <div class="metric-card">
@@ -68,7 +72,10 @@ export function generate_HTTP_status_codes(aggregate, httpResponses) {
 	return `
       <!-- HTTP Status Codes -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">HTTP Status Codes</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">HTTP Status Codes</h2>
+          ${generate_info_icon(explanations.http_status_codes.description)}
+        </div>
         <div class="section-container">
           <table>
             <thead>
@@ -124,7 +131,10 @@ export function generate_errors_section(aggregate) {
 	return `
       <!-- Errors Section -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">Errors</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Errors</h2>
+          ${generate_info_icon(explanations.errors.description)}
+        </div>
         <div class="section-container">
           <table>
             <thead>
@@ -157,7 +167,10 @@ export function generate_response_time_percentiles(responseTimeSummary) {
 	return `
       <!-- Response Time Percentiles -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">Response Time Percentiles</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Response Time Percentiles</h2>
+          ${generate_info_icon(explanations.response_time_percentiles.description)}
+        </div>
         <div class="section-container">
           <div class="percentiles-grid">
             <div class="percentile-item">
@@ -194,6 +207,132 @@ export function generate_response_time_percentiles(responseTimeSummary) {
 }
 
 /**
+ * Generate session length statistics section
+ */
+export function generate_session_length_stats(summaries) {
+	const sessionLengthData = summaries?.["vusers.session_length"];
+
+	if (!sessionLengthData) {
+		return ""; // Skip if no session length data
+	}
+
+	return `
+      <!-- Session Length Statistics -->
+      <section class="mb-8">
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Session Length Statistics</h2>
+          ${generate_info_icon(explanations.session_length_stats.description)}
+        </div>
+        <div class="section-container">
+          <div class="percentiles-grid">
+            <div class="percentile-item">
+              <div class="label">Min Duration</div>
+              <div class="value">${sessionLengthData.min ? sessionLengthData.min.toFixed(0) : "N/A"}ms</div>
+            </div>
+            <div class="percentile-item">
+              <div class="label">p50 (Median)</div>
+              <div class="value">${sessionLengthData.p50 ? sessionLengthData.p50.toFixed(0) : "N/A"}ms</div>
+            </div>
+            <div class="percentile-item">
+              <div class="label">Mean Duration</div>
+              <div class="value">${sessionLengthData.mean ? sessionLengthData.mean.toFixed(0) : "N/A"}ms</div>
+            </div>
+            <div class="percentile-item">
+              <div class="label">p95</div>
+              <div class="value">${sessionLengthData.p95 ? sessionLengthData.p95.toFixed(0) : "N/A"}ms</div>
+            </div>
+            <div class="percentile-item">
+              <div class="label">p99</div>
+              <div class="value">${sessionLengthData.p99 ? sessionLengthData.p99.toFixed(0) : "N/A"}ms</div>
+            </div>
+            <div class="percentile-item">
+              <div class="label">Max Duration</div>
+              <div class="value">${sessionLengthData.max ? sessionLengthData.max.toFixed(0) : "N/A"}ms</div>
+            </div>
+          </div>
+        </div>
+      </section>`;
+}
+
+/**
+ * Generate test timing information section
+ */
+export function generate_test_timing_info(aggregate) {
+	const startTime = aggregate.firstCounterAt
+		? new Date(aggregate.firstCounterAt).toLocaleString()
+		: "N/A";
+	const endTime = aggregate.lastCounterAt
+		? new Date(aggregate.lastCounterAt).toLocaleString()
+		: "N/A";
+	const duration =
+		aggregate.firstCounterAt && aggregate.lastCounterAt
+			? ((aggregate.lastCounterAt - aggregate.firstCounterAt) / 1000).toFixed(2)
+			: "N/A";
+
+	return `
+      <!-- Test Timing Information -->
+      <section class="mb-8">
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Test Timing</h2>
+          ${generate_info_icon(explanations.test_timing.description)}
+        </div>
+        <div class="section-container">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="metric-card">
+              <div class="metric-label">Test Start Time</div>
+              <div class="text-sm text-gray-100 font-semibold">${startTime}</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Test End Time</div>
+              <div class="text-sm text-gray-100 font-semibold">${endTime}</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Total Duration</div>
+              <div class="metric-value text-lg">${duration}s</div>
+            </div>
+          </div>
+        </div>
+      </section>`;
+}
+
+/**
+ * Generate trace collection stats
+ */
+export function generate_trace_stats(aggregate) {
+	const tracesCollected = aggregate.counters["browser.traces_collected"] || 0;
+	const tracesDiscarded = aggregate.counters["browser.traces_discarded"] || 0;
+	const totalTraces = tracesCollected + tracesDiscarded;
+	const collectionRate = totalTraces > 0 ? ((tracesCollected / totalTraces) * 100).toFixed(1) : 0;
+
+	return `
+      <!-- Trace Collection Stats -->
+      <section class="mb-8">
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Trace Collection</h2>
+          ${generate_info_icon(explanations.trace_stats.description)}
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="metric-card">
+            <div class="metric-label">Traces Collected</div>
+            <div class="metric-value success-indicator">${tracesCollected.toLocaleString()}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Traces Discarded</div>
+            <div class="metric-value failed-indicator">${tracesDiscarded.toLocaleString()}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Traces</div>
+            <div class="metric-value">${totalTraces.toLocaleString()}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Collection Rate</div>
+            <div class="metric-value success-indicator">${collectionRate}%</div>
+          </div>
+        </div>
+      </section>`;
+}
+
+/**
  * Generate intermediate results section
  */
 export function generate_intermediate_results(intermediate) {
@@ -222,7 +361,10 @@ export function generate_intermediate_results(intermediate) {
 	return `
       <!-- Intermediate Results -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">Intermediate Results by Time Period</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Intermediate Results by Time Period</h2>
+          ${generate_info_icon(explanations.intermediate_results.description)}
+        </div>
         <div class="section-container">
           <div class="overflow-x-auto">
             <table>
@@ -277,7 +419,10 @@ export function generate_web_vitals(summaries) {
 	return `
       <!-- Web Vitals -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">Web Vitals</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Web Vitals</h2>
+          ${generate_info_icon(explanations.web_vitals.description)}
+        </div>
         <div class="percentiles-grid">
           <!-- TTFB: Time To First Byte -->
           <div class="percentile-item">
@@ -351,7 +496,10 @@ export function generate_browser_metrics(aggregate) {
 	return `
       <!-- Browser Performance Metrics -->
       <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-100 mb-4">Browser Performance</h2>
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Browser Performance</h2>
+          ${generate_info_icon(explanations.browser_performance.description)}
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="metric-card">
             <div class="metric-label">Browser HTTP Requests</div>

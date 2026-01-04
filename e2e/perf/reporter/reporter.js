@@ -11,6 +11,9 @@ import {
 	generate_intermediate_results,
 	generate_web_vitals,
 	generate_browser_metrics,
+	generate_session_length_stats,
+	generate_test_timing_info,
+	generate_trace_stats,
 } from "./index.js";
 import { ensure_dir } from "../../client/utils/fs_helper.js";
 
@@ -45,11 +48,14 @@ function generate_HTML(data, outputPath, outputDir) {
     <main class="max-w-7xl mx-auto px-6 py-8">
 ${generate_header(stats, status, statusIcon)}
 ${generate_summary_metrics(aggregate, responseTimeSummary, httpDownloadedBytes, httpResponses, requestRate)}
+${generate_test_timing_info(aggregate)}
+${generate_session_length_stats(aggregate.summaries)}
 ${generate_HTTP_status_codes(aggregate, httpResponses)}
 ${generate_errors_section(aggregate)}
 ${generate_response_time_percentiles(responseTimeSummary)}
 ${generate_web_vitals(aggregate.summaries)}
 ${generate_browser_metrics(aggregate)}
+${generate_trace_stats(aggregate)}
 ${generate_intermediate_results(intermediate)}
     </main>
 ${get_HTML_footer()}`;

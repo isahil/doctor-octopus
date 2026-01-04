@@ -62,7 +62,7 @@ export function generate_header(stats, status, statusIcon) {
             ${statusIcon} ${status}
           </div>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
           <div>
             <span class="text-gray-400">Test Suite:</span>
             <p class="font-semibold text-gray-100">${stats.test_suite || "N/A"}</p>
@@ -74,6 +74,18 @@ export function generate_header(stats, status, statusIcon) {
           <div>
             <span class="text-gray-400">Product:</span>
             <p class="font-semibold text-gray-100">${stats.product || "N/A"}</p>
+          </div>
+          <div>
+            <span class="text-gray-400">Branch:</span>
+            <p class="font-semibold text-gray-100">${stats.git_branch || "N/A"}</p>
+          </div>
+          <div>
+            <span class="text-gray-400">User:</span>
+            <p class="font-semibold text-gray-100">${stats.username || "N/A"}</p>
+          </div>
+          <div>
+            <span class="text-gray-400">Protocol:</span>
+            <p class="font-semibold text-gray-100">${stats.protocol || "N/A"}</p>
           </div>
         </div>
       </div>
@@ -104,4 +116,17 @@ export function format_bytes(bytes) {
 	const sizes = ["B", "KB", "MB", "GB"];
 	const i = Math.floor(Math.log(bytes) / Math.log(k));
 	return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+}
+
+/**
+ * Generate info icon with tooltip
+ */
+export function generate_info_icon(explanation) {
+	return `<span class="info-icon" title="${explanation}">
+		<svg class="info-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<circle cx="12" cy="12" r="10"></circle>
+			<line x1="12" y1="16" x2="12" y2="12"></line>
+			<line x1="12" y1="8" x2="12.01" y2="8"></line>
+		</svg>
+	</span>`;
 }
