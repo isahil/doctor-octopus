@@ -10,6 +10,7 @@
     --status-success: #10b981;
     --status-failed: #ef4444;
     --status-warning: #f59e0b;
+    --octopus-green: #1abc9c;
 }
 
 * {
@@ -65,7 +66,7 @@ body {
 .metric-value {
     font-size: 28px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--octopus-green);
     margin: 8px 0;
 }
 
@@ -149,7 +150,7 @@ header {
 header h1 {
     font-size: 24px;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--octopus-green);
     margin: 0;
 }
 
