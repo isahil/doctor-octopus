@@ -1,4 +1,28 @@
-/* Artillery Performance Report Styles */
+/* Artillery Performance Report Styles - Dark Theme */
+
+:root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --bg-tertiary: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --border-color: #3a3a3a;
+    --status-success: #10b981;
+    --status-failed: #ef4444;
+    --status-warning: #f59e0b;
+}
+
+* {
+    color-scheme: dark;
+}
+
+/* Base Styles */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+}
 
 /* Status Badge Styling */
 .status-badge {
@@ -8,38 +32,46 @@
     padding: 8px 16px;
     border-radius: 6px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
+    border: 1px solid;
 }
 
 .status-success {
-    background-color: #dcfce7;
-    color: #166534;
-    border: 1px solid #86efac;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
 }
 
 .status-failed {
-    background-color: #fee2e2;
-    color: #7f1d1d;
-    border: 1px solid #fca5a5;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
 }
 
 /* Metric Card Styling */
 .metric-card {
     border-radius: 8px;
     padding: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.2s ease;
+}
+
+.metric-card:hover {
+    border-color: var(--text-secondary);
 }
 
 .metric-value {
     font-size: 28px;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text-primary);
     margin: 8px 0;
 }
 
 .metric-label {
     font-size: 12px;
-    color: #6b7280;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -51,8 +83,8 @@ table {
 }
 
 thead {
-    background-color: #f3f4f6;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
 }
 
 thead th {
@@ -60,75 +92,65 @@ thead th {
     text-align: left;
     font-size: 14px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 tbody tr {
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-color);
     transition: background-color 0.2s ease;
 }
 
 tbody tr:hover {
-    background-color: #f9fafb;
+    background-color: var(--bg-tertiary);
 }
 
 tbody td {
     padding: 12px 16px;
     font-size: 14px;
-    color: #4b5563;
+    color: var(--text-secondary);
 }
 
 tbody td.font-semibold {
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 /* Status Code Badge */
 .status-code-badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 12px;
     border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
+    border: 1px solid;
 }
 
 .status-code-success {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
 }
 
 .status-code-error {
-    background-color: #fee2e2;
-    color: #991b1b;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
 }
 
 /* Header Styles */
 header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
     z-index: 10;
 }
 
-header .header-container {
-    max-width: 80rem;
-    margin: 0 auto;
-    padding: 16px 24px;
-}
-
 header h1 {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0;
-}
-
-header .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
 }
 
 header .header-grid {
@@ -139,20 +161,20 @@ header .header-grid {
 }
 
 header .header-item span {
-    color: #6b7280;
+    color: var(--text-secondary);
     display: block;
     margin-bottom: 4px;
 }
 
 header .header-item p {
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0;
 }
 
 /* Main Content */
 main {
-    max-width: 80rem;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 32px 24px;
 }
@@ -162,28 +184,47 @@ section {
 }
 
 section h2 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
-    color: #111827;
-    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    margin: 16px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Cards Grid */
-.cards-grid {
+/* Container */
+.report-container {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+}
+
+/* Footer */
+footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    margin-top: 48px;
+    padding: 24px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Section Containers */
+.section-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Grid Layouts */
+.metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
 }
 
-.card {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* Percentiles Grid */
 .percentiles-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -196,53 +237,30 @@ section h2 {
 
 .percentile-item .label {
     font-size: 12px;
-    color: #6b7280;
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
 .percentile-item .value {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
-/* Error Table Styling */
-.error-table thead {
-    background-color: #fef2f2;
-    border-bottom: 1px solid #fecaca;
+/* Status Indicators */
+.success-indicator {
+    color: var(--status-success);
 }
 
-.error-table tbody tr:hover {
-    background-color: #fef2f2;
+.failed-indicator {
+    color: var(--status-failed);
 }
 
-.error-table td {
-    color: #991b1b;
+.warning-indicator {
+    color: var(--status-warning);
 }
 
-.error-table td.error-count {
-    font-weight: 600;
-    color: #dc2626;
-}
-
-/* Container */
-.report-container {
-    min-height: 100vh;
-    background-color: #f9fafb;
-}
-
-/* Footer */
-footer {
-    background-color: #ffffff;
-    border-top: 1px solid #e5e7eb;
-    margin-top: 48px;
-    padding: 24px;
-    text-align: center;
-    color: #6b7280;
-    font-size: 14px;
-}
-
-/* Responsive */
+/* Responsive Design */
 @media (max-width: 768px) {
     header .header-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -252,7 +270,7 @@ footer {
         padding: 16px 12px;
     }
 
-    .cards-grid {
+    .metrics-grid {
         grid-template-columns: 1fr;
     }
 
@@ -273,6 +291,10 @@ footer {
         padding: 8px 12px;
         font-size: 12px;
     }
+
+    section h2 {
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -285,7 +307,7 @@ footer {
     }
 
     section h2 {
-        font-size: 18px;
+        font-size: 14px;
     }
 
     .metric-value {
@@ -300,4 +322,23 @@ footer {
         font-size: 11px;
         padding: 6px 8px;
     }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
 }

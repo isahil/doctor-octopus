@@ -1,5 +1,5 @@
 import { test, expect } from "playwright/test";
-import { Cards, Lab } from "../../component";
+import { Cards } from "../../component";
 
 test.describe("Doctor Octopus Reports Page UI Test", () => {
 	test("Cards Component UI Validation", async ({ page }) => {
