@@ -249,15 +249,15 @@ footer {
 
 /* Status Indicators */
 .success-indicator {
-    color: var(--status-success);
+    color: var(--status-success) !important;
 }
 
 .failed-indicator {
-    color: var(--status-failed);
+    color: var(--status-failed) !important;
 }
 
 .warning-indicator {
-    color: var(--status-warning);
+    color: var(--status-warning) !important;
 }
 
 /* Responsive Design */
