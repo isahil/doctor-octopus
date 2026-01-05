@@ -9,15 +9,14 @@ import {
 	get_test_reports_dir,
 	gh_actions_debug_mode,
 	upload_report,
-	ensure_dir,
 } from "../client/utils/index.js";
 
-const test_suite = process.argv[2];
+let test_suite = process.argv[2];
 const environment = process.argv[3];
 const options = process.argv[4] || "{}";
 
 const full_test_reports_dir = get_test_reports_dir();
-let json_report_path = "";
+let json_report_path = "", feature = "";
 
 const upload_report_to_s3 = async (code) => {
 	try {
@@ -33,6 +32,7 @@ const upload_report_to_s3 = async (code) => {
 };
 
 const generate_reports = (code) => {
+	test_suite = `perf:${feature}`
 	console.log(`Received test completion code from the last process: ${code}`);
 	add_stats_to_json({ test_suite, json_report_path, runner: "artillery" });
 	console.log(
@@ -57,7 +57,7 @@ export const execute_runner = async ({ test_suite, environment, tags }) => {
 	console.log(
 		`Starting... artillery test: [${test_suite}] | environment: ${environment} | options: ${options ?? "{}"} | record-mode: ${record} [${get_est_date_time()}]`
 	);
-	const feature = test_suite.split("/").pop()?.replace(".yml", "").replace(".yaml", "") || "na";
+	feature = test_suite.split("/").pop()?.replace(".yml", "").replace(".yaml", "") || "na";
 	json_report_path = `${full_test_reports_dir}/${feature}_report.json`; // e.g., ./test_reports/1-2-2026_3-42-21_PM/cards_report.json
 
 	let artillery_tags = tags ? `,${tags}` : ""; // Tags help with filtering & reporting in Artillery Cloud
