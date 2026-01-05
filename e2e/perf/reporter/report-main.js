@@ -84,7 +84,7 @@ export function generate_header(stats, status, statusIcon) {
             <p class="font-semibold text-gray-100">${stats.username || "N/A"}</p>
           </div>
           <div>
-            <span class="text-gray-400">Protocol:</span>
+            <span class="text-gray-400">Feature:</span>
             <p class="font-semibold text-gray-100">${stats.protocol || "N/A"}</p>
           </div>
         </div>
@@ -100,6 +100,7 @@ export function get_HTML_footer() {
                 <footer class="bg-gray-800 border-t border-gray-700 mt-12 py-6">
                     <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-400">
                         <p>Generated on ${new Date().toLocaleString()}</p>
+                        <p>Developer: Imran Sahil</p>
                     </div>
                 </footer>
             </div>
@@ -129,4 +130,52 @@ export function generate_info_icon(explanation) {
 			<line x1="12" y1="8" x2="12.01" y2="8"></line>
 		</svg>
 	</span>`;
+}
+
+export function html_utils() {
+	return `
+  <script>
+      // Initialize lightbox functionality for screenshots
+      window.currentSlide = 0;
+      const slides = document.querySelectorAll('.lightbox-slide');
+
+      window.openLightbox = function(index) {
+        window.currentSlide = index;
+        document.getElementById('lightbox').style.display = 'block';
+        window.showSlide(window.currentSlide);
+      };
+
+      window.closeLightbox = function() {
+        document.getElementById('lightbox').style.display = 'none';
+      };
+
+      window.changeSlide = function(n) {
+        window.currentSlide += n;
+        if (window.currentSlide >= slides.length) window.currentSlide = 0;
+        if (window.currentSlide < 0) window.currentSlide = slides.length - 1;
+        window.showSlide(window.currentSlide);
+      };
+
+      window.showSlide = function(n) {
+        slides.forEach(slide => slide.classList.remove('show'));
+        if (slides[n]) slides[n].classList.add('show');
+      };
+
+      // Close lightbox when clicking outside
+      const lightbox = document.getElementById('lightbox');
+      if (lightbox) {
+        lightbox.addEventListener('click', function(e) {
+          if (e.target === this) window.closeLightbox();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+          if (lightbox.style.display === 'block') {
+            if (e.key === 'Escape') window.closeLightbox();
+            if (e.key === 'ArrowLeft') window.changeSlide(-1);
+            if (e.key === 'ArrowRight') window.changeSlide(1);
+          }
+        });
+      }
+    </script>`;
 }

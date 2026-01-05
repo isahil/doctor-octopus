@@ -62,6 +62,9 @@ export function generate_summary_metrics(
  * Generate HTTP status codes section
  */
 export function generate_HTTP_status_codes(aggregate, httpResponses) {
+	if (httpResponses === 0) {
+		return "";
+	}
 	const status_codes = Object.keys(aggregate.counters)
 		.filter((key) => key.startsWith("http.codes."))
 		.map((key) => ({
@@ -533,4 +536,63 @@ export function generate_browser_metrics(aggregate) {
 				: ""
 		}
       </section>`;
+}
+
+/**
+ * Generate screenshots section with lightbox
+ */
+export function generate_screenshots_section(screenshots) {
+	if (!screenshots || screenshots.length === 0) {
+		return ""; // Skip if no screenshots
+	}
+
+	const screenshot_thumbnails = screenshots
+		.map(
+			(screenshot, index) => `
+			<div class="screenshot-item" onclick="window.openLightbox(${index})">
+				<img src="${screenshot}" alt="Screenshot ${index + 1}" class="screenshot-thumb">
+				<div class="screenshot-overlay">
+					<span class="text-white">View</span>
+				</div>
+			</div>
+		`
+		)
+		.join("");
+
+	const screenshot_gallery = screenshots
+		.map(
+			(screenshot, index) => `
+			<div class="lightbox-slide fade" id="slide-${index}">
+				<img src="${screenshot}" class="lightbox-image">
+				<span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
+				<span class="lightbox-caption">Screenshot ${index + 1}</span>
+			</div>
+		`
+		)
+		.join("");
+
+	return `
+      <!-- Screenshots Section -->
+      <section class="mb-8">
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Screenshots Gallery</h2>
+          <span class="info-icon" title="Visual evidence captured during test execution. Click on any screenshot to view in full size.">
+			<svg class="info-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+				<circle cx="8.5" cy="8.5" r="1.5"></circle>
+				<polyline points="21 15 16 10 5 21"></polyline>
+			</svg>
+		</span>
+        </div>
+        <div class="screenshots-grid">
+          ${screenshot_thumbnails}
+        </div>
+      </section>
+
+      <!-- Lightbox Modal -->
+      <div id="lightbox" class="lightbox">
+        ${screenshot_gallery}
+        <a class="lightbox-prev" onclick="window.changeSlide(-1)">&#10094;</a>
+        <a class="lightbox-next" onclick="window.changeSlide(1)">&#10095;</a>
+      </div>`;
 }

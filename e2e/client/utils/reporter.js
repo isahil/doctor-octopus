@@ -26,7 +26,7 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 	const aws_sdet_bucket_name = get_aws_sdet_bucket_name();
 	const record = artillery_record_mode();
 	// Changing the report pattern can break report cards feature
-	const test_protocol = test_suite.split(delimeter(test_suite))[0];
+	const test_protocol = test_suite.split(delimeter(test_suite))[0].replace(".yml", "").replace(".yaml", "") || "na";
 	const report_dir = full_test_reports_dir.split("/").pop();
 	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${report_dir}`;
 

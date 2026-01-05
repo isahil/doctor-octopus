@@ -14,6 +14,8 @@ import {
 	generate_session_length_stats,
 	generate_test_timing_info,
 	generate_trace_stats,
+	generate_screenshots_section,
+	html_utils
 } from "./index.js";
 import { ensure_dir } from "../../client/utils/fs_helper.js";
 
@@ -36,6 +38,16 @@ function generate_HTML(data, outputPath, outputDir) {
 	// Response time summaries
 	const responseTimeSummary = aggregate.summaries["http.response_time"] || {};
 
+	// Get screenshots if they exist
+	const screenshotsDir = path.join(outputDir, "screenshots");
+	let screenshots = [];
+	if (fs.existsSync(screenshotsDir)) {
+		const files = fs.readdirSync(screenshotsDir);
+		screenshots = files
+			.filter((file) => /\.(png|jpg|jpeg|gif)$/i.test(file))
+			.map((file) => `screenshots/${file}`);
+	}
+
 	// Ensure output directory exists
 	ensure_dir(outputDir);
 
@@ -55,10 +67,13 @@ ${generate_errors_section(aggregate)}
 ${generate_response_time_percentiles(responseTimeSummary)}
 ${generate_web_vitals(aggregate.summaries)}
 ${generate_browser_metrics(aggregate)}
-${generate_trace_stats(aggregate)}
 ${generate_intermediate_results(intermediate)}
+${generate_trace_stats(aggregate)}
+${generate_screenshots_section(screenshots)}
     </main>
-${get_HTML_footer()}`;
+${get_HTML_footer()}
+${html_utils()}
+    `;
 	fs.writeFileSync(outputPath, html + sections);
 	console.log(`✅ Report generated: ${outputPath}`);
 }
@@ -78,12 +93,10 @@ const output_dir = args[1];
 try {
 	// Generate filename - always create index.html
 	const output_filename = path.join(output_dir, "index.html");
-
-	// Read and parse JSON
 	const data = JSON.parse(fs.readFileSync(input_path, "utf8"));
 	generate_HTML(data, output_filename, output_dir);
 	console.log(
-		`📊 Report data: ${data.aggregate.counters["vusers.created"]} VUsers, ${data.aggregate.counters["http.requests"]} Requests`
+		`📊 Report data: created - ${data.aggregate.counters["vusers.created"]} VUsers, failed - ${data.aggregate.counters["vusers.failed"]}`
 	);
 } catch (error) {
 	console.error("❌ Error:", error.message);
