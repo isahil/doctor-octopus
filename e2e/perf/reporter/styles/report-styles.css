@@ -11,6 +11,7 @@
     --status-failed: #ef4444;
     --status-warning: #f59e0b;
     --octopus-green: #1abc9c;
+    --octopus-green-gradient: linear-gradient(90deg, #0a7958 0%, #72d3da 100%);
 }
 
 * {
@@ -150,7 +151,10 @@ header {
 header h1 {
     font-size: 24px;
     font-weight: 700;
-    color: var(--octopus-green) !important;
+    background: var(--octopus-green-gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin: 0;
 }
 

@@ -34,7 +34,7 @@ export function get_HTML_head() {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Artillery Perf Report</title>
+                <title>DO Report</title>
                 <script src="https://cdn.tailwindcss.com"></script>
                 <script>
                     tailwindConfig = {
@@ -57,7 +57,7 @@ export function generate_header(stats, status, statusIcon) {
     <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex items-center justify-between mb-4">
-          <h1 class="text-2xl font-bold text-gray-100">Artillery Perf Report</h1>
+          <h1 class="text-2xl font-bold text-gray-100">Doctor Octopus Perf Report</h1>
           <div class="status-badge ${status === "SUCCEEDED" ? "status-success" : "status-failed"}">
             ${statusIcon} ${status}
           </div>
@@ -84,7 +84,7 @@ export function generate_header(stats, status, statusIcon) {
             <p class="font-semibold text-gray-100">${stats.username || "N/A"}</p>
           </div>
           <div>
-            <span class="text-gray-400">Feature:</span>
+            <span class="text-gray-400">Protocol:</span>
             <p class="font-semibold text-gray-100">${stats.protocol || "N/A"}</p>
           </div>
         </div>

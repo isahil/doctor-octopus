@@ -18,7 +18,7 @@ const options = process.argv[4] || "{}";
 const full_test_reports_dir = get_test_reports_dir();
 let json_report_path = "", feature = "";
 
-const upload_report_to_s3 = async (code) => {
+const post_steps = async (code) => {
 	try {
 		await upload_report(code, {
 			test_suite,
@@ -41,7 +41,7 @@ const generate_reports = (code) => {
 
 	spawn_child_process(
 		`npm run generate-haiku-report ${json_report_path} ${full_test_reports_dir}`,
-		upload_report_to_s3
+		post_steps
 	);
 };
 

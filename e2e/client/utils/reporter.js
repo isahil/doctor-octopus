@@ -13,11 +13,15 @@ import {
 	get_github_server_url,
 	get_github_actor,
 	artillery_record_mode,
+	get_test_reports_dir,
 } from "./env_loader.js";
 
-const delimeter = (test_suite) => {
-	return test_suite.includes(":") ? ":" : "_";
-};
+const delimiter = (test_suite) => (test_suite.includes(":") ? ":" : "_");
+
+const test_protocol_value = (test_suite) =>
+	test_suite.split(delimiter(test_suite))[0].replace(".yml", "").replace(".yaml", "") || "na";
+
+const reports_dir = get_test_reports_dir().split("/").pop() || "na";
 
 export const upload_report = async (code, { test_suite, full_test_reports_dir }) => {
 	const test_reports_dir = "test_reports";
@@ -26,9 +30,8 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 	const aws_sdet_bucket_name = get_aws_sdet_bucket_name();
 	const record = artillery_record_mode();
 	// Changing the report pattern can break report cards feature
-	const test_protocol = test_suite.split(delimeter(test_suite))[0].replace(".yml", "").replace(".yaml", "") || "na";
-	const report_dir = full_test_reports_dir.split("/").pop();
-	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${report_dir}`;
+	const test_protocol = test_protocol_value(test_suite);
+	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${reports_dir}`;
 
 	if (!is_ci && !record) return process.exit(code ?? 1);
 	await upload_directory(aws_sdet_bucket_name, full_test_reports_dir, s3_test_reports_dir);
@@ -41,8 +44,7 @@ export const add_stats_to_json = ({ test_suite, json_report_path, runner }) => {
 	const product = get_product();
 	const app_name = get_app_name();
 	const environment = get_environment();
-	const test_protocol =
-		test_suite.split("/").pop()?.replace(".yml", "").replace(".yaml", "") || "na";
+	const test_protocol = test_protocol_value(test_suite);
 	const test_reports_dir = "test_reports";
 
 	// Add meta data below
@@ -53,6 +55,7 @@ export const add_stats_to_json = ({ test_suite, json_report_path, runner }) => {
 	report_card["stats"]["app_name"] = app_name;
 	report_card["stats"]["environment"] = environment;
 	report_card["stats"]["git_branch"] = git_branch;
+	report_card["stats"]["grafana_url"] = "N/A"; // TODO: Add Grafana URL once implemented
 	report_card["stats"]["protocol"] = test_protocol;
 	report_card["stats"]["product"] = product;
 	report_card["stats"]["runner"] = runner;
