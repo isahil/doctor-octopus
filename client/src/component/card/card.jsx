@@ -1,5 +1,5 @@
 import "./card.css"
-import { github_icon } from "../../util/icons"
+import { github_icon, grafana_icon } from "../../util/icons"
 
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
@@ -24,6 +24,7 @@ function Card({ card, index, filter, setAlert }) {
   const date = new Date(startTime)
   const formatted_date_time = date.toLocaleString() // formatting
   const run_url = ci?.run_url ?? "" // GitHub Action run URL
+  const grafana_url = ci?.grafana_url ?? "" // Grafana Dashboard URL
   const sdet = ci?.sdet ?? ""
 
   const handle_view_report_click = async () => {
@@ -52,6 +53,17 @@ function Card({ card, index, filter, setAlert }) {
     e.stopPropagation()
     if (run_url) {
       window.open(run_url, "_blank")
+    }
+  }
+
+  const handle_grafana_click = (e) => {
+    const valid_url = grafana_url.startsWith("http") ? grafana_url : ""
+    console.log(`Grafana button clicked.. url: ${valid_url}`)
+    e.stopPropagation()
+    if (valid_url) {
+      window.open(valid_url, "_blank")
+    } else {
+      alert("Grafana URL is not available for this report.")
     }
   }
 
@@ -107,11 +119,25 @@ function Card({ card, index, filter, setAlert }) {
           {run_url && (
             <button
               className="github-icon-button"
+              href={run_url}
               onClick={handle_github_click}
               title="View GitHub Workflow"
               aria-label="View GitHub Workflow"
             >
               {github_icon(18, 18)}
+            </button>
+          )}
+        </div>
+        <div className="grafana-info">
+          {grafana_url && (
+            <button
+              className="grafana-icon-button"
+              href={grafana_url}
+              onClick={handle_grafana_click}
+              title="View Grafana Dashboard"
+              aria-label="View Grafana Dashboard"
+            >
+              {grafana_icon(18, 18)}
             </button>
           )}
         </div>

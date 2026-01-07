@@ -88,6 +88,7 @@ button:hover {
   font-size: 11px;
   margin-top: 5px;
   padding-top: 5px;
+  padding-right: 70px;
   border-top: 0.5px solid #a3a9a2;
   color: var(--border-color);
   position: relative;
@@ -133,8 +134,34 @@ button:hover {
   z-index: 5;
 }
 
+.grafana-icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  margin-right: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  position: absolute;
+  right: 50px;
+  bottom: 10px;
+  z-index: 5;
+}
+
 .github-icon-button:hover .github-icon {
   color: cyan;
+  transform: scale(1.2);
+}
+
+.grafana-icon-button:hover .grafana-icon {
+  transform: scale(1.2);
+}
+
+.grafana-icon-button:hover img {
+  filter: brightness(1.2);
   transform: scale(1.2);
 }
 
