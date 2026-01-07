@@ -14,7 +14,7 @@ from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
-from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_est_date_time, get_unix_time
+from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_unix_time
 import src.utils.redis as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
@@ -104,6 +104,18 @@ async def process_card(card_tuple) -> Union[dict, None]:
         return None
 
 
+def identify_runner(json_report: dict) -> str:
+    """Identify the test runner from the JSON report structure"""
+    keys = list(json_report.keys())
+    if "config" in keys and "suites" in keys:
+        return "playwright"
+    if "collectors" in keys and "tests" in keys:
+        return "pytest"
+    if "aggregate" in keys and "intermediate" in keys:
+        return "artillery"
+    return "unknown"
+
+
 def process_json(json_report: dict, card_date: str) -> dict:
     """Process the JSON report to remove unnecessary details and normalize stats"""
 
@@ -111,26 +123,21 @@ def process_json(json_report: dict, card_date: str) -> dict:
 
     # Normalize stats object for pytest reports
     if "stats" not in json_report:
-        json_report["stats"] = {"startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0}
+        json_report["stats"] = {"startTime": "", "expected": 0, "unexpected": 0, "skipped": 0, "flaky": 0}
 
     stats = json_report["stats"]
-    keys = list(json_report.keys())
+    runner = identify_runner(json_report)
 
-    if "config" in keys and "suites" in keys:
-        runner = "playwright"
+    if runner == "playwright":
         del json_report["config"]
         del json_report["suites"]
 
-    if "collectors" in keys and "tests" in keys:
-        runner = "pytest"
+    if runner == "pytest":
         del json_report["collectors"]
         del json_report["tests"]
-
-        # Transform summary data into stats with same key names
+        # Transform summary data into stats with expected/unexpected/skipped key names. TODO: optimize the mapping.
         if "summary" in json_report:
             summary = json_report["summary"]
-
-            # Copy summary fields to stats
             for key, value in summary.items():
                 if key == "passed":
                     stats["expected"] = value
@@ -140,8 +147,21 @@ def process_json(json_report: dict, card_date: str) -> dict:
                     stats["skipped"] = value
                 else:
                     stats[key] = value
+    if runner == "artillery":
+        del json_report["intermediate"]
+        aggregate = json_report.get("aggregate")
+        summary = aggregate.get("counters") if aggregate else None
+        # Transform counter data into stats with expected/unexpected key names.
+        if aggregate and summary:
+            for key, value in summary.items():
+                if key == "vusers.completed":
+                    stats["expected"] = value
+                elif key == "vusers.failed":
+                    stats["unexpected"] = value
+                else:
+                    stats[key] = value
         else:
-            logger.info("No summary found in pytest json report to normalize stats.")
+            logger.info("No counters block found in artillery json report to normalize stats.")
 
         # Convert Unix timestamp to ISO 8601 format
         created_timestamp = json_report.get("created")
