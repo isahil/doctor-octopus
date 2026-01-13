@@ -16,6 +16,38 @@ export function generate_summary_metrics(
 	const failed_vusers = aggregate.counters["vusers.failed"] || 0;
 	const http_requests = aggregate.counters["http.requests"] || 0;
 
+	// Extract custom counters (exclude standard Artillery counters)
+	const standard_counter_prefixes = ["vusers.", "http.", "browser.", "errors."];
+	const custom_counters = Object.entries(aggregate.counters)
+		.filter(([key]) => {
+			const is_standard = standard_counter_prefixes.some((prefix) => key.startsWith(prefix));
+			return !is_standard;
+		})
+		.map(([key, value]) => ({
+			name: key.replace(/_/g, " "),
+			value: value,
+		}));
+
+	const custom_metrics_HTML =
+		custom_counters.length > 0
+			? `
+		<div class="mt-4 pt-4 border-t border-gray-600">
+			<div class="text-sm font-semibold text-gray-300 mb-3">Custom Metrics</div>
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+				${custom_counters
+					.map(
+						({ name, value }) => `
+				<div class="custom-metric-item">
+					<div class="text-xs text-gray-400">${name}</div>
+					<div class="text-lg font-semibold text-blue-400">${value.toLocaleString()}</div>
+				</div>
+				`
+					)
+					.join("")}
+			</div>
+		</div>`
+			: "";
+
 	return `
       <!-- Summary Metrics -->
       <section class="mb-8">
@@ -55,6 +87,7 @@ export function generate_summary_metrics(
             <div class="text-xs text-gray-400 mt-2">${httpResponses} responses</div>
           </div>
         </div>
+        ${custom_metrics_HTML}
       </section>`;
 }
 

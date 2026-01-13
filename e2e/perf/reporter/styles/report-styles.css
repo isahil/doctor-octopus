@@ -78,6 +78,20 @@ body {
     letter-spacing: 0.5px;
 }
 
+.custom-metric-item {
+    border-radius: 6px;
+    padding: 12px;
+    background-color: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all 0.2s ease;
+}
+
+.custom-metric-item:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+}
+
 /* Table Styles */
 table {
     width: 100%;

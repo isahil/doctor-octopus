@@ -1,6 +1,6 @@
 import { Cards } from "../client/component/cards.js";
 
-export const cards_filters_change = async (page) => {
+export const cards_filters_change = async (page, context, events) => {
 	const { TEST_REPORTS_DIR } = process.env;
 	const random_num = Math.ceil(Math.random() * 3);
 	console.log(`random_num for this run: ${random_num}`);
@@ -12,13 +12,16 @@ export const cards_filters_change = async (page) => {
 		await cards.click_filters_option("day", "30");
 		await cards.click_filters_option("app", "all");
 		await cards.click_filters_option("protocol", "all");
+		events.emit("counter", "filters_changed", 1);
 
 		const card_count = await cards.get_card_count();
 		console.log(`Cards displayed after applying filters: ${card_count}`);
 		if (random_num == 2) {
 			throw new Error("Simulated error for testing screenshot capture.");
 		}
+		events.emit("counter", "cards_displayed", 1);
 	} catch (error) {
+		events.emit("counter", "error_occurred", 1);
 		const new_random_num = Math.ceil(Math.random() * 10000);
 		await page.screenshot({
 			path: `${TEST_REPORTS_DIR}/screenshots/cards_error_${new_random_num}.png`,
