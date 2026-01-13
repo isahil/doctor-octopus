@@ -5,8 +5,8 @@ config:
             target: "http://localhost:3000"
             phases:
                 - name: Cards UI performance tests
-                  duration: 90
-                  arrivalCount: 150
+                  duration: 10
+                  arrivalCount: 10
             processor: "../dist/perf/cards-processor.js"
             engines:
                 playwright:

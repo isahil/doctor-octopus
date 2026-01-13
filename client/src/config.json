@@ -20,7 +20,7 @@
     "protocol": {
       "name": "protocol",
       "label": "suites",
-      "options": ["all", "ui", "api", "fix", "db", "unit", "perf"]
+      "options": ["all", "ui", "api", "fix", "db", "perf", "unit"]
     }
   }
 }

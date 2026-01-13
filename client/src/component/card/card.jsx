@@ -24,7 +24,7 @@ function Card({ card, index, filter, setAlert }) {
   const date = new Date(startTime)
   const formatted_date_time = date.toLocaleString() // formatting
   const run_url = ci?.run_url ?? "" // GitHub Action run URL
-  const grafana_url = ci?.grafana_url ?? "" // Grafana Dashboard URL
+  const grafana_url = stats?.app_grafana_url // Grafana Dashboard URL
   const sdet = ci?.sdet ?? ""
 
   const handle_view_report_click = async () => {
@@ -57,11 +57,11 @@ function Card({ card, index, filter, setAlert }) {
   }
 
   const handle_grafana_click = (e) => {
-    const valid_url = grafana_url.startsWith("http") ? grafana_url : ""
-    console.log(`Grafana button clicked.. url: ${valid_url}`)
+    // const valid_url = grafana_url.startsWith("http") ? grafana_url : ""
+    console.log(`Grafana button clicked.. url: ${grafana_url}`)
     e.stopPropagation()
-    if (valid_url) {
-      window.open(valid_url, "_blank")
+    if (grafana_url) {
+      window.open(grafana_url, "_blank")
     } else {
       alert("Grafana URL is not available for this report.")
     }

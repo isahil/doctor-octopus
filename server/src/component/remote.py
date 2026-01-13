@@ -104,7 +104,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
         return None
 
 
-def identify_runner(json_report: dict) -> str:
+def identify_runner(json_report: dict, card_date: str) -> str:
     """Identify the test runner from the JSON report structure"""
     keys = list(json_report.keys())
     if "config" in keys and "suites" in keys:
@@ -113,7 +113,9 @@ def identify_runner(json_report: dict) -> str:
         return "pytest"
     if "aggregate" in keys and "intermediate" in keys:
         return "artillery"
-    return "unknown"
+    else:
+        logger.info(f"[{card_date}] Unable to identify test runner from JSON report structure.")
+        return "unknown"
 
 
 def process_json(json_report: dict, card_date: str) -> dict:
@@ -126,7 +128,7 @@ def process_json(json_report: dict, card_date: str) -> dict:
         json_report["stats"] = {"startTime": "", "expected": 0, "unexpected": 0, "skipped": 0, "flaky": 0}
 
     stats = json_report["stats"]
-    runner = identify_runner(json_report)
+    runner = identify_runner(json_report, card_date)
 
     if runner == "playwright":
         del json_report["config"]
@@ -169,7 +171,6 @@ def process_json(json_report: dict, card_date: str) -> dict:
         stats["duration"] = json_report.get("duration", 0)
 
     if not stats.get("startTime"):
-        # TODO: Use the actual test start time if available
         time = convert_unix_to_iso8601_time(get_unix_time())
         stats["startTime"] = time
         logger.info(f"[{card_date}] has no startTime in stats, setting to current time: {time}")

@@ -55,10 +55,11 @@ export const add_stats_to_json = ({ test_suite, json_report_path, runner }) => {
 	report_card["stats"]["app_name"] = app_name;
 	report_card["stats"]["environment"] = environment;
 	report_card["stats"]["git_branch"] = git_branch;
-	report_card["stats"]["grafana_url"] = "N/A"; // TODO: Add Grafana URL once implemented
+	report_card["stats"]["app_grafana_url"] = "https://www.grafana.com"; // TODO: Add application Grafana URL once implemented
 	report_card["stats"]["protocol"] = test_protocol;
 	report_card["stats"]["product"] = product;
 	report_card["stats"]["runner"] = runner;
+	report_card["stats"]["startTime"] ??= new Date().toISOString();
 	report_card["stats"]["test_reports_dir"] = test_reports_dir;
 	report_card["stats"]["test_suite"] = test_suite;
 	report_card["stats"]["username"] = os_username;

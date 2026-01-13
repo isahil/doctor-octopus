@@ -197,6 +197,22 @@ section h2 {
     letter-spacing: 0.5px;
 }
 
+.grafana-button {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 4px 10px;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.grafana-button:hover {
+    background-color: var(--octopus-green);
+}
+
 /* Container */
 .report-container {
     min-height: 100vh;

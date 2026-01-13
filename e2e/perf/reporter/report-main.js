@@ -52,6 +52,7 @@ export function get_HTML_head() {
  * Generate header section with status and metadata
  */
 export function generate_header(stats, status, statusIcon) {
+	const grafana_url = stats.app_grafana_url;
 	return `
     <!-- Header -->
     <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
@@ -87,6 +88,11 @@ export function generate_header(stats, status, statusIcon) {
             <span class="text-gray-400">Protocol:</span>
             <p class="font-semibold text-gray-100">${stats.protocol || "N/A"}</p>
           </div>
+          <div>
+            <span class="text-gray-400">Grafana:</span>
+            ${grafana_url 
+              ? `<a class="grafana-button" href="${grafana_url}" target="_blank" rel="noopener noreferrer">📊 View Dashboard</a>`
+              : `<a class="font-semibold text-gray-100">${grafana_url}</a>`}
         </div>
       </div>
     </header>`;
