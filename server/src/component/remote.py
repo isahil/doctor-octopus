@@ -121,9 +121,6 @@ def identify_runner(json_report: dict, card_date: str) -> str:
 def process_json(json_report: dict, card_date: str) -> dict:
     """Process the JSON report to remove unnecessary details and normalize stats"""
 
-    runner = "unknown"
-
-    # Normalize stats object for pytest reports
     if "stats" not in json_report:
         json_report["stats"] = {"startTime": "", "expected": 0, "unexpected": 0, "skipped": 0, "flaky": 0}
 

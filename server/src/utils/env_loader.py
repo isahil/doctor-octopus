@@ -1,7 +1,6 @@
 import os
 import platform
 from dotenv import load_dotenv
-from datetime import datetime
 from config import test_reports_dir
 from src.utils.file_helper import ensure_dir
 from src.utils.date_time_helper import get_est_date_time
