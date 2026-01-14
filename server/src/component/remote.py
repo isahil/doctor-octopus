@@ -83,6 +83,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
     redis_client: _redis.StrictRedis = instances.redis.redis_client
 
     card_date, card_value = card_tuple
+    protocol = card_value["filter_data"].get("protocol", "")
     try:
         object_name = card_value["filter_data"].get("object_name")
         environment = card_value["filter_data"].get("environment", "")
@@ -94,13 +95,14 @@ async def process_card(card_tuple) -> Union[dict, None]:
             j_report = json.loads(S3.get_a_s3_object(object_name))
             j_report = process_json(j_report, card_date)
             card_value["json_report"] = j_report
+            logger.info(f"Storing card in Redis cache for protocol: {protocol} [{card_date}]")
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
             return card_value
         else:
-            # logger.info(f"Card found in Redis cache: {card_date}")
+            # logger.info(f"Card found in Redis cache for protocol: {protocol} [{card_date}]")
             return None
     except (KeyError, json.JSONDecodeError) as e:
-        logger.info(f"Error processing card {card_date}: {type(e).__name__} - {str(e)}")
+        logger.info(f"Error processing card for protocol: {protocol} [{card_date}] - {type(e).__name__} - {str(e)}")
         return None
 
 
