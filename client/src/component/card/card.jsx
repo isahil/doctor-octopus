@@ -4,9 +4,9 @@ import { github_icon, grafana_icon } from "../../util/icons"
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
-  const { source } = filter
+  const { source, protocol } = filter
   const { json_report, root_dir } = card
-  const { stats, ci } = json_report
+  const { stats, ci, aggregate } = json_report
   const {
     expected = 0,
     flaky = 0,
@@ -17,8 +17,16 @@ function Card({ card, index, filter, setAlert }) {
     test_suite = "n_a",
     environment = "n_a",
     app = "n_a",
-    duration = 0,
   } = stats // scoreboard values
+
+  // Calculate duration: for perf protocol, use aggregate timestamps; otherwise use stats.duration
+  let duration = 0
+  if (protocol === "perf" && aggregate?.firstMetricAt && aggregate?.lastMetricAt) {
+    duration = (aggregate.lastMetricAt - aggregate.firstMetricAt)
+  } else {
+    duration = stats?.duration || 0
+  }
+
   const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected
   const date = new Date(startTime)
