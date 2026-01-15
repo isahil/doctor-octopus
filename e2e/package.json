@@ -23,7 +23,7 @@
 		"ui:smoke": "npm test ui:smoke",
 		"ui:sanity": "npm test ui:sanity",
 		"ui:regression": "npm test ui:regression",
-		"generate-haiku-report": "node perf/reporter/reporter.js"
+		"perf-report": "node perf/reporter/perf_reporter.js"
 	},
 	"author": "Imran Sahil",
 	"license": "ISC",

@@ -30,21 +30,21 @@ export function get_HTML_head() {
 	const css_tag = css_content ? `<style>\n${css_content}\n</style>` : "";
 
 	return `<!DOCTYPE html>
-        <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>DO Report</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-                <script>
-                    tailwindConfig = {
-                        darkMode: 'class'
-                    }
-                </script>
-                ${css_tag}
-            </head>
-            <body class="bg-gray-900 text-gray-100 dark">
-                <div class="min-h-screen">
+          <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>DO Report</title>
+                  <script src="https://cdn.tailwindcss.com"></script>
+                  <script>
+                      tailwindConfig = {
+                          darkMode: 'class'
+                      }
+                  </script>
+                  ${css_tag}
+              </head>
+              <body class="bg-gray-900 text-gray-100 dark">
+                  <div class="min-h-screen">
         `;
 }
 

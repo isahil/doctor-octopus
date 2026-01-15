@@ -17,7 +17,7 @@ export function generate_summary_metrics(
 	const http_requests = aggregate.counters["http.requests"] || 0;
 
 	// Extract custom counters (exclude standard Artillery counters)
-	const standard_counter_prefixes = ["vusers.", "http.", "browser.", "errors."];
+	const standard_counter_prefixes = ["vusers.", "http.", "browser.", "errors.", "plugins."];
 	const custom_counters = Object.entries(aggregate.counters)
 		.filter(([key]) => {
 			const is_standard = standard_counter_prefixes.some((prefix) => key.startsWith(prefix));
@@ -253,10 +253,10 @@ export function generate_session_length_stats(summaries) {
 	}
 
 	return `
-      <!-- Session Length Statistics -->
+      <!-- VU Session Statistics -->
       <section class="mb-8">
         <div class="section-title-container">
-          <h2 class="text-xl font-semibold text-gray-100 mb-4">Session Length Statistics</h2>
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">VU Session Statistics</h2>
           ${generate_info_icon(explanations.session_length_stats.description)}
         </div>
         <div class="section-container">
