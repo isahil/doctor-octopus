@@ -153,7 +153,7 @@ def process_json(json_report: dict, card_date: str) -> dict:
     if runner == "artillery":
         aggregate = json_report.get("aggregate", {})
         counters = aggregate.get("counters")  # e.g. {'vusers.completed': 100, 'vusers.failed': 5, ...}
-        stats["duration"] = aggregate.get("firstCounterAt", 0) - aggregate.get("lastCounterAt", 0)
+        stats["duration"] = aggregate.get("lastCounterAt", 0) - aggregate.get("firstCounterAt", 0)
 
         del json_report["intermediate"]
         del aggregate["summaries"]
