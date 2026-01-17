@@ -55,7 +55,7 @@ export function generate_header(stats, status, statusIcon) {
 	const grafana_url = stats.app_grafana_url;
 	return `
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
+    <header class="bg-gray-800 border-b border-gray-700">
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-2xl font-bold text-gray-100">Doctor Octopus Perf Report</h1>

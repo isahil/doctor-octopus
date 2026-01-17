@@ -447,7 +447,43 @@ footer {
 }
 
 /* Responsive adjustments for tooltip */
-@media (max-width: 768px) {
+@media (max-width: 450px) {
+    header {
+        background-color: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        padding: 8px 12px;
+    }
+
+    header h1 {
+        font-size: 18px;
+        margin: 4px 0;
+    }
+
+    header .header-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    header .header-item span {
+        margin-bottom: 2px;
+        font-size: 10px;
+    }
+
+    header .header-item p {
+        font-size: 11px;
+        margin: 0;
+    }
+
+    main {
+        padding-top: 100px;
+    }
+
     .section-title-container {
         flex-direction: column;
         align-items: flex-start;
