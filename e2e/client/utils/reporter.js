@@ -59,7 +59,7 @@ export const add_stats_to_json = ({ test_suite, json_report_path, runner }) => {
 	report_card["stats"]["protocol"] = test_protocol;
 	report_card["stats"]["product"] = product;
 	report_card["stats"]["runner"] = runner;
-	report_card["stats"]["startTime"] ??= new Date().toISOString();
+	report_card["stats"]["startTime"] ??= new Date().toISOString(); // TODO: add it in pre-step
 	report_card["stats"]["test_reports_dir"] = test_reports_dir;
 	report_card["stats"]["test_suite"] = test_suite;
 	report_card["stats"]["username"] = os_username;

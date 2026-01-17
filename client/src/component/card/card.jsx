@@ -21,7 +21,7 @@ function Card({ card, index, filter, setAlert }) {
 
   // Calculate duration: for perf protocol, use aggregate timestamps; otherwise use stats.duration
   let duration = 0
-  if (protocol === "perf" && aggregate?.firstMetricAt && aggregate?.lastMetricAt) {
+  if (protocol === "perf" && !startTime) {
     duration = (aggregate.lastMetricAt - aggregate.firstMetricAt)
   } else {
     duration = stats?.duration || 0

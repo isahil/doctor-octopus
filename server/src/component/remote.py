@@ -65,7 +65,6 @@ async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> lis
         if report_dir_date not in cards_pool:
             cards_pool[report_dir_date] = {
                 "filter_data": received_card,
-                "html_report": f"{report_dir_date}/index.html",
                 "json_report": {},
                 "root_dir": received_card["s3_root_dir"],
             }
@@ -107,7 +106,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
 
 
 def identify_runner(json_report: dict, card_date: str) -> str:
-    """Identify the test runner from the JSON report structure"""
+    """Identify the test runner from the JSON report structure. Must not use stats key as it is common across runners."""
     keys = list(json_report.keys())
     if "config" in keys and "suites" in keys:
         return "playwright"
@@ -126,8 +125,9 @@ def process_json(json_report: dict, card_date: str) -> dict:
     if "stats" not in json_report:
         json_report["stats"] = {"startTime": "", "expected": 0, "unexpected": 0, "skipped": 0, "flaky": 0}
 
-    stats = json_report["stats"]
+    stats = json_report.get("stats", {})
     runner = identify_runner(json_report, card_date)
+    stats["runner"] = runner
 
     if runner == "playwright":
         del json_report["config"]
@@ -136,44 +136,43 @@ def process_json(json_report: dict, card_date: str) -> dict:
     if runner == "pytest":
         del json_report["collectors"]
         del json_report["tests"]
-        # Transform summary data into stats with expected/unexpected/skipped key names. TODO: optimize the mapping.
-        if "summary" in json_report:
-            summary = json_report["summary"]
-            for key, value in summary.items():
-                if key == "passed":
-                    stats["expected"] = value
-                elif key == "failed":
-                    stats["unexpected"] = value
-                elif key == "deselected":
-                    stats["skipped"] = value
-                else:
-                    stats[key] = value
-    if runner == "artillery":
-        del json_report["intermediate"]
-        aggregate = json_report.get("aggregate")
-        summary = aggregate.get("counters") if aggregate else None
-        # Transform counter data into stats with expected/unexpected key names.
-        if aggregate and summary:
-            for key, value in summary.items():
-                if key == "vusers.completed":
-                    stats["expected"] = value
-                elif key == "vusers.failed":
-                    stats["unexpected"] = value
-                else:
-                    stats[key] = value
-        else:
-            logger.info("No counters block found in artillery json report to normalize stats.")
+        summary = json_report.get("summary", {})  # e.g. {'passed': 10, 'failed': 2, 'deselected': 1, ...}
+        duration = json_report.get("duration")
+        stats["duration"] = duration
 
-        # Convert Unix timestamp to ISO 8601 format
-        created_timestamp = json_report.get("created")
-        stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
-        stats["duration"] = json_report.get("duration", 0)
+        for key, value in summary.items():
+            if key == "passed":
+                stats["expected"] = value
+            elif key == "failed":
+                stats["unexpected"] = value
+            elif key == "deselected":
+                stats["skipped"] = value
+            else:
+                stats[key] = value
+
+    if runner == "artillery":
+        aggregate = json_report.get("aggregate", {})
+        counters = aggregate.get("counters")  # e.g. {'vusers.completed': 100, 'vusers.failed': 5, ...}
+        stats["duration"] = aggregate.get("firstCounterAt", 0) - aggregate.get("lastCounterAt", 0)
+
+        del json_report["intermediate"]
+        del aggregate["summaries"]
+        del aggregate["histograms"]
+
+        for key, value in counters.items():
+            if key == "vusers.completed":
+                stats["expected"] = value
+            elif key == "vusers.failed":
+                stats["unexpected"] = value
+            else:
+                stats[key] = value
 
     if not stats.get("startTime"):
+        # client card requires startTime to be set
         time = convert_unix_to_iso8601_time(get_unix_time())
         stats["startTime"] = time
         logger.info(f"[{card_date}] has no startTime in stats, setting to current time: {time}")
-    stats["runner"] = runner
+
     return json_report
 
 
