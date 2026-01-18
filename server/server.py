@@ -25,14 +25,13 @@ fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name
 if __name__ == "__main__":
     main_server_port = get_main_server_port()
     node_env = get_node_env()
-    workers = workers_limit
 
     uvicorn.run(
         "server:fastapi_app",
         host="0.0.0.0",
         port=main_server_port,
         lifespan="on",
-        workers=workers,
+        workers=workers_limit,
         reload=(node_env != "production"),
     )
 
