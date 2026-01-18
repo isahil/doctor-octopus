@@ -16,11 +16,12 @@ export function generate_summary_metrics(
 	const failed_vusers = aggregate.counters["vusers.failed"] || 0;
 	const http_requests = aggregate.counters["http.requests"] || 0;
 
+	const standard_artillery_prefixes = ["vusers.", "http.", "browser.", "errors.", "plugins."];
+  
 	// Extract custom counters (exclude standard Artillery counters)
-	const standard_counter_prefixes = ["vusers.", "http.", "browser.", "errors.", "plugins."];
 	const custom_counters = Object.entries(aggregate.counters)
 		.filter(([key]) => {
-			const is_standard = standard_counter_prefixes.some((prefix) => key.startsWith(prefix));
+			const is_standard = standard_artillery_prefixes.some((prefix) => key.startsWith(prefix));
 			return !is_standard;
 		})
 		.map(([key, value]) => ({
@@ -49,10 +50,9 @@ export function generate_summary_metrics(
 			: "";
 
 	// Extract rates (excluding standard rate prefixes)
-	const standard_rate_prefixes = ["http.", "browser.", "plugins."];
 	const custom_rates = Object.entries(aggregate.rates || {})
 		.filter(([key]) => {
-			const is_standard = standard_rate_prefixes.some((prefix) => key.startsWith(prefix));
+			const is_standard = standard_artillery_prefixes.some((prefix) => key.startsWith(prefix));
 			return !is_standard;
 		})
 		.map(([key, value]) => ({
@@ -81,15 +81,9 @@ export function generate_summary_metrics(
 			: "";
 
 	// Extract custom summaries (exclude standard summary prefixes)
-	const standard_summary_prefixes = [
-		"http.",
-		"browser.page",
-		"vusers.session_length",
-		"plugins.",
-	];
 	const custom_summaries = Object.entries(aggregate.summaries || {})
 		.filter(([key]) => {
-			const is_standard = standard_summary_prefixes.some((prefix) => key.startsWith(prefix));
+			const is_standard = standard_artillery_prefixes.some((prefix) => key.startsWith(prefix));
 			return !is_standard;
 		})
 		.map(([key, value]) => ({
