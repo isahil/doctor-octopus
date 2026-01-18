@@ -13,11 +13,12 @@ aioredis_instance_key: str = f"{root_redis_key}:stats:aioredis_instance_count"
 redis_cache_ttl: int = 60  # Redis cache Time To Live (TTL) in days
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
+test_protocols: list = ["api", "ui", "unit", "perf", "s3", "db", "fix"]  # list of test protocols.
 
 the_lab_log_file_name: str = "lab.log"  # default log file name for the lab component
 the_doc_log_file_name: str = "doc.log"  # default log file name for the executor component
 
-max_local_dirs = 500  # max number of downloaded test report directories to keep
+max_local_dirs = 2000  # max number of downloaded test report directories to keep
 notification_frequency_time: int = 10  # frequency of S3 notifications update in seconds
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
@@ -37,4 +38,5 @@ __all__ = [
     "the_doc_log_file_name",
     "pubsub_frequency_time",
     "redis_cache_ttl",
+    "test_protocols",
 ]  # export the variables

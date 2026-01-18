@@ -19,7 +19,7 @@ test.describe("Doctor Octopus Reports Page UI Test", () => {
 			const day_filter = cards.filter_locator("day");
 			await expect.soft(day_filter, "Day filter should be visible").toBeVisible();
 
-			const product_filter = cards.filter_locator("app");
+			const product_filter = cards.filter_locator("product");
 			await expect.soft(product_filter, "Product filter should be visible").toBeVisible();
 
 			const protocol_filter = cards.filter_locator("protocol");
@@ -29,7 +29,7 @@ test.describe("Doctor Octopus Reports Page UI Test", () => {
 		await step("Apply Filters and verify results", async () => {
 			await cards.click_filters_option("environment", "all");
 			await cards.click_filters_option("day", "30");
-			await cards.click_filters_option("app", "all");
+			await cards.click_filters_option("product", "all");
 			await cards.click_filters_option("protocol", "all");
 
 			await expect.soft(page.locator(".card").first()).toBeVisible();

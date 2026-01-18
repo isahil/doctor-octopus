@@ -4,7 +4,7 @@ import { github_icon, grafana_icon } from "../../util/icons"
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
-  const { source, protocol } = filter
+  const { mode, protocol } = filter
   const { json_report, root_dir } = card
   const { stats, ci, aggregate } = json_report
   const {
@@ -17,6 +17,7 @@ function Card({ card, index, filter, setAlert }) {
     test_suite = "n_a",
     environment = "n_a",
     app = "n_a",
+    product = "n_a",
   } = stats // scoreboard values
 
   // Calculate duration: for perf protocol, use aggregate timestamps; otherwise use stats.duration
@@ -41,7 +42,7 @@ function Card({ card, index, filter, setAlert }) {
     })
 
     const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
-    const response = await fetch(`${server_url}/card?source=${source}&root_dir=${root_dir}`)
+    const response = await fetch(`${server_url}/card?mode=${mode}&root_dir=${root_dir}`)
     const report_path = await response.text()
     const full_report_url = `${server_url}${report_path}`
     try {
@@ -116,7 +117,7 @@ function Card({ card, index, filter, setAlert }) {
           </button>
         </div>
         <span className="card-title">
-          {app ? `${app} -` : ""} {environment}{" "}
+          {(product || app) ? `${product || app} -` : ""} {environment}{" "}
         </span>
         <div className="card-footer">
           <span className="branch">{git_branch}</span>

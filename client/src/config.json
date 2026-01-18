@@ -12,8 +12,8 @@
       "label": "env",
       "options": ["all", "dev", "qa", "uat", "sit", "prod"]
     },
-    "app": {
-      "name": "app",
+    "product": {
+      "name": "product",
       "label": "app",
       "options": ["all", "loan", "clo"]
     },

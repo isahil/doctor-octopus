@@ -40,7 +40,7 @@ const generate_reports = (code) => {
 	);
 
 	spawn_child_process(
-		`npm run generate-haiku-report ${json_report_path} ${full_test_reports_dir}`,
+		`npm run perf-report ${json_report_path} ${full_test_reports_dir}`,
 		post_steps
 	);
 };

@@ -6,6 +6,8 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 import redis as _redis
 from config import (
+    test_environments,
+    test_protocols,
     test_reports_dir,
     test_reports_redis_key,
     rate_limit_file_batch_size,
@@ -45,7 +47,7 @@ def format_s3_object_filter_data(obj):
     }
 
 
-async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> list[dict]:
+async def get_cards_from_s3_and_cache(expected_filter_data: dict) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
 
     s3_objects = S3.list_all_s3_objects()
@@ -76,19 +78,26 @@ async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> lis
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
+    """
+    Check if the card is already cached in Redis. If not, download the JSON report from S3,
+    process it, and cache it in Redis
+
+    :param card_tuple: Tuple containing card date and card value
+    """
     import instances
 
     redis: redis_module.RedisClient = instances.redis
     redis_client: _redis.StrictRedis = instances.redis.redis_client
 
     card_date, card_value = card_tuple
-    protocol = card_value["filter_data"].get("protocol", "")
+    protocol = card_value["filter_data"].get("protocol")
     try:
         object_name = card_value["filter_data"].get("object_name")
-        environment = card_value["filter_data"].get("environment", "")
-        reports_cache_key = f"{test_reports_redis_key}:{environment}"  # e.g. trading-apps-reports:qa
-        if not object_name:
-            return None
+        environment = card_value["filter_data"].get("environment")
+        if not object_name or not environment or not protocol:
+            logger.error(f"object_name, environment, or protocol missing for protocol: {protocol} [{card_date}]")
+            return
+        reports_cache_key = f"{test_reports_redis_key}:{environment}:{protocol}"  # e.g. trading-apps-reports:qa:ui
 
         if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
@@ -96,13 +105,9 @@ async def process_card(card_tuple) -> Union[dict, None]:
             card_value["json_report"] = j_report
             logger.info(f"Storing card in Redis cache for protocol: {protocol} [{card_date}]")
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
-            return card_value
-        else:
-            # logger.info(f"Card found in Redis cache for protocol: {protocol} [{card_date}]")
-            return None
+
     except (KeyError, json.JSONDecodeError) as e:
         logger.info(f"Error processing card for protocol: {protocol} [{card_date}] - {type(e).__name__} - {str(e)}")
-        return None
 
 
 def identify_runner(json_report: dict, card_date: str) -> str:
@@ -232,3 +237,44 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
                 time.sleep(rate_limit)
     logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir
+
+
+def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
+    """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
+    import instances
+
+    environment = expected_filter_data.get("environment")
+    protocol = expected_filter_data.get("protocol")
+    day = int(expected_filter_data.get("day", 1))
+
+    if not environment or not protocol:
+        logger.error(
+            "Environment and Protocol must be specified in expected_filter_data for get_cards_from_cache function"
+        )
+        return []
+
+    envs_to_check = test_environments if environment == "all" else [environment]
+    protocols_to_check = test_protocols if protocol == "all" else [protocol]
+    filtered_cards: list[dict] = []
+
+    redis = instances.redis
+
+    # Iterate through all environment and protocol combinations
+    for env in envs_to_check:
+        for proto in protocols_to_check:
+            reports_cache_key = f"{test_reports_redis_key}:{env}:{proto}"  # e.g. trading-apps-reports:qa:ui
+            logger.info(f"Fetch cards from cache env: {env} | day: {day} | protocol: {proto}")
+
+            cached_cards = redis.get_all_cached_cards(reports_cache_key)
+            if cached_cards and isinstance(cached_cards, dict):
+                for _, received_card_data in cached_cards.items():
+                    received_card_data = json.loads(received_card_data)
+                    received_filter_data = received_card_data.get("filter_data")
+                    error = validate(received_filter_data, expected_filter_data)
+                    if error:
+                        # logger.warning(f"Card filter data validation failed: {error}")
+                        continue
+                    filtered_cards.append(received_card_data)
+
+    sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    return sorted_cards

@@ -33,8 +33,9 @@ run_test "unit:client" "npm run unit:client"
 run_test "unit:server" "npm run unit:server"
 run_test "api:regression" "npm run api:regression"
 run_test "ui:regression" "npm run ui:regression"
-run_test "perf:cards" "npm run perf:cards"
-run_test "perf:fixme" "npm run perf:fixme"
+run_test "perf:cards-ui" "npm run perf:cards-ui"
+run_test "perf:cards-api" "npm run perf:cards-api"
+run_test "perf:fixme-ws" "npm run perf:fixme-ws"
 
 END_TIME=$(date +%s)
 TIME_TAKEN=$(($END_TIME - $START_TIME))
