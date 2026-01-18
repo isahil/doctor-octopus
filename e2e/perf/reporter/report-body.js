@@ -71,7 +71,7 @@ export function generate_summary_metrics(
 						({ name, value }) => `
 				<div class="rate-item">
 					<div class="rate-label">${name}</div>
-					<div class="rate-value">${typeof value === "number" ? value.toFixed(2) : value}</div>
+					<div class="rate-value">${typeof value === "number" ? value.toFixed(2) : value} / sec</div>
 				</div>
 				`,
 					)
@@ -100,46 +100,46 @@ export function generate_summary_metrics(
 	const custom_histograms_HTML =
 		custom_summaries.length > 0
 			? `
-		<div class="summaries-section">
-			<div class="summaries-title">Custom Histograms</div>
-			<div class="summaries-grid">
-				${custom_summaries
-					.map(
-						({ name, min, max, mean, p50, p95, p99 }) => `
-				<div class="summary-item">
-					<div class="summary-name">${name}</div>
-					<div class="summary-stats">
-						<div class="summary-stat">
-							<span>Min:</span>
-							<span class="summary-stat-value">${typeof min === "number" ? min.toFixed(2) : "N/A"}</span>
-						</div>
-						<div class="summary-stat">
-							<span>Mean:</span>
-							<span class="summary-stat-value">${typeof mean === "number" ? mean.toFixed(2) : "N/A"}</span>
-						</div>
-						<div class="summary-stat">
-							<span>p50:</span>
-							<span class="summary-stat-value">${typeof p50 === "number" ? p50.toFixed(2) : "N/A"}</span>
-						</div>
-						<div class="summary-stat">
-							<span>p95:</span>
-							<span class="summary-stat-value">${typeof p95 === "number" ? p95.toFixed(2) : "N/A"}</span>
-						</div>
-						<div class="summary-stat">
-							<span>p99:</span>
-							<span class="summary-stat-value">${typeof p99 === "number" ? p99.toFixed(2) : "N/A"}</span>
-						</div>
-						<div class="summary-stat">
-							<span>Max:</span>
-							<span class="summary-stat-value">${typeof max === "number" ? max.toFixed(2) : "N/A"}</span>
-						</div>
-					</div>
-				</div>
-				`,
-					)
-					.join("")}
-			</div>
-		</div>`
+    <div class="summaries-section">
+      <div class="summaries-title">Custom Histograms</div>
+      <div class="summaries-grid">
+        ${custom_summaries
+			.map(
+				({ name, min, max, mean, p50, p95, p99 }) => `
+        <div class="summary-item">
+          <div class="summary-name">${name}</div>
+          <div class="summary-stats">
+            <div class="summary-stat">
+              <span>Min:</span>
+              <span class="summary-stat-value">${typeof min === "number" ? (min / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+            <div class="summary-stat">
+              <span>Mean:</span>
+              <span class="summary-stat-value">${typeof mean === "number" ? (mean / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+            <div class="summary-stat">
+              <span>p50:</span>
+              <span class="summary-stat-value">${typeof p50 === "number" ? (p50 / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+            <div class="summary-stat">
+              <span>p95:</span>
+              <span class="summary-stat-value">${typeof p95 === "number" ? (p95 / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+            <div class="summary-stat">
+              <span>p99:</span>
+              <span class="summary-stat-value">${typeof p99 === "number" ? (p99 / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+            <div class="summary-stat">
+              <span>Max:</span>
+              <span class="summary-stat-value">${typeof max === "number" ? (max / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+          </div>
+        </div>
+        `,
+			)
+			.join("")}
+      </div>
+    </div>`
 			: "";
 
 	// Extract test timing information
