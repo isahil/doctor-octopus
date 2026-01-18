@@ -2,14 +2,14 @@ import { format_bytes, generate_info_icon } from "./index.js";
 import explanations from "./explanations.json" with { type: "json" };
 
 /**
- * Generate summary metrics section
+ * Generate summary metrics section (includes test timing)
  */
 export function generate_summary_metrics(
 	aggregate,
-	responseTimeSummary,
-	httpDownloadedBytes,
-	httpResponses,
-	requestRate
+	response_time_summary,
+	http_downloaded_bytes,
+	http_responses,
+	request_rate,
 ) {
 	const total_vusers = aggregate.counters["vusers.created"] || 0;
 	const completed_vusers = aggregate.counters["vusers.completed"] || 0;
@@ -41,61 +41,115 @@ export function generate_summary_metrics(
 					<div class="text-xs text-gray-400">${name}</div>
 					<div class="text-lg font-semibold text-blue-400">${value.toLocaleString()}</div>
 				</div>
-				`
+				`,
 					)
 					.join("")}
 			</div>
 		</div>`
 			: "";
 
+	// Extract test timing information
+	const start_time = aggregate.firstCounterAt
+		? new Date(aggregate.firstCounterAt).toLocaleString()
+		: "N/A";
+	const end_time = aggregate.lastCounterAt
+		? new Date(aggregate.lastCounterAt).toLocaleString()
+		: "N/A";
+	const duration =
+		aggregate.firstCounterAt && aggregate.lastCounterAt
+			? ((aggregate.lastCounterAt - aggregate.firstCounterAt) / 1000).toFixed(2)
+			: "N/A";
+
 	return `
-      <!-- Summary Metrics -->
-      <section class="mb-8">
-        <div class="section-title-container">
-          <h2 class="text-xl font-semibold text-gray-100 mb-4">Summary Metrics</h2>
-          ${generate_info_icon(explanations.summary_metrics.description)}
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <!-- Virtual Users -->
-          <div class="metric-card">
-            <div class="metric-label">Virtual Users Created</div>
-            <div class="metric-value">${total_vusers.toLocaleString()}</div>
-            <div class="text-xs text-gray-400 mt-2">
-              <span class="success-indicator font-semibold">${completed_vusers}</span> completed, 
-              <span class="failed-indicator font-semibold">${failed_vusers}</span> failed
-            </div>
-          </div>
+    <!-- Summary Metrics -->
+    <section class="mb-8">
+    <div class="section-title-container">
+      <h2 class="text-xl font-semibold text-gray-100 mb-4">Summary Metrics</h2>
+      ${generate_info_icon(explanations.summary_metrics.description)}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Virtual Users -->
+      ${
+			total_vusers > 0
+				? `
+      <div class="metric-card">
+      <div class="metric-label">Virtual Users Created</div>
+      <div class="metric-value">${total_vusers.toLocaleString()}</div>
+      <div class="text-xs text-gray-400 mt-2">
+        <span class="success-indicator font-semibold">${completed_vusers}</span> completed, 
+        <span class="failed-indicator font-semibold">${failed_vusers}</span> failed
+      </div>
+      </div>
+      `
+				: ""
+		}
 
-          <!-- HTTP Requests -->
-          <div class="metric-card">
-            <div class="metric-label">HTTP Requests</div>
-            <div class="metric-value">${http_requests.toLocaleString()}</div>
-            <div class="text-xs text-gray-400 mt-2">${requestRate.toFixed(2)} req/s average</div>
-          </div>
+      <!-- HTTP Requests -->
+      ${
+			http_requests > 0
+				? `
+      <div class="metric-card">
+      <div class="metric-label">HTTP Requests</div>
+      <div class="metric-value">${http_requests.toLocaleString()}</div>
+      <div class="text-xs text-gray-400 mt-2">${request_rate.toFixed(2)} req/s average</div>
+      </div>
+      `
+				: ""
+		}
 
-          <!-- Response Time -->
-          <div class="metric-card">
-            <div class="metric-label">Avg Response Time</div>
-            <div class="metric-value">${(responseTimeSummary.mean || 0).toFixed(1)}<span class="text-sm">ms</span></div>
-            <div class="text-xs text-gray-400 mt-2">p95: ${(responseTimeSummary.p95 || 0).toFixed(1)}ms</div>
-          </div>
+      <!-- Response Time -->
+      ${
+			response_time_summary?.mean
+				? `
+      <div class="metric-card">
+      <div class="metric-label">Avg Response Time</div>
+      <div class="metric-value">${response_time_summary.mean.toFixed(1)}<span class="text-sm">ms</span></div>
+      <div class="text-xs text-gray-400 mt-2">p95: ${(response_time_summary.p95 || 0).toFixed(1)}ms</div>
+      </div>
+      `
+				: ""
+		}
 
-          <!-- Downloaded Data -->
-          <div class="metric-card">
-            <div class="metric-label">Data Downloaded</div>
-            <div class="metric-value text-lg">${format_bytes(httpDownloadedBytes)}</div>
-            <div class="text-xs text-gray-400 mt-2">${httpResponses} responses</div>
-          </div>
-        </div>
-        ${custom_metrics_HTML}
-      </section>`;
+      <!-- Downloaded Data -->
+      ${
+			http_downloaded_bytes > 0
+				? `
+      <div class="metric-card">
+      <div class="metric-label">Data Downloaded</div>
+      <div class="metric-value text-lg">${format_bytes(http_downloaded_bytes)}</div>
+      <div class="text-xs text-gray-400 mt-2">${http_responses} responses</div>
+      </div>
+      `
+				: ""
+		}
+
+      <!-- Test Start Time -->
+      <div class="metric-card">
+      <div class="metric-label">Test Start</div>
+      <div class="text-sm text-gray-100 font-semibold">${start_time}</div>
+      </div>
+
+      <!-- Test End Time -->
+      <div class="metric-card">
+      <div class="metric-label">Test End</div>
+      <div class="text-sm text-gray-100 font-semibold">${end_time}</div>
+      </div>
+
+      <!-- Total Duration -->
+      <div class="metric-card">
+      <div class="metric-label">Total Duration</div>
+      <div class="metric-value text-lg">${duration}s</div>
+      </div>
+    </div>
+    ${custom_metrics_HTML}
+    </section>`;
 }
 
 /**
  * Generate HTTP status codes section
  */
-export function generate_HTTP_status_codes(aggregate, httpResponses) {
-	if (httpResponses === 0) {
+export function generate_HTTP_status_codes(aggregate, http_responses) {
+	if (http_responses === 0) {
 		return "";
 	}
 	const status_codes = Object.keys(aggregate.counters)
@@ -124,7 +178,7 @@ export function generate_HTTP_status_codes(aggregate, httpResponses) {
             <tbody>
               ${status_codes
 					.map(({ code, count }) => {
-						const percentage = ((count / httpResponses) * 100).toFixed(1);
+						const percentage = ((count / http_responses) * 100).toFixed(1);
 						const isSuccess = code.startsWith("2");
 						return `<tr>
                   <td>
@@ -187,7 +241,7 @@ export function generate_errors_section(aggregate) {
                 <td class="font-medium">${type}</td>
                 <td class="font-semibold failed-indicator">${count.toLocaleString()}</td>
               </tr>
-              `
+              `,
 					)
 					.join("")}
             </tbody>
@@ -199,7 +253,10 @@ export function generate_errors_section(aggregate) {
 /**
  * Generate response time percentiles section
  */
-export function generate_response_time_percentiles(responseTimeSummary) {
+export function generate_response_time_percentiles(response_time_summary) {
+	if (!response_time_summary || Object.keys(response_time_summary).length === 0) {
+		return "";
+	}
 	return `
       <!-- Response Time Percentiles -->
       <section class="mb-8">
@@ -211,31 +268,31 @@ export function generate_response_time_percentiles(responseTimeSummary) {
           <div class="percentiles-grid">
             <div class="percentile-item">
               <div class="label">Min</div>
-              <div class="value">${(responseTimeSummary.min || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.min || 0).toFixed(1)}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p50 (Median)</div>
-              <div class="value">${(responseTimeSummary.p50 || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.p50 || 0).toFixed(1)}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p75</div>
-              <div class="value">${(responseTimeSummary.p75 || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.p75 || 0).toFixed(1)}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p90</div>
-              <div class="value">${(responseTimeSummary.p90 || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.p90 || 0).toFixed(1)}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p95</div>
-              <div class="value">${(responseTimeSummary.p95 || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.p95 || 0).toFixed(1)}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p99</div>
-              <div class="value">${(responseTimeSummary.p99 || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.p99 || 0).toFixed(1)}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">Max</div>
-              <div class="value">${(responseTimeSummary.max || 0).toFixed(1)}ms</div>
+              <div class="value">${(response_time_summary.max || 0).toFixed(1)}ms</div>
             </div>
           </div>
         </div>
@@ -245,11 +302,11 @@ export function generate_response_time_percentiles(responseTimeSummary) {
 /**
  * Generate session length statistics section
  */
-export function generate_session_length_stats(summaries) {
-	const sessionLengthData = summaries?.["vusers.session_length"];
+export function generate_vu_session_length_stats(summaries) {
+	const session_length_data = summaries?.["vusers.session_length"];
 
-	if (!sessionLengthData) {
-		return ""; // Skip if no session length data
+	if (!session_length_data) {
+		return ""; // Skip if there's no session length data
 	}
 
 	return `
@@ -257,74 +314,33 @@ export function generate_session_length_stats(summaries) {
       <section class="mb-8">
         <div class="section-title-container">
           <h2 class="text-xl font-semibold text-gray-100 mb-4">VU Session Statistics</h2>
-          ${generate_info_icon(explanations.session_length_stats.description)}
+          ${generate_info_icon(explanations.vu_session_length_stats.description)}
         </div>
         <div class="section-container">
           <div class="percentiles-grid">
             <div class="percentile-item">
               <div class="label">Min Duration</div>
-              <div class="value">${sessionLengthData.min ? sessionLengthData.min.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.min ? session_length_data.min.toFixed(0) : "N/A"}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p50 (Median)</div>
-              <div class="value">${sessionLengthData.p50 ? sessionLengthData.p50.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.p50 ? session_length_data.p50.toFixed(0) : "N/A"}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">Mean Duration</div>
-              <div class="value">${sessionLengthData.mean ? sessionLengthData.mean.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.mean ? session_length_data.mean.toFixed(0) : "N/A"}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p95</div>
-              <div class="value">${sessionLengthData.p95 ? sessionLengthData.p95.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.p95 ? session_length_data.p95.toFixed(0) : "N/A"}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">p99</div>
-              <div class="value">${sessionLengthData.p99 ? sessionLengthData.p99.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.p99 ? session_length_data.p99.toFixed(0) : "N/A"}ms</div>
             </div>
             <div class="percentile-item">
               <div class="label">Max Duration</div>
-              <div class="value">${sessionLengthData.max ? sessionLengthData.max.toFixed(0) : "N/A"}ms</div>
-            </div>
-          </div>
-        </div>
-      </section>`;
-}
-
-/**
- * Generate test timing information section
- */
-export function generate_test_timing_info(aggregate) {
-	const startTime = aggregate.firstCounterAt
-		? new Date(aggregate.firstCounterAt).toLocaleString()
-		: "N/A";
-	const endTime = aggregate.lastCounterAt
-		? new Date(aggregate.lastCounterAt).toLocaleString()
-		: "N/A";
-	const duration =
-		aggregate.firstCounterAt && aggregate.lastCounterAt
-			? ((aggregate.lastCounterAt - aggregate.firstCounterAt) / 1000).toFixed(2)
-			: "N/A";
-
-	return `
-      <!-- Test Timing Information -->
-      <section class="mb-8">
-        <div class="section-title-container">
-          <h2 class="text-xl font-semibold text-gray-100 mb-4">Test Timing</h2>
-          ${generate_info_icon(explanations.test_timing.description)}
-        </div>
-        <div class="section-container">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="metric-card">
-              <div class="metric-label">Test Start Time</div>
-              <div class="text-sm text-gray-100 font-semibold">${startTime}</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-label">Test End Time</div>
-              <div class="text-sm text-gray-100 font-semibold">${endTime}</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-label">Total Duration</div>
-              <div class="metric-value text-lg">${duration}s</div>
+              <div class="value">${session_length_data.max ? session_length_data.max.toFixed(0) : "N/A"}ms</div>
             </div>
           </div>
         </div>
@@ -335,10 +351,15 @@ export function generate_test_timing_info(aggregate) {
  * Generate trace collection stats
  */
 export function generate_trace_stats(aggregate) {
-	const tracesCollected = aggregate.counters["browser.traces_collected"] || 0;
-	const tracesDiscarded = aggregate.counters["browser.traces_discarded"] || 0;
-	const totalTraces = tracesCollected + tracesDiscarded;
-	const collectionRate = totalTraces > 0 ? ((tracesCollected / totalTraces) * 100).toFixed(1) : 0;
+	const traces_collected = aggregate.counters["browser.traces_collected"] || 0;
+	const traces_discarded = aggregate.counters["browser.traces_discarded"] || 0;
+	const total_traces = traces_collected + traces_discarded;
+	const collection_rate =
+		total_traces > 0 ? ((traces_collected / total_traces) * 100).toFixed(1) : 0;
+
+	if (total_traces === 0) {
+		return ""; // Skip if no traces collected
+	}
 
 	return `
       <!-- Trace Collection Stats -->
@@ -350,19 +371,19 @@ export function generate_trace_stats(aggregate) {
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="metric-card">
             <div class="metric-label">Traces Collected</div>
-            <div class="metric-value success-indicator">${tracesCollected.toLocaleString()}</div>
+            <div class="metric-value success-indicator">${traces_collected.toLocaleString()}</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Traces Discarded</div>
-            <div class="metric-value failed-indicator">${tracesDiscarded.toLocaleString()}</div>
+            <div class="metric-value failed-indicator">${traces_discarded.toLocaleString()}</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Total Traces</div>
-            <div class="metric-value">${totalTraces.toLocaleString()}</div>
+            <div class="metric-value">${total_traces.toLocaleString()}</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Collection Rate</div>
-            <div class="metric-value success-indicator">${collectionRate}%</div>
+            <div class="metric-value success-indicator">${collection_rate}%</div>
           </div>
         </div>
       </section>`;
@@ -429,7 +450,7 @@ export function generate_intermediate_results(intermediate) {
 export function generate_web_vitals(summaries) {
 	// Check if Web Vitals data exists
 	const webVitalsKeys = Object.keys(summaries || {}).filter((key) =>
-		key.includes("browser.page.")
+		key.includes("browser.page."),
 	);
 
 	if (webVitalsKeys.length === 0) {
@@ -438,7 +459,7 @@ export function generate_web_vitals(summaries) {
 
 	// Find the first URL's metrics (usually http://localhost:3000/)
 	const ttfb = Object.values(summaries).find((v) =>
-		Object.keys(summaries).find((k) => k.includes("TTFB"))
+		Object.keys(summaries).find((k) => k.includes("TTFB")),
 	);
 	const ttfbKey = Object.keys(summaries).find((k) => k.includes("browser.page.TTFB"));
 	const fcpKey = Object.keys(summaries).find((k) => k.includes("browser.page.FCP"));
@@ -588,7 +609,7 @@ export function generate_screenshots_section(screenshots) {
 					<span class="text-white">View</span>
 				</div>
 			</div>
-		`
+		`,
 		)
 		.join("");
 
@@ -600,7 +621,7 @@ export function generate_screenshots_section(screenshots) {
 				<span class="lightbox-close" onclick="window.closeLightbox()">&times;</span>
 				<span class="lightbox-caption">Screenshot ${index + 1}</span>
 			</div>
-		`
+		`,
 		)
 		.join("");
 

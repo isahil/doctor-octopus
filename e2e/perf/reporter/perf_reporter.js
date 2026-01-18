@@ -11,8 +11,7 @@ import {
 	generate_intermediate_results,
 	generate_web_vitals,
 	generate_browser_metrics,
-	generate_session_length_stats,
-	generate_test_timing_info,
+	generate_vu_session_length_stats,
 	generate_trace_stats,
 	generate_screenshots_section,
 	html_utils
@@ -34,8 +33,6 @@ function generate_HTML(data, outputPath, outputDir) {
 	const httpResponses = aggregate.counters["http.responses"] || 0;
 	const httpDownloadedBytes = aggregate.counters["http.downloaded_bytes"] || 0;
 	const requestRate = aggregate.rates["http.request_rate"] || 0;
-
-	// Response time summaries
 	const responseTimeSummary = aggregate.summaries["http.response_time"] || {};
 
 	// Get screenshots if they exist
@@ -60,8 +57,7 @@ function generate_HTML(data, outputPath, outputDir) {
     <main class="max-w-7xl mx-auto px-6 py-8">
 ${generate_header(stats, status, statusIcon)}
 ${generate_summary_metrics(aggregate, responseTimeSummary, httpDownloadedBytes, httpResponses, requestRate)}
-${generate_test_timing_info(aggregate)}
-${generate_session_length_stats(aggregate.summaries)}
+${generate_vu_session_length_stats(aggregate.summaries)}
 ${generate_HTTP_status_codes(aggregate, httpResponses)}
 ${generate_errors_section(aggregate)}
 ${generate_response_time_percentiles(responseTimeSummary)}

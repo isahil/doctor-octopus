@@ -11,8 +11,8 @@
 		"title": "Trace Collection",
 		"description": "Browser trace collection metrics showing how many traces were successfully collected versus discarded. Higher collection rates indicate better instrumentation capture for performance analysis."
 	},
-	"session_length_stats": {
-		"title": "Session Length Statistics",
+	"vu_session_length_stats": {
+		"title": "VU Session Statistics",
 		"description": "Statistical breakdown of virtual user session durations including minimum, median, mean, and percentile values (p95, p99, max). Shows how long users spent in each test session."
 	},
 	"http_status_codes": {
