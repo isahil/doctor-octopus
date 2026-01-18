@@ -1,25 +1,37 @@
 import { Cards } from "../client/component/cards.js";
 
+const change_filter = async (cards, filter_name, filter_value, events) => {
+	await cards.click_filters_option(filter_name, filter_value);
+	events.emit("counter", "filters_changed", 1);
+	events.emit("rate", "filters_change_rate");
+};
+
 export const cards_filters_change = async (page, context, events) => {
 	const { TEST_REPORTS_DIR } = process.env;
-	const random_num = Math.ceil(Math.random() * 3);
-	console.log(`random_num for this run: ${random_num}`);
+
 	try {
+		const start_time = performance.now();
+
 		await page.goto("http://localhost:3000", { timeout: 3000 });
 
 		const cards = new Cards(page);
-		await cards.click_filters_option("environment", "all");
-		await cards.click_filters_option("day", "30");
-		await cards.click_filters_option("app", "all");
-		await cards.click_filters_option("protocol", "all");
-		events.emit("counter", "filters_changed", 1);
+		await change_filter(cards, "environment", "all", events);
+		await change_filter(cards, "day", "30", events);
+		await change_filter(cards, "product", "all", events);
+		await change_filter(cards, "protocol", "all", events);
 
-		const card_count = await cards.get_card_count();
-		console.log(`Cards displayed after applying filters: ${card_count}`);
-		if (random_num == 2) {
-			throw new Error("Simulated error for testing screenshot capture.");
-		}
-		events.emit("counter", "cards_displayed", 1);
+		const cards_count = await cards.get_cards_count();
+
+		const end_time = performance.now();
+		const duration = end_time - start_time;
+
+		console.log(`cards_filters_change duration: ${duration} ms`);
+		console.log(`Cards displayed after applying filters: ${cards_count}`);
+		// const random_num = Math.ceil(Math.random() * 3);
+		// if (random_num == 2) throw new Error("Simulated error for testing screenshot capture.");
+
+		events.emit("histogram", "cards_count", cards_count);
+		
 	} catch (error) {
 		events.emit("counter", "error_occurred", 1);
 		const new_random_num = Math.ceil(Math.random() * 10000);
@@ -28,7 +40,7 @@ export const cards_filters_change = async (page, context, events) => {
 		});
 		console.error(
 			`Error in cards_filters_change. screenshot saved as: cards_error_${new_random_num}.png\n`,
-			error
+			error,
 		);
 		throw error;
 	}
