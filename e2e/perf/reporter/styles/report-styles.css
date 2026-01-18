@@ -342,6 +342,18 @@ footer {
     gap: 24px;
 }
 
+/* URL section for Web Vitals */
+.url-section {
+    border-left: 2px solid var(--octopus-green);
+    padding-left: 16px;
+}
+
+.url-section h3 {
+    color: var(--octopus-green);
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    word-break: break-all;
+}
+
 .percentile-item {
     padding: 12px 0;
 }
