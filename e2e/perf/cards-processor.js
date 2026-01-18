@@ -21,16 +21,18 @@ export const cards_filters_change = async (page, context, events) => {
 		await change_filter(cards, "protocol", "all", events);
 
 		const cards_count = await cards.get_cards_count();
+		if( cards_count === 0 ) {
+			throw new Error("No cards displayed after applying filters.");
+		}
 
 		const end_time = performance.now();
 		const duration = end_time - start_time;
-
-		console.log(`cards_filters_change duration: ${duration} ms`);
-		console.log(`Cards displayed after applying filters: ${cards_count}`);
+		// console.log(`cards_filters_change duration: ${duration} ms`);
+		// console.log(`Cards displayed after applying filters: ${cards_count}`);
 		// const random_num = Math.ceil(Math.random() * 3);
 		// if (random_num == 2) throw new Error("Simulated error for testing screenshot capture.");
 
-		events.emit("histogram", "cards_count", cards_count);
+		events.emit("histogram", "cards_filter_change_duration", duration);
 		
 	} catch (error) {
 		events.emit("counter", "error_occurred", 1);

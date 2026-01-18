@@ -87,6 +87,95 @@ body {
     transform: translateY(-2px);
 }
 
+.rates-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #4b5563;
+}
+
+.rates-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d1d5db;
+    margin-bottom: 12px;
+}
+
+.rates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.rate-item {
+    border-radius: 6px;
+    padding: 12px;
+    background-color: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.rate-label {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.rate-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4ade80;
+    margin-top: 4px;
+}
+
+/* Custom summaries section styling */
+.summaries-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #4b5563;
+}
+
+.summaries-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d1d5db;
+    margin-bottom: 12px;
+}
+
+.summaries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.summary-item {
+    background-color: #1f2937;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.summary-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #d1d5db;
+    margin-bottom: 8px;
+}
+
+.summary-stats {
+    font-size: 12px;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-stat {
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-stat-value {
+    color: #e5e7eb;
+    font-weight: 600;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

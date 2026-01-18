@@ -32,7 +32,7 @@ export function generate_summary_metrics(
 		custom_counters.length > 0
 			? `
 		<div class="mt-4 pt-4 border-t border-gray-600">
-			<div class="text-sm font-semibold text-gray-300 mb-3">Custom Metrics</div>
+			<div class="text-sm font-semibold text-gray-300 mb-3">Custom Counters</div>
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 				${custom_counters
 					.map(
@@ -40,6 +40,100 @@ export function generate_summary_metrics(
 				<div class="custom-metric-item">
 					<div class="text-xs text-gray-400">${name}</div>
 					<div class="text-lg font-semibold text-blue-400">${value.toLocaleString()}</div>
+				</div>
+				`,
+					)
+					.join("")}
+			</div>
+		</div>`
+			: "";
+
+	// Extract rates (excluding standard rate prefixes)
+	const standard_rate_prefixes = ["http.", "browser.", "plugins."];
+	const custom_rates = Object.entries(aggregate.rates || {})
+		.filter(([key]) => {
+			const is_standard = standard_rate_prefixes.some((prefix) => key.startsWith(prefix));
+			return !is_standard;
+		})
+		.map(([key, value]) => ({
+			name: key.replace(/_/g, " "),
+			value: value,
+		}));
+
+	const rates_HTML =
+		custom_rates.length > 0
+			? `
+		<div class="rates-section">
+			<div class="rates-title">Custom Rates</div>
+			<div class="rates-grid">
+				${custom_rates
+					.map(
+						({ name, value }) => `
+				<div class="rate-item">
+					<div class="rate-label">${name}</div>
+					<div class="rate-value">${typeof value === "number" ? value.toFixed(2) : value}</div>
+				</div>
+				`,
+					)
+					.join("")}
+			</div>
+		</div>`
+			: "";
+
+	// Extract custom summaries (exclude standard summary prefixes)
+	const standard_summary_prefixes = [
+		"http.",
+		"browser.page",
+		"vusers.session_length",
+		"plugins.",
+	];
+	const custom_summaries = Object.entries(aggregate.summaries || {})
+		.filter(([key]) => {
+			const is_standard = standard_summary_prefixes.some((prefix) => key.startsWith(prefix));
+			return !is_standard;
+		})
+		.map(([key, value]) => ({
+			name: key.replace(/_/g, " "),
+			...value,
+		}));
+
+	const custom_histograms_HTML =
+		custom_summaries.length > 0
+			? `
+		<div class="summaries-section">
+			<div class="summaries-title">Custom Histograms</div>
+			<div class="summaries-grid">
+				${custom_summaries
+					.map(
+						({ name, min, max, mean, p50, p95, p99 }) => `
+				<div class="summary-item">
+					<div class="summary-name">${name}</div>
+					<div class="summary-stats">
+						<div class="summary-stat">
+							<span>Min:</span>
+							<span class="summary-stat-value">${typeof min === "number" ? min.toFixed(2) : "N/A"}</span>
+						</div>
+						<div class="summary-stat">
+							<span>Mean:</span>
+							<span class="summary-stat-value">${typeof mean === "number" ? mean.toFixed(2) : "N/A"}</span>
+						</div>
+						<div class="summary-stat">
+							<span>p50:</span>
+							<span class="summary-stat-value">${typeof p50 === "number" ? p50.toFixed(2) : "N/A"}</span>
+						</div>
+						<div class="summary-stat">
+							<span>p95:</span>
+							<span class="summary-stat-value">${typeof p95 === "number" ? p95.toFixed(2) : "N/A"}</span>
+						</div>
+						<div class="summary-stat">
+							<span>p99:</span>
+							<span class="summary-stat-value">${typeof p99 === "number" ? p99.toFixed(2) : "N/A"}</span>
+						</div>
+						<div class="summary-stat">
+							<span>Max:</span>
+							<span class="summary-stat-value">${typeof max === "number" ? max.toFixed(2) : "N/A"}</span>
+						</div>
+					</div>
 				</div>
 				`,
 					)
@@ -104,7 +198,7 @@ export function generate_summary_metrics(
       <div class="metric-card">
       <div class="metric-label">Avg Response Time</div>
       <div class="metric-value">${response_time_summary.mean.toFixed(1)}<span class="text-sm">ms</span></div>
-      <div class="text-xs text-gray-400 mt-2">p95: ${(response_time_summary.p95 || 0).toFixed(1)}ms</div>
+      <div class="text-xs text-gray-400 mt-2">p99: ${(response_time_summary.p99 || 0).toFixed(1)}ms</div>
       </div>
       `
 				: ""
@@ -142,6 +236,8 @@ export function generate_summary_metrics(
       </div>
     </div>
     ${custom_metrics_HTML}
+    ${rates_HTML}
+    ${custom_histograms_HTML}
     </section>`;
 }
 
