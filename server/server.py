@@ -6,6 +6,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 os.environ["SERVER_MODE"] = "main"
+from config import workers_limit
 from src.utils.env_loader import get_main_server_port, get_node_env
 from instances import fastapi_app
 from src.fastapi import router as fastapi_router
@@ -24,7 +25,7 @@ fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name
 if __name__ == "__main__":
     main_server_port = get_main_server_port()
     node_env = get_node_env()
-    workers = 1
+    workers = workers_limit
 
     uvicorn.run(
         "server:fastapi_app",

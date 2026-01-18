@@ -1,5 +1,6 @@
 import os
 
+node_env: str = os.environ.get("NODE_ENV", "")
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
 test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
 
@@ -22,6 +23,8 @@ max_local_dirs = 2000  # max number of downloaded test report directories to kee
 notification_frequency_time: int = 10  # frequency of S3 notifications update in seconds
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
+workers_limit: int = 5 if node_env == "production" else 1  # number of workers for the main server process
+
 rate_limit_wait_time: float = 0.25  # seconds to wait between S3 downloads to avoid rate limiting
 rate_limit_folder_batch_size: int = 5  # number of S3 folders to download in a batch before waiting
 rate_limit_file_batch_size: int = 20  # number of S3 objects to download in a batch before waiting
@@ -39,4 +42,5 @@ __all__ = [
     "pubsub_frequency_time",
     "redis_cache_ttl",
     "test_protocols",
+    "workers_limit"
 ]  # export the variables

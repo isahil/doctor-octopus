@@ -14,41 +14,63 @@ stop_service() {
         return 0
     fi
     
-    local pid=$(cat "$pid_file")
+    local pids_str=$(cat "$pid_file")
     
-    # Validate PID
-    if [ -z "$pid" ] || ! [[ "$pid" =~ ^[0-9]+$ ]]; then
-        echo "[$(date)] Invalid PID in $pid_file: '$pid'"
+    # Handle multiple PIDs (space-separated)
+    local pids=()
+    for pid in $pids_str; do
+        # Validate each PID
+        if [ -z "$pid" ] || ! [[ "$pid" =~ ^[0-9]+$ ]]; then
+            echo "[$(date)] Invalid PID in $pid_file: '$pid'"
+            continue
+        fi
+        pids+=("$pid")
+    done
+    
+    # If no valid PIDs found
+    if [ ${#pids[@]} -eq 0 ]; then
+        echo "[$(date)] No valid PIDs found in $pid_file"
         rm -f "$pid_file"
         return 1
     fi
     
-    # Check if process exists
-    if ! kill -0 "$pid" 2>/dev/null; then
-        echo "[$(date)] Process $pid for $service_name is not running (stale PID)"
-        rm -f "$pid_file"
-        return 0
-    fi
+    local all_stopped=true
     
-    # Verify this is actually our process
-    local cmd=$(ps -p "$pid" -o comm= 2>/dev/null || echo "")
-    if ! [[ "$cmd" =~ (npm|node|python|uvicorn) ]]; then
-        echo "[$(date)] WARNING: PID $pid is not a Node.js/Python process (cmd: $cmd)"
-        echo "[$(date)] Skipping kill to avoid stopping wrong process"
-        rm -f "$pid_file"
-        return 1
-    fi
+    # Try graceful shutdown for all PIDs
+    for pid in "${pids[@]}"; do
+        # Check if process exists
+        if ! kill -0 "$pid" 2>/dev/null; then
+            echo "[$(date)] Process $pid for $service_name is not running (stale PID)"
+            continue
+        fi
+        
+        # Verify this is actually our process
+        local cmd=$(ps -p "$pid" -o comm= 2>/dev/null || echo "")
+        if ! [[ "$cmd" =~ (npm|node|python|uvicorn) ]]; then
+            echo "[$(date)] WARNING: PID $pid is not a Node.js/Python process (cmd: $cmd)"
+            echo "[$(date)] Skipping kill to avoid stopping wrong process"
+            continue
+        fi
+        
+        echo "[$(date)] Stopping $service_name (PID: $pid, CMD: $cmd)..."
+        echo "[$(date)] Stopping $service_name (PID: $pid)..." >> "$log_file"
+        
+        # Try graceful shutdown
+        kill -TERM "$pid" 2>/dev/null
+    done
     
-    echo "[$(date)] Stopping $service_name (PID: $pid, CMD: $cmd)..."
-    echo "[$(date)] Stopping $service_name..." >> "$log_file"
-    
-    # Try graceful shutdown first
-    kill -TERM "$pid" 2>/dev/null
-    
-    # Wait up to 15 seconds for graceful shutdown
+    # Wait up to 15 seconds for graceful shutdown of all processes
     local count=0
     while [ $count -lt 15 ]; do
-        if ! kill -0 "$pid" 2>/dev/null; then
+        local running=false
+        for pid in "${pids[@]}"; do
+            if kill -0 "$pid" 2>/dev/null; then
+                running=true
+                break
+            fi
+        done
+        
+        if [ "$running" = false ]; then
             echo "[$(date)] $service_name stopped gracefully"
             echo "[$(date)] $service_name stopped gracefully" >> "$log_file"
             rm -f "$pid_file"
@@ -58,21 +80,32 @@ stop_service() {
         count=$((count + 1))
     done
     
-    # Force kill if still running
-    echo "[$(date)] Force killing $service_name (PID: $pid)..."
-    echo "[$(date)] Force killing $service_name" >> "$log_file"
-    kill -9 "$pid" 2>/dev/null
+    # Force kill any remaining processes
+    for pid in "${pids[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "[$(date)] Force killing $service_name (PID: $pid)..."
+            echo "[$(date)] Force killing $service_name (PID: $pid)" >> "$log_file"
+            kill -9 "$pid" 2>/dev/null
+        fi
+    done
     
-    # Wait a moment and verify
+    # Wait a moment and verify all are killed
     sleep 2
-    if kill -0 "$pid" 2>/dev/null; then
-        echo "[$(date)] ERROR: Failed to stop $service_name (PID: $pid)"
-        return 1
-    else
+    for pid in "${pids[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "[$(date)] ERROR: Failed to stop $service_name (PID: $pid)"
+            all_stopped=false
+        fi
+    done
+    
+    if [ "$all_stopped" = true ]; then
         echo "[$(date)] $service_name force killed successfully"
         echo "[$(date)] $service_name force killed" >> "$log_file"
         rm -f "$pid_file"
         return 0
+    else
+        echo "[$(date)] ERROR: Failed to stop some processes for $service_name"
+        return 1
     fi
 }
 
