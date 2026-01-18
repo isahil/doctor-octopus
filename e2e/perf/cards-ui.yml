@@ -5,8 +5,20 @@ config:
             target: "http://localhost:3000"
             phases:
                 - name: Cards UI performance tests
-                  duration: 10
-                  arrivalCount: 10
+                  duration: 90
+                  arrivalCount: 300
+            processor: "../dist/perf/cards-processor.js"
+            engines:
+                playwright:
+                    trace: true
+                    launchOptions:
+                        headless: true
+        threads:
+            target: "http://localhost:3000"
+            phases:
+                - name: Cards UI performance tests
+                  duration: 1
+                  arrivalCount: 100
             processor: "../dist/perf/cards-processor.js"
             engines:
                 playwright:
@@ -15,6 +27,6 @@ config:
                         headless: true
 
 scenarios:
-    - name: "Cards - Fetch All Cards in 30 Day"
+    - name: "Cards - Fetch All Cards in 30 Days"
       engine: playwright
       testFunction: cards_filters_change

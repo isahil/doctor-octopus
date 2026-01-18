@@ -1,5 +1,7 @@
 import { Cards } from "../client/component/cards.js";
 
+const homepage_url = "http://localhost:3000";
+
 const change_filter = async (cards, filter_name, filter_value, events) => {
 	await cards.click_filters_option(filter_name, filter_value);
 	events.emit("counter", "filters_changed", 1);
@@ -12,7 +14,7 @@ export const cards_filters_change = async (page, context, events) => {
 	try {
 		const start_time = performance.now();
 
-		await page.goto("http://localhost:3000", { timeout: 3000 });
+		await page.goto(homepage_url, { timeout: 3000 });
 
 		const cards = new Cards(page);
 		await change_filter(cards, "environment", "all", events);
