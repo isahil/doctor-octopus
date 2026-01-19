@@ -12,7 +12,7 @@ import {
 } from "../client/utils/index.js";
 
 let test_suite = process.argv[2];
-const environment = process.argv[3];
+const environment = process.argv[3] || "dev";
 const options = process.argv[4] || "{}";
 
 const full_test_reports_dir = get_test_reports_dir();

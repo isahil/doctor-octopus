@@ -36,7 +36,7 @@ export function generate_summary_metrics(
 			? `
 		<div class="mt-4 pt-4 border-t border-gray-600">
 			<div class="flex items-center justify-between mb-3">
-				<div class="text-sm font-semibold text-gray-300">Custom Counters</div>
+				<div class="text-sm font-semibold text-gray-300">Counters</div>
 				${generate_info_icon(explanations.counters.description)}
 			</div>
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -72,7 +72,7 @@ export function generate_summary_metrics(
 			? `
 		<div class="rates-section">
 			<div class="flex items-center justify-between mb-3">
-				<div class="rates-title">Custom Rates</div>
+				<div class="rates-title">Rates</div>
 				${generate_info_icon(explanations.rates.description)}
 			</div>
 			<div class="rates-grid">
@@ -108,7 +108,7 @@ export function generate_summary_metrics(
 			? `
     <div class="summaries-section">
       <div class="flex items-center justify-between mb-3">
-        <div class="summaries-title">Custom Histograms</div>
+        <div class="summaries-title">Histograms</div>
         ${generate_info_icon(explanations.histograms.description)}
       </div>
       <div class="summaries-grid">
