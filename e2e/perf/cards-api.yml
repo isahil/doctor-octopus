@@ -8,12 +8,18 @@ config:
           duration: 3
           rampTo: 3
           arrivalRate: 1
+    threads:
+      target: "http://localhost:8000"
+      phases:
+        - name: Cards REST API Threads performance tests
+          duration: 1
+          arrivalCount: 1000
 
 scenarios:
   - name: "Cards - Fetch All Cards in 1 Day"
     flow:
       - get:
-          url: "/cards?source=remote&day=1&environment=dev&app=loan&protocol=all"
+          url: "/cards?mode=cache&day=30&environment=all&product=all&protocol=all"
           capture:
             - json: "$.cards.length"
               as: "cards_count"

@@ -10,6 +10,8 @@
     --status-warning: #f59e0b;
     --octopus-green: #1abc9c;
     --octopus-green-gradient: linear-gradient(90deg, #0a7958 0%, #72d3da 100%);
+    --octopus-blue: rgba(59, 130, 246, 0.05);
+    --octopus-gray: #1f2937;
 }
 
 * {
@@ -76,7 +78,7 @@ body {
 .custom-metric-item {
     border-radius: 6px;
     padding: 12px;
-    background-color: rgba(59, 130, 246, 0.05);
+    background-color: var(--octopus-blue);
     border: 1px solid rgba(59, 130, 246, 0.2);
     transition: all 0.2s ease;
 }
@@ -91,6 +93,13 @@ body {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid #4b5563;
+    transition: all 0.2s ease;
+}
+
+.rates-section:hover {
+    border-left: 3px solid var(--octopus-green);
+    padding-left: 16px;
+    margin-left: -3px;
 }
 
 .rates-title {
@@ -109,7 +118,7 @@ body {
 .rate-item {
     border-radius: 6px;
     padding: 12px;
-    background-color: rgba(59, 130, 246, 0.05);
+    background-color: var(--octopus-blue);
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
@@ -130,6 +139,13 @@ body {
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid #4b5563;
+    transition: all 0.2s ease;
+}
+
+.summaries-section:hover {
+    border-left: 3px solid var(--octopus-green);
+    padding-left: 16px;
+    margin-left: -3px;
 }
 
 .summaries-title {
@@ -146,7 +162,7 @@ body {
 }
 
 .summary-item {
-    background-color: #1f2937;
+    background-color: var(--octopus-blue);
     padding: 12px;
     border-radius: 6px;
 }
@@ -182,7 +198,7 @@ table {
 }
 
 thead {
-    background-color: var(--bg-tertiary);
+    /* background-color: var(--bg-tertiary); */
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -238,7 +254,7 @@ tbody td.font-semibold {
 header {
     background-color: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
-    position: sticky;
+    position: relative;
     top: 0;
     z-index: 10;
 }
@@ -328,6 +344,11 @@ footer {
     border-radius: 8px;
     padding: 20px;
     overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.section-container:hover {
+    border-left: 3px solid var(--octopus-green);
 }
 
 .metrics-grid {
@@ -345,6 +366,7 @@ footer {
 /* Test Scenario section styling */
 .test-scenario-container {
     padding: 0 !important;
+    background-color: var(--octopus-gray);
 }
 
 .step-item {
@@ -439,6 +461,10 @@ footer {
 
 .warning-indicator {
     color: var(--status-warning) !important;
+}
+
+.intermediate {
+    background-color: var(--octopus-blue);
 }
 
 /* Responsive Design */

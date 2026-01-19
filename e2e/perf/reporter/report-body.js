@@ -373,31 +373,31 @@ export function generate_response_time_percentiles(response_time_summary) {
           <div class="percentiles-grid">
             <div class="percentile-item">
               <div class="label">Min</div>
-              <div class="value">${(response_time_summary.min || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.min || 0) / 1000).toFixed(2)}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p50 (Median)</div>
-              <div class="value">${(response_time_summary.p50 || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.p50 || 0) / 1000).toFixed(2)}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p75</div>
-              <div class="value">${(response_time_summary.p75 || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.p75 || 0) / 1000).toFixed(2)}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p90</div>
-              <div class="value">${(response_time_summary.p90 || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.p90 || 0) / 1000).toFixed(2)}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p95</div>
-              <div class="value">${(response_time_summary.p95 || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.p95 || 0) / 1000).toFixed(2)}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p99</div>
-              <div class="value">${(response_time_summary.p99 || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.p99 || 0) / 1000).toFixed(2)}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">Max</div>
-              <div class="value">${(response_time_summary.max || 0).toFixed(1)}ms</div>
+              <div class="value">${((response_time_summary.max || 0) / 1000).toFixed(2)}s</div>
             </div>
           </div>
         </div>
@@ -425,70 +425,28 @@ export function generate_vu_session_length_stats(summaries) {
           <div class="percentiles-grid">
             <div class="percentile-item">
               <div class="label">Min Duration</div>
-              <div class="value">${session_length_data.min ? session_length_data.min.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.min ? (session_length_data.min / 1000).toFixed(2) : "N/A"}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p50 (Median)</div>
-              <div class="value">${session_length_data.p50 ? session_length_data.p50.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.p50 ? (session_length_data.p50 / 1000).toFixed(2) : "N/A"}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">Mean Duration</div>
-              <div class="value">${session_length_data.mean ? session_length_data.mean.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.mean ? (session_length_data.mean / 1000).toFixed(2) : "N/A"}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p95</div>
-              <div class="value">${session_length_data.p95 ? session_length_data.p95.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.p95 ? (session_length_data.p95 / 1000).toFixed(2) : "N/A"}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">p99</div>
-              <div class="value">${session_length_data.p99 ? session_length_data.p99.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.p99 ? (session_length_data.p99 / 1000).toFixed(2) : "N/A"}s</div>
             </div>
             <div class="percentile-item">
               <div class="label">Max Duration</div>
-              <div class="value">${session_length_data.max ? session_length_data.max.toFixed(0) : "N/A"}ms</div>
+              <div class="value">${session_length_data.max ? (session_length_data.max / 1000).toFixed(2) : "N/A"}s</div>
             </div>
-          </div>
-        </div>
-      </section>`;
-}
-
-/**
- * Generate trace collection stats
- */
-export function generate_trace_stats(aggregate) {
-	const traces_collected = aggregate.counters["browser.traces_collected"] || 0;
-	const traces_discarded = aggregate.counters["browser.traces_discarded"] || 0;
-	const total_traces = traces_collected + traces_discarded;
-	const collection_rate =
-		total_traces > 0 ? ((traces_collected / total_traces) * 100).toFixed(1) : 0;
-
-	if (total_traces === 0) {
-		return ""; // Skip if no traces collected
-	}
-
-	return `
-      <!-- Trace Collection Stats -->
-      <section class="mb-8">
-        <div class="section-title-container">
-          <h2 class="text-xl font-semibold text-gray-100 mb-4">Trace Collection</h2>
-          ${generate_info_icon(explanations.trace_stats.description)}
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="metric-card">
-            <div class="metric-label">Traces Collected</div>
-            <div class="metric-value success-indicator">${traces_collected.toLocaleString()}</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Traces Discarded</div>
-            <div class="metric-value failed-indicator">${traces_discarded.toLocaleString()}</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Total Traces</div>
-            <div class="metric-value">${total_traces.toLocaleString()}</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Collection Rate</div>
-            <div class="metric-value success-indicator">${collection_rate}%</div>
           </div>
         </div>
       </section>`;
@@ -498,27 +456,89 @@ export function generate_trace_stats(aggregate) {
  * Generate intermediate results section
  */
 export function generate_intermediate_results(intermediate) {
+	// Collect all unique browser.page metrics across all periods
+	const browser_page_metrics = new Set();
+	intermediate.forEach((period) => {
+		Object.keys(period.summaries || {}).forEach((key) => {
+			if (key.includes("browser.page.")) {
+				const match = key.match(/browser\.page\.(\w+)\./);
+				if (match) {
+					browser_page_metrics.add(match[1]);
+				}
+			}
+		});
+	});
+	const sorted_metrics = Array.from(browser_page_metrics).sort();
+
+	// Check if HTTP data is available
+	const has_http_data = intermediate.some(
+		(period) =>
+			period.counters?.["http.requests"] ||
+			period.rates?.["http.request_rate"] ||
+			period.summaries?.["http.response_time"],
+	);
+
 	const intermediate_rows = intermediate
 		.map((period) => {
 			const timestamp = new Date(parseInt(period.period)).toLocaleString();
 			const vusers = period.counters["vusers.created"] || 0;
-			const requests = period.counters["http.requests"] || 0;
-			const rate = period.rates["http.request_rate"] || 0;
-			const p95 = period.summaries?.["http.response_time"]?.p95 || "N/A";
+
+			let row = `<tr>
+      <td>${timestamp}</td>
+      <td>${vusers}</td>`;
+
+			// Add HTTP columns only if data is available
+			if (has_http_data) {
+				const requests = period.counters["http.requests"] || 0;
+				const rate = period.rates["http.request_rate"] || 0;
+				const p95 = period.summaries?.["http.response_time"]?.p95 || "0";
+				row += `
+      <td>${requests}</td>
+      <td>${rate.toFixed(2)}</td>
+      <td>${typeof p95 === "number" ? (p95 / 1000).toFixed(2) : p95}s</td>`;
+			}
+
+			// Add browser.page metrics dynamically
+			sorted_metrics.forEach((metric) => {
+				const url_suffix =
+					Object.keys(period.summaries || {})
+						.find((key) => key.startsWith(`browser.page.${metric}.`))
+						?.split("browser.page." + metric + ".")[1] || "";
+				const key = `browser.page.${metric}.${url_suffix}`;
+				const value = period.summaries?.[key]?.p95;
+				const display = typeof value === "number" ? (value / 1000).toFixed(2) : "N/A";
+				row += `
+      <td>${display}${typeof value === "number" ? "s" : ""}</td>`;
+			});
+
 			const period_errors = Object.keys(period.counters)
 				.filter((key) => key.includes("errors"))
 				.reduce((sum, key) => sum + (period.counters[key] || 0), 0);
-
-			return `<tr>
-      <td>${timestamp}</td>
-      <td>${vusers}</td>
-      <td>${requests}</td>
-      <td>${rate.toFixed(2)}</td>
-      <td>${typeof p95 === "number" ? p95.toFixed(1) : p95} ms</td>
+			row += `
       <td>${period_errors}</td>
     </tr>`;
+			return row;
 		})
 		.join("");
+
+	// Build table header dynamically
+	let table_header = `
+                <tr>
+                  <th>Timestamp</th>
+                  <th>VUsers Created</th>`;
+	if (has_http_data) {
+		table_header += `
+                  <th>Requests</th>
+                  <th>Req/s</th>
+                  <th>p95 HTTP (s)</th>`;
+	}
+	sorted_metrics.forEach((metric) => {
+		table_header += `
+                  <th>${metric} (s)</th>`;
+	});
+	table_header += `
+                  <th>Errors</th>
+                </tr>`;
 
 	return `
       <!-- Intermediate Results -->
@@ -527,18 +547,11 @@ export function generate_intermediate_results(intermediate) {
           <h2 class="text-xl font-semibold text-gray-100 mb-4">Intermediate Results by Time Period</h2>
           ${generate_info_icon(explanations.intermediate_results.description)}
         </div>
-        <div class="section-container">
+        <div class="intermediate section-container">
           <div class="overflow-x-auto">
             <table>
               <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>VUsers Created</th>
-                  <th>Requests</th>
-                  <th>Req/s</th>
-                  <th>p95 (ms)</th>
-                  <th>Errors</th>
-                </tr>
+                ${table_header}
               </thead>
               <tbody>
                 ${intermediate_rows}
@@ -642,23 +655,24 @@ export function generate_web_vitals(summaries) {
  * Generate Browser Performance section for UI tests
  */
 export function generate_browser_metrics(aggregate) {
-	const browserPageCodes = {};
-	const browserHttpRequests = aggregate.counters["browser.http_requests"] || 0;
-	const browserTracesDiscarded = aggregate.counters["browser.traces_discarded"] || 0;
+	const browser_page_codes = {};
+	const browser_http_requests = aggregate.counters["browser.http_requests"] || 0;
+	const browser_traces_collected = aggregate.counters["browser.traces_collected"] || 0;
+	const browser_traces_discarded = aggregate.counters["browser.traces_discarded"] || 0;
 
 	// Extract all browser.page.codes.* entries
 	Object.entries(aggregate.counters).forEach(([key, value]) => {
 		if (key.includes("browser.page.codes.")) {
 			const code = key.replace("browser.page.codes.", "");
-			browserPageCodes[code] = value;
+			browser_page_codes[code] = value;
 		}
 	});
 
-	if (browserHttpRequests === 0 && Object.keys(browserPageCodes).length === 0) {
+	if (browser_http_requests === 0 && Object.keys(browser_page_codes).length === 0) {
 		return ""; // Skip section if no browser metrics
 	}
 
-	const codeRows = Object.entries(browserPageCodes)
+	const codeRows = Object.entries(browser_page_codes)
 		.map(([code, count]) => {
 			const isSuccess = code.startsWith("2");
 			const badgeClass = isSuccess ? "status-code-success" : "status-code-error";
@@ -679,11 +693,15 @@ export function generate_browser_metrics(aggregate) {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="metric-card">
             <div class="metric-label">Browser HTTP Requests</div>
-            <div class="metric-value">${browserHttpRequests.toLocaleString()}</div>
+            <div class="metric-value">${browser_http_requests.toLocaleString()}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Traces Collected</div>
+            <div class="metric-value">${browser_traces_collected.toLocaleString()}</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Traces Discarded</div>
-            <div class="metric-value">${browserTracesDiscarded.toLocaleString()}</div>
+            <div class="metric-value">${browser_traces_discarded.toLocaleString()}</div>
           </div>
         </div>
 

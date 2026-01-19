@@ -12,7 +12,6 @@ import {
 	generate_web_vitals,
 	generate_browser_metrics,
 	generate_vu_session_length_stats,
-	generate_trace_stats,
 	generate_test_scenario,
 	generate_screenshots_section,
 	html_utils,
@@ -26,9 +25,9 @@ function generate_HTML(data, outputPath, outputDir) {
 	const { aggregate, intermediate, stats } = data;
 
 	// Determine status
-	const failedVusers = aggregate.counters["vusers.failed"] || 0;
-	const status = failedVusers > 0 ? "FAILED" : "SUCCEEDED";
-	const statusIcon = status === "SUCCEEDED" ? "✅" : "❌";
+	const failed_vusers = aggregate.counters["vusers.failed"] || 0;
+	const status = failed_vusers > 0 ? "UNSTABLE" : "STABLE";
+	const status_icon = status === "STABLE" ? "✅" : "⚠️";
 
 	// HTTP metrics
 	const httpResponses = aggregate.counters["http.responses"] || 0;
@@ -37,10 +36,10 @@ function generate_HTML(data, outputPath, outputDir) {
 	const responseTimeSummary = aggregate.summaries["http.response_time"] || {};
 
 	// Get screenshots if they exist
-	const screenshotsDir = path.join(outputDir, "screenshots");
+	const screenshots_dir = path.join(outputDir, "screenshots");
 	let screenshots = [];
-	if (fs.existsSync(screenshotsDir)) {
-		const files = fs.readdirSync(screenshotsDir);
+	if (fs.existsSync(screenshots_dir)) {
+		const files = fs.readdirSync(screenshots_dir);
 		screenshots = files
 			.filter((file) => /\.(png|jpg|jpeg|gif)$/i.test(file))
 			.map((file) => `screenshots/${file}`);
@@ -56,8 +55,9 @@ function generate_HTML(data, outputPath, outputDir) {
 	const sections = `
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-6 py-8">
-${generate_header(stats, status, statusIcon)}
+${generate_header(stats, status, status_icon)}
 ${generate_summary_metrics(aggregate, responseTimeSummary, httpDownloadedBytes, httpResponses, requestRate)}
+${generate_test_scenario(aggregate.summaries)}
 ${generate_vu_session_length_stats(aggregate.summaries)}
 ${generate_HTTP_status_codes(aggregate, httpResponses)}
 ${generate_errors_section(aggregate)}
@@ -65,8 +65,6 @@ ${generate_response_time_percentiles(responseTimeSummary)}
 ${generate_web_vitals(aggregate.summaries)}
 ${generate_browser_metrics(aggregate)}
 ${generate_intermediate_results(intermediate)}
-${generate_trace_stats(aggregate)}
-${generate_test_scenario(aggregate.summaries)}
 ${generate_screenshots_section(screenshots)}
     </main>
 ${get_HTML_footer()}

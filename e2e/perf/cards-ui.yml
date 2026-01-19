@@ -16,7 +16,7 @@ config:
         threads:
             target: "http://localhost:3000"
             phases:
-                - name: Cards UI performance tests
+                - name: Cards UI Threads performance tests
                   duration: 1
                   arrivalCount: 100
             processor: "../dist/perf/cards-processor.js"
