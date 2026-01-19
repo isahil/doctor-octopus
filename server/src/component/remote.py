@@ -103,7 +103,7 @@ async def process_card(card_tuple) -> Union[dict, None]:
             j_report = json.loads(S3.get_a_s3_object(object_name))
             j_report = process_json(j_report, card_date)
             card_value["json_report"] = j_report
-            logger.info(f"Storing card in Redis cache for protocol: {protocol} [{card_date}]")
+            logger.info(f"Caching card in Redis for protocol: {protocol} [{card_date}]")
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
 
     except (KeyError, json.JSONDecodeError) as e:
@@ -160,6 +160,9 @@ def process_json(json_report: dict, card_date: str) -> dict:
         counters = aggregate.get("counters")  # e.g. {'vusers.completed': 100, 'vusers.failed': 5, ...}
         duration = aggregate.get("lastCounterAt", 0) - aggregate.get("firstCounterAt", 0)
         stats["duration"] = duration
+        # Use aggregate.firstCounterAt for startTime.
+        first_counter_timestamp = aggregate.get("firstCounterAt")
+        stats["startTime"] = convert_unix_to_iso8601_time(first_counter_timestamp) if first_counter_timestamp else ""
 
         del json_report["intermediate"]
         del aggregate["summaries"]
@@ -172,9 +175,6 @@ def process_json(json_report: dict, card_date: str) -> dict:
                 stats["unexpected"] = value
             else:
                 stats[key] = value
-        # Convert Unix timestamp to ISO 8601 format for client.
-        created_timestamp = json_report.get("created")
-        stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
 
     if not stats.get("startTime"):
         # Fall back: client card requires startTime to be set for sorting logic.
