@@ -8,34 +8,39 @@ const change_filter = async (cards, filter_name, filter_value, events) => {
 	events.emit("rate", "filters_change_rate");
 };
 
-export const cards_filters_change = async (page, context, events) => {
+export const cards_filters_change = async (page, context, events, test) => {
+	const { step } = test;
 	const { TEST_REPORTS_DIR } = process.env;
 
 	try {
 		const start_time = performance.now();
 
-		await page.goto(homepage_url, { timeout: 3000 });
+		await step("Navigate to homepage", async () => {
+			await page.goto(homepage_url, { timeout: 3000 });
+		});
 
 		const cards = new Cards(page);
-		await change_filter(cards, "environment", "all", events);
-		await change_filter(cards, "day", "30", events);
-		await change_filter(cards, "product", "all", events);
-		await change_filter(cards, "protocol", "all", events);
 
-		const cards_count = await cards.get_cards_count();
-		if( cards_count === 0 ) {
-			throw new Error("No cards displayed after applying filters.");
-		}
+		await step("Apply filters", async () => {
+			await change_filter(cards, "environment", "all", events);
+			await change_filter(cards, "day", "30", events);
+			await change_filter(cards, "product", "all", events);
+			await change_filter(cards, "protocol", "all", events);
+		});
 
-		const end_time = performance.now();
-		const duration = end_time - start_time;
-		// console.log(`cards_filters_change duration: ${duration} ms`);
-		// console.log(`Cards displayed after applying filters: ${cards_count}`);
-		// const random_num = Math.ceil(Math.random() * 3);
-		// if (random_num == 2) throw new Error("Simulated error for testing screenshot capture.");
+		await step("Verify cards loaded", async () => {
+			const cards_count = await cards.get_cards_count();
+			if (cards_count === 0) {
+				throw new Error("No cards displayed after applying filters.");
+			}
 
-		events.emit("histogram", "cards_filter_change_duration", duration);
-		
+			const end_time = performance.now();
+			const duration = end_time - start_time;
+			// console.log(`cards_filters_change duration: ${duration} ms`);
+			// console.log(`Cards displayed after applying filters: ${cards_count}`);
+
+			events.emit("histogram", "cards_filter_change_duration", duration);
+		});
 	} catch (error) {
 		events.emit("counter", "error_occurred", 1);
 		const new_random_num = Math.ceil(Math.random() * 10000);

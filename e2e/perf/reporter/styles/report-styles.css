@@ -342,16 +342,75 @@ footer {
     gap: 24px;
 }
 
-/* URL section for Web Vitals */
-.url-section {
-    border-left: 2px solid var(--octopus-green);
-    padding-left: 16px;
+/* Test Scenario section styling */
+.test-scenario-container {
+    padding: 0 !important;
 }
 
-.url-section h3 {
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.step-item:hover {
+    background-color: rgba(26, 188, 156, 0.05);
+}
+
+.step-item:last-child {
+    border-bottom: none;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    background: var(--octopus-green);
+    color: var(--bg-primary);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 16px;
+}
+
+.step-details {
+    flex: 1;
+}
+
+.step-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.step-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.metric-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-size: 12px;
+    font-weight: 600;
     color: var(--octopus-green);
-    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-    word-break: break-all;
 }
 
 .percentile-item {

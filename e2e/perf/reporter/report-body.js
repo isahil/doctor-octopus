@@ -712,6 +712,59 @@ export function generate_browser_metrics(aggregate) {
 }
 
 /**
+ * Generate test scenario section with browser steps
+ */
+export function generate_test_scenario(summaries) {
+	// Extract browser.step entries
+	const browser_steps = Object.entries(summaries || {})
+		.filter(([key]) => key.startsWith("browser.step."))
+		.map(([key, value]) => ({
+			step_name: key.replace("browser.step.", ""),
+			...value,
+		}));
+
+	if (browser_steps.length === 0) {
+		return ""; // Skip if no browser steps
+	}
+
+	const step_rows = browser_steps
+		.map((step, index) => {
+			return `
+      <div class="step-item">
+        <div class="step-number">${index + 1}</div>
+        <div class="step-details">
+          <div class="step-name">${step.step_name}</div>
+          <div class="step-metrics">
+            <div class="metric-row">
+              <span class="metric-label">Min:</span>
+              <span class="metric-value">${step.min ? (step.min / 1000).toFixed(2) : "N/A"}s</span>
+              <span class="metric-label">Mean:</span>
+              <span class="metric-value">${step.mean ? (step.mean / 1000).toFixed(2) : "N/A"}s</span>
+              <span class="metric-label">p95:</span>
+              <span class="metric-value">${step.p95 ? (step.p95 / 1000).toFixed(2) : "N/A"}s</span>
+              <span class="metric-label">Max:</span>
+              <span class="metric-value">${step.max ? (step.max / 1000).toFixed(2) : "N/A"}s</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+		})
+		.join("");
+
+	return `
+      <!-- Test Scenario -->
+      <section class="mb-8">
+        <div class="section-title-container">
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">Test Scenario</h2>
+          ${generate_info_icon(explanations.test_scenarios.description)}
+        </div>
+        <div class="section-container test-scenario-container">
+          ${step_rows}
+        </div>
+      </section>`;
+}
+
+/**
  * Generate screenshots section with lightbox
  */
 export function generate_screenshots_section(screenshots) {

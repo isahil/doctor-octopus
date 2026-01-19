@@ -13,8 +13,9 @@ import {
 	generate_browser_metrics,
 	generate_vu_session_length_stats,
 	generate_trace_stats,
+	generate_test_scenario,
 	generate_screenshots_section,
-	html_utils
+	html_utils,
 } from "./index.js";
 import { ensure_dir } from "../../client/utils/fs_helper.js";
 
@@ -65,6 +66,7 @@ ${generate_web_vitals(aggregate.summaries)}
 ${generate_browser_metrics(aggregate)}
 ${generate_intermediate_results(intermediate)}
 ${generate_trace_stats(aggregate)}
+${generate_test_scenario(aggregate.summaries)}
 ${generate_screenshots_section(screenshots)}
     </main>
 ${get_HTML_footer()}
@@ -92,7 +94,7 @@ try {
 	const data = JSON.parse(fs.readFileSync(input_path, "utf8"));
 	generate_HTML(data, output_filename, output_dir);
 	console.log(
-		`📊 Report data: created - ${data.aggregate.counters["vusers.created"]} VUsers, failed - ${data.aggregate.counters["vusers.failed"]}`
+		`📊 Report data: created - ${data.aggregate.counters["vusers.created"]} VUsers, failed - ${data.aggregate.counters["vusers.failed"]}`,
 	);
 } catch (error) {
 	console.error("❌ Error:", error.message);

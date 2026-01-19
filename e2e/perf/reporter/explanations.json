@@ -7,6 +7,10 @@
 		"title": "Test Timing",
 		"description": "Timestamp information showing when the test started and ended, along with the total duration. Helps understand test execution window and performance across time."
 	},
+	"test_scenarios": {
+		"title": "Test Scenarios",
+		"description": "Details of the Test Cases/Scenarios executed during the performance test. List each test step performed by virtual users."
+	},
 	"trace_stats": {
 		"title": "Trace Collection",
 		"description": "Browser trace collection metrics showing how many traces were successfully collected versus discarded. Higher collection rates indicate better instrumentation capture for performance analysis."
