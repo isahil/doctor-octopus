@@ -35,6 +35,7 @@ export function get_HTML_head() {
                   <meta charset="UTF-8">
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
                   <title>DO Report</title>
+                  <link rel="icon" type="image/x-icon" href="../../../client/public/img/favicon-1.ico">
                   <script src="https://cdn.tailwindcss.com"></script>
                   <script>
                       tailwindConfig = {
@@ -90,9 +91,11 @@ export function generate_header(stats, status, statusIcon) {
           </div>
           <div>
             <span class="text-gray-400">Grafana:</span>
-            ${grafana_url 
-              ? `<a class="grafana-button" href="${grafana_url}" target="_blank" rel="noopener noreferrer">📊 View Dashboard</a>`
-              : `<a class="font-semibold text-gray-100">${grafana_url}</a>`}
+            ${
+				grafana_url
+					? `<a class="grafana-button" href="${grafana_url}" target="_blank" rel="noopener noreferrer">📊 View Dashboard</a>`
+					: `<a class="font-semibold text-gray-100">${grafana_url}</a>`
+			}
         </div>
       </div>
     </header>`;
