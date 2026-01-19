@@ -29,7 +29,7 @@
 	},
 	"web_vitals": {
 		"title": "Web Vitals",
-		"description": "Core Web Vitals metrics for browser-based performance testing. Includes TTFB (Time To First Byte), FCP (First Contentful Paint), LCP (Largest Contentful Paint), INP (Interaction to Next Paint), and CLS (Cumulative Layout Shift)."
+		"description": "Core Web Vitals metrics for browser-based performance testing. Includes TTFB (Time To First Byte), FCP (First Contentful Paint), LCP (Largest Contentful Paint), FID (First Input Delay), INP (Interaction to Next Paint), and CLS (Cumulative Layout Shift)."
 	},
 	"browser_performance": {
 		"title": "Browser Performance",
@@ -38,5 +38,17 @@
 	"intermediate_results": {
 		"title": "Intermediate Results by Time Period",
 		"description": "Detailed breakdown of test metrics segmented by time periods. Shows VUsers created, requests executed, request rate, response time percentiles, and errors for each measurement period."
+	},
+	"counters": {
+		"title": "Custom Counters Metrics",
+		"description": "A counter to keep track of certain events, like the number of times a VU completed a specific transaction/event."
+	},
+	"histograms": {
+		"title": "Custom Histograms Metrics",
+		"description": "A distribution (max, min, median, mean, p95, p99) of some measurements, like API response times or event lengths."
+	},
+	"rates": {
+		"title": "Custom Rates Metrics",
+		"description": "The average number of times something happened in a time period, like the number of HTTP requests sent or UI button clicks."
 	}
 }

@@ -17,11 +17,13 @@ export function generate_summary_metrics(
 	const http_requests = aggregate.counters["http.requests"] || 0;
 
 	const standard_artillery_prefixes = ["vusers.", "http.", "browser.", "errors.", "plugins."];
-  
+
 	// Extract custom counters (exclude standard Artillery counters)
 	const custom_counters = Object.entries(aggregate.counters)
 		.filter(([key]) => {
-			const is_standard = standard_artillery_prefixes.some((prefix) => key.startsWith(prefix));
+			const is_standard = standard_artillery_prefixes.some((prefix) =>
+				key.startsWith(prefix),
+			);
 			return !is_standard;
 		})
 		.map(([key, value]) => ({
@@ -33,7 +35,10 @@ export function generate_summary_metrics(
 		custom_counters.length > 0
 			? `
 		<div class="mt-4 pt-4 border-t border-gray-600">
-			<div class="text-sm font-semibold text-gray-300 mb-3">Custom Counters</div>
+			<div class="flex items-center justify-between mb-3">
+				<div class="text-sm font-semibold text-gray-300">Custom Counters</div>
+				${generate_info_icon(explanations.counters.description)}
+			</div>
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 				${custom_counters
 					.map(
@@ -52,7 +57,9 @@ export function generate_summary_metrics(
 	// Extract rates (excluding standard rate prefixes)
 	const custom_rates = Object.entries(aggregate.rates || {})
 		.filter(([key]) => {
-			const is_standard = standard_artillery_prefixes.some((prefix) => key.startsWith(prefix));
+			const is_standard = standard_artillery_prefixes.some((prefix) =>
+				key.startsWith(prefix),
+			);
 			return !is_standard;
 		})
 		.map(([key, value]) => ({
@@ -64,7 +71,10 @@ export function generate_summary_metrics(
 		custom_rates.length > 0
 			? `
 		<div class="rates-section">
-			<div class="rates-title">Custom Rates</div>
+			<div class="flex items-center justify-between mb-3">
+				<div class="rates-title">Custom Rates</div>
+				${generate_info_icon(explanations.rates.description)}
+			</div>
 			<div class="rates-grid">
 				${custom_rates
 					.map(
@@ -83,7 +93,9 @@ export function generate_summary_metrics(
 	// Extract custom summaries (exclude standard summary prefixes)
 	const custom_summaries = Object.entries(aggregate.summaries || {})
 		.filter(([key]) => {
-			const is_standard = standard_artillery_prefixes.some((prefix) => key.startsWith(prefix));
+			const is_standard = standard_artillery_prefixes.some((prefix) =>
+				key.startsWith(prefix),
+			);
 			return !is_standard;
 		})
 		.map(([key, value]) => ({
@@ -95,7 +107,10 @@ export function generate_summary_metrics(
 		custom_summaries.length > 0
 			? `
     <div class="summaries-section">
-      <div class="summaries-title">Custom Histograms</div>
+      <div class="flex items-center justify-between mb-3">
+        <div class="summaries-title">Custom Histograms</div>
+        ${generate_info_icon(explanations.histograms.description)}
+      </div>
       <div class="summaries-grid">
         ${custom_summaries
 			.map(
