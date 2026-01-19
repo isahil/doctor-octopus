@@ -1,0 +1,58 @@
+{
+	"summary_metrics": {
+		"title": "Summary Metrics",
+		"description": "Overview of key performance indicators including total virtual users created, HTTP requests executed, average response time, and data downloaded during the test run."
+	},
+	"test_timing": {
+		"title": "Test Timing",
+		"description": "Timestamp information showing when the test started and ended, along with the total duration. Helps understand test execution window and performance across time."
+	},
+	"test_scenarios": {
+		"title": "Test Scenarios",
+		"description": "Details of the Test Cases/Scenarios executed during the performance test. List each test step performed by virtual users."
+	},
+	"trace_stats": {
+		"title": "Trace Collection",
+		"description": "Browser trace collection metrics showing how many traces were successfully collected versus discarded. Higher collection rates indicate better instrumentation capture for performance analysis."
+	},
+	"vu_session_length_stats": {
+		"title": "VU Session Statistics",
+		"description": "Statistical breakdown of virtual user session durations including minimum, median, mean, and percentile values (p95, p99, max). Shows how long users spent in each test session."
+	},
+	"http_status_codes": {
+		"title": "HTTP Status Codes",
+		"description": "Distribution of HTTP response status codes received from the server. Shows the count and percentage of 2xx, 3xx, 4xx, and 5xx responses to understand success vs error rates."
+	},
+	"errors": {
+		"title": "Errors",
+		"description": "Summary of errors encountered during the test execution. Lists specific error types (e.g., ECONNREFUSED, timeouts, etc.) with their occurrence count."
+	},
+	"response_time_percentiles": {
+		"title": "Response Time Percentiles",
+		"description": "Statistical breakdown of response times showing minimum, median (p50), and percentile values (p75, p90, p95, p99). Helps identify latency distribution and outliers."
+	},
+	"web_vitals": {
+		"title": "Web Vitals",
+		"description": "Core Web Vitals metrics for browser-based performance testing. Includes TTFB (Time To First Byte), FCP (First Contentful Paint), LCP (Largest Contentful Paint), FID (First Input Delay), INP (Interaction to Next Paint), and CLS (Cumulative Layout Shift)."
+	},
+	"browser_performance": {
+		"title": "Browser Performance",
+		"description": "Performance metrics specific to browser-based testing using Playwright. Tracks HTTP requests made by the browser and response codes received during page interactions."
+	},
+	"intermediate_results": {
+		"title": "Intermediate Results by Time Period",
+		"description": "Detailed breakdown of test metrics segmented by time periods. Shows VUsers created, requests executed, request rate, response time percentiles, and errors for each measurement period."
+	},
+	"counters": {
+		"title": "Custom Counters Metrics",
+		"description": "A counter to keep track of certain events, like the number of times a VU completed a specific transaction/event."
+	},
+	"histograms": {
+		"title": "Custom Histograms Metrics",
+		"description": "A distribution (max, min, median, mean, p95, p99) of some measurements, like API response times or event lengths."
+	},
+	"rates": {
+		"title": "Custom Rates Metrics",
+		"description": "The average number of times something happened in a time period, like the number of HTTP requests sent or UI button clicks."
+	}
+}

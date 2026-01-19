@@ -12,10 +12,10 @@ def test_get_cards_with_all_filters(setup_teardown):
 
     # Test different filter combinations
     test_cases = [
-        {"source": "remote", "environment": "qa", "day": 1, "app": "loan", "protocol": "ui"},
-        {"source": "remote", "environment": "sit", "day": 3, "app": "clo", "protocol": "api"},
-        {"source": "remote", "environment": "all", "day": 7, "app": "all", "protocol": "all"},
-        {"source": "remote", "environment": "qa", "day": 120, "app": "all", "protocol": "all"},
+        {"mode": "remote", "environment": "qa", "day": 1, "product": "loan", "protocol": "ui"},
+        {"mode": "remote", "environment": "sit", "day": 3, "product": "clo", "protocol": "api"},
+        {"mode": "remote", "environment": "all", "day": 7, "product": "all", "protocol": "all"},
+        {"mode": "remote", "environment": "qa", "day": 120, "product": "all", "protocol": "all"},
     ]
 
     results = []

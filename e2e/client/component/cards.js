@@ -13,7 +13,7 @@ export class Cards {
 	async click_filter(filter) {
 		const filter_locator = this.filter_locator(filter);
 		await filter_locator.click();
-        return filter_locator;
+		return filter_locator;
 	}
 
 	async click_filters_option(filter, option) {
@@ -22,7 +22,7 @@ export class Cards {
 		await option_locator.click();
 	}
 
-    async get_card_count() {
-        return await this.page.locator(".card").count();
-    }
+	async get_cards_count() {
+		return await this.page.locator(".card", { timeout: 3000 }).count();
+	}
 }

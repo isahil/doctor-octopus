@@ -1,7 +1,6 @@
 import os
 import platform
 from dotenv import load_dotenv
-from datetime import datetime
 from config import test_reports_dir
 from src.utils.file_helper import ensure_dir
 from src.utils.date_time_helper import get_est_date_time
@@ -125,11 +124,11 @@ def get_aws_sdet_bucket_region():
 
 
 def get_aws_sdet_bucket_access_key_id():
-    return get_env_variable("AWS_SDET_BUCKET_ACCESS_KEY_ID")
+    return get_env_variable("AWS_ACCESS_KEY_ID")
 
 
 def get_aws_sdet_bucket_secret_access_key():
-    return get_env_variable("AWS_SDET_BUCKET_SECRET_ACCESS_KEY")
+    return get_env_variable("AWS_SECRET_ACCESS_KEY")
 
 
 def get_aws_session_token():

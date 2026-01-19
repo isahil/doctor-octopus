@@ -54,6 +54,31 @@ save_pid_with_validation() {
         echo "[$(date)] The $service_name's process PID logged: [$pid]"
         if kill -0 "$pid" 2>/dev/null; then
             echo "[$(date)] The $service_name started successfully with PID: [$pid]" >> "$log_file"
+            
+            # For services that bind to ports, detect all actual process PIDs
+            local port=""
+            case "$service_name" in
+                "client")
+                    port=3000
+                    ;;
+                "server")
+                    port=8000
+                    ;;
+                "fixme")
+                    port=8001
+                    ;;
+            esac
+            
+            if [ -n "$port" ]; then
+                sleep 2 # Give processes time to bind to port
+                local actual_pids=$(lsof -ti:$port 2>/dev/null | sort -u | tr '\n' ' ')
+                if [ -n "$actual_pids" ]; then
+                    echo "[$(date)] Detected $service_name process PIDs on port $port: $actual_pids"
+                    echo "$actual_pids" > "$pid_file"
+                    echo "[$(date)] $service_name process PIDs saved to $pid_file" >> "$log_file"
+                fi
+            fi
+            
             return 0
         else
             echo "[$(date)] ERROR: The $service_name process $pid failed to start properly"
@@ -133,16 +158,14 @@ if save_pid_with_validation "$FIXME_PID" "fixme"; then
     echo "[$(date)] FIXME service process started. [$FIXME_PID]"
     echo "[$(date)] FIXME logs at >> $fixme_log_file"
 else
-    # Check if the actual FIXME server is listening on port 8001
-    sleep 5  # Additional wait for server to start
-    if lsof -i :8001 >/dev/null 2>&1; then
-        FIXME_ACTUAL_PID=$(lsof -ti:8001 | head -1)
-        echo $FIXME_ACTUAL_PID > logs/fixme.pid
-        echo "[$(date)] FIXME service started successfully with actual PID: [$FIXME_ACTUAL_PID]"
-        echo "[$(date)] FIXME logs at >> $fixme_log_file"
-    else
-        echo "[$(date)] Failed to start FIXME service"
-    fi
+    echo "[$(date)] Failed to start FIXME service"
+    client_pid=$(get_service_pid "client")
+    server_pid=$(get_service_pid "server")
+    notification_pid=$(get_service_pid "notification")
+    [ -n "$client_pid" ] && kill $client_pid 2>/dev/null
+    [ -n "$server_pid" ] && kill $server_pid 2>/dev/null
+    [ -n "$notification_pid" ] && kill $notification_pid 2>/dev/null
+    exit 1
 fi
 
 echo "[$(date)] === Port Status ==="
@@ -175,26 +198,28 @@ if [ "$DEBUG" = "true" ]; then
         for service in "${services[@]}"; do
             pid_file="logs/${service}.pid"
             if [ -f "$pid_file" ]; then
-                pid=$(cat "$pid_file")
-                if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-                    echo "[$(date)] Stopping $service (PID: $pid)..."
-                    kill "$pid"
-                    
-                    # Wait for graceful shutdown
-                    for i in {1..10}; do
-                        if ! kill -0 "$pid" 2>/dev/null; then
-                            echo "[$(date)] $service stopped gracefully"
-                            break
+                pids_str=$(cat "$pid_file")
+                for pid in $pids_str; do
+                    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+                        echo "[$(date)] Stopping $service (PID: $pid)..."
+                        kill "$pid"
+                        
+                        # Wait for graceful shutdown
+                        for i in {1..10}; do
+                            if ! kill -0 "$pid" 2>/dev/null; then
+                                echo "[$(date)] $service stopped gracefully"
+                                break
+                            fi
+                            sleep 1
+                        done
+                        
+                        # Force kill if still running
+                        if kill -0 "$pid" 2>/dev/null; then
+                            echo "[$(date)] Force killing $service (PID: $pid)..."
+                            kill -9 "$pid" 2>/dev/null
                         fi
-                        sleep 1
-                    done
-                    
-                    # Force kill if still running
-                    if kill -0 "$pid" 2>/dev/null; then
-                        echo "[$(date)] Force killing $service (PID: $pid)..."
-                        kill -9 "$pid" 2>/dev/null
                     fi
-                fi
+                done
                 rm -f "$pid_file"
             fi
         done
@@ -214,13 +239,15 @@ if [ "$DEBUG" = "true" ]; then
             for service in "${services[@]}"; do
                 pid_file="logs/${service}.pid"
                 if [ -f "$pid_file" ]; then
-                    pid=$(cat $pid_file)
-                    if kill -0 "$pid" 2>/dev/null; then
-                        services_running=$((services_running + 1))
-                    else
-                        echo "[$(date)] WARNING: $service (PID: $pid) has stopped unexpectedly"
-                        rm -f "$pid_file"
-                    fi
+                    pids_str=$(cat $pid_file)
+                    for pid in $pids_str; do
+                        if kill -0 "$pid" 2>/dev/null; then
+                            services_running=$((services_running + 1))
+                        else
+                            echo "[$(date)] WARNING: $service (PID: $pid) has stopped unexpectedly"
+                            rm -f "$pid_file"
+                        fi
+                    done
                 fi
             done
             

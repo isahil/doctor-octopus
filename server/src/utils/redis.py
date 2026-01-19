@@ -82,7 +82,7 @@ class RedisClient:
     def create_card_cache(self, cards_cache_key: str, card_cache_field: str, card_cache_value: str) -> None:
         was_set = self.redis_client.hsetnx(cards_cache_key, card_cache_field, card_cache_value)
         if was_set:
-            self.logger.info(f"Created a new cache for: {card_cache_field}")
+            self.logger.info(f"Cached created for: {card_cache_field}")
 
     def get_a_cached_card(self, cards_cache_key: str, card_cache_field: str) -> Union[dict, None]:
         if not self.redis_client.hexists(cards_cache_key, card_cache_field):

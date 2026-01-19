@@ -9,7 +9,7 @@ def build_validation_rules():
             {"is_valid": equal_value},
         ],
         "day": [{"is_valid": less_or_eqaul_to_date_time}],
-        "app": [
+        "product": [
             {"is_valid": equal_value},
         ],
         "protocol": [
@@ -44,7 +44,7 @@ def validate(received_data, expected_data):
         expected_value,
     ) in expected_data.items():
         # logger.info(f"expected_key: {expected_key} | expected_value: {expected_value}")
-        if expected_key == "source":
+        if expected_key == "mode":
             continue
         received_value = received_data.get(expected_key)  # "qa", "clo", "api"
         validations = validation_rules[expected_key]  # [{'is_valid': <function is_valid>}]

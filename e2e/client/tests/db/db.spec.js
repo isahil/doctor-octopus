@@ -4,7 +4,7 @@ import { fs_parse_csv } from "../../utils/fs_helper";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
+const __filename = "" // fileURLToPath(import.meta.url); update import to commonjs if needed;
 const __dirname = path.dirname(__filename);
 const csv_data_path = path.join(__dirname, "../../../data/Electric_Vehicle_Population_Data.csv");
 

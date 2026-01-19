@@ -19,7 +19,7 @@ sys.modules["src.utils.redis"] = MagicMock()
 from src.component.remote import (  # type: ignore  # noqa: E402
     total_s3_objects,
     format_s3_object_filter_data,
-    get_all_s3_cards,
+    get_cards_from_s3_and_cache,
     process_card,
     find_s3_report_dir_objects,
     download_s3_folder,
@@ -141,18 +141,18 @@ class TestFormatS3ObjectFilterData:
 @pytest.mark.unit_regression
 @pytest.mark.unit_sanity
 class TestGetAllS3Cards:
-    """Test the get_all_s3_cards async function"""
+    """Test the get_cards_from_s3_and_cache async function"""
 
     @patch("src.component.remote.S3.list_all_s3_objects")
     @patch("src.component.remote.validate")
     @patch("src.component.remote.process_card")
-    async def test_get_all_s3_cards_empty_bucket(self, mock_process, mock_validate, mock_list):
+    async def test_get_cards_from_s3_and_cache_empty_bucket(self, mock_process, mock_validate, mock_list):
         """Test getting cards from empty S3 bucket"""
         mock_list.return_value = []
         mock_validate.return_value = None
         mock_process.return_value = None
 
-        result = await get_all_s3_cards({"environment": "qa", "app": "all", "protocol": "all"})
+        result = await get_cards_from_s3_and_cache({"environment": "qa", "app": "all", "protocol": "all"})
 
         assert result == []
 
@@ -160,7 +160,7 @@ class TestGetAllS3Cards:
     @patch("src.component.remote.S3.list_all_s3_objects")
     @patch("src.component.remote.validate")
     @patch("src.component.remote.process_card")
-    async def test_get_all_s3_cards_with_valid_objects(self, mock_process, mock_validate, mock_list):
+    async def test_get_cards_from_s3_and_cache_with_valid_objects(self, mock_process, mock_validate, mock_list):
         """Test getting cards with valid S3 objects"""
         mock_list.return_value = [{"Key": "trading-apps/test_reports/loan/qa/ui/12-31-2025_08-30-00_AM/report.json"}]
         mock_validate.return_value = None  # Validation passes
@@ -172,7 +172,7 @@ class TestGetAllS3Cards:
         }
         mock_process.return_value = AsyncMock(return_value=mock_card_value)
 
-        result = await get_all_s3_cards({"environment": "qa", "app": "all", "protocol": "all"})
+        result = await get_cards_from_s3_and_cache({"environment": "qa", "app": "all", "protocol": "all"})
 
         # Result depends on processing
         assert isinstance(result, list)
@@ -180,7 +180,7 @@ class TestGetAllS3Cards:
     @patch("src.component.remote.S3.list_all_s3_objects")
     @patch("src.component.remote.validate")
     @patch("src.component.remote.process_card")
-    async def test_get_all_s3_cards_validation_filters_objects(self, mock_process, mock_validate, mock_list):
+    async def test_get_cards_from_s3_and_cache_validation_filters_objects(self, mock_process, mock_validate, mock_list):
         """Test that validation filters out non-matching objects"""
         mock_list.return_value = [
             {"Key": "trading-apps/test_reports/loan/qa/ui/12-31-2025_08-30-00_AM/report.json"},
@@ -190,7 +190,7 @@ class TestGetAllS3Cards:
         mock_validate.side_effect = [None, "error"]
         mock_process.return_value = AsyncMock(return_value=None)
 
-        result = await get_all_s3_cards({"environment": "qa", "app": "all", "protocol": "all"})
+        result = await get_cards_from_s3_and_cache({"environment": "qa", "app": "all", "protocol": "all"})
 
         assert isinstance(result, list)
 
@@ -207,7 +207,7 @@ class TestProcessCard:
         """Test successful card processing"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
+        sys.modules["instances"].redis = mock_redis  # pyright: ignore[reportAttributeAccessIssue]
         mock_redis.redis_client.hexists.return_value = False
 
         mock_json_loads.return_value = {
@@ -232,12 +232,11 @@ class TestProcessCard:
         assert result is not None
         assert "json_report" in result
 
-    
     async def test_process_card_missing_object_name(self):
         """Test processing card with missing object_name"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
+        sys.modules["instances"].redis = mock_redis  # pyright: ignore[reportAttributeAccessIssue]
 
         card_tuple = (
             "12-31-2025_08-30-00_AM",
@@ -253,14 +252,13 @@ class TestProcessCard:
 
         assert result is None
 
-    
     @patch("src.component.remote.S3.get_a_s3_object")
     @patch("src.component.remote.json.loads")
     async def test_process_card_json_decode_error(self, mock_json_loads, mock_s3_get):
         """Test processing card with JSON decode error"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
+        sys.modules["instances"].redis = mock_redis  # pyright: ignore[reportAttributeAccessIssue]
         mock_redis.redis_client.hexists.return_value = False
 
         mock_json_loads.side_effect = json.JSONDecodeError("msg", "doc", 0)
@@ -279,12 +277,11 @@ class TestProcessCard:
 
         assert result is None
 
-    
     async def test_process_card_already_cached(self):
         """Test processing card that already exists in cache"""
         # Configure the instances mock that's already in sys.modules
         mock_redis = MagicMock()
-        sys.modules["instances"].redis = mock_redis # pyright: ignore[reportAttributeAccessIssue]
+        sys.modules["instances"].redis = mock_redis  # pyright: ignore[reportAttributeAccessIssue]
         mock_redis.redis_client.hexists.return_value = True  # Card exists in cache
 
         card_tuple = (

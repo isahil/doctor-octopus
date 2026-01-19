@@ -11,7 +11,7 @@ def test_cache_reload_happy_path(setup_teardown):
 	endpoint = f"{server_endpoint}/cache-reload"
 
 	params = {
-		"source": "remote",
+		"mode": "remote",
 		"day": 1,
 		"environment": "qa",
 	}
@@ -30,13 +30,13 @@ def test_cache_reload_negative_paths(setup_teardown):
 
 	scenarios = [
 		{
-			"name": "missing_source",
+			"name": "missing_mode",
 			"params": {"day": 1, "environment": "qa"},
 			"expected_status": 422,
 		},
 		{
 			"name": "invalid_day_type",
-			"params": {"source": "remote", "day": "abc", "environment": "qa"},
+			"params": {"mode": "remote", "day": "abc", "environment": "qa"},
 			"expected_status": 422,
 		},
 	]

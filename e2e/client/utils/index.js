@@ -3,3 +3,4 @@ export * from "./date_time_helper.js";
 export * from "./spawn_child_process.js";
 export * from "./env_loader.js";
 export * from "./reporter.js";
+export * from "./fs_helper.js";
