@@ -30,7 +30,7 @@ async def notify_s3_object_updates():
 
                 initial_total_s3_objects = current_total_s3_objects
 
-                await cards.actions({"day": 1, "mode": "cache", "environment": "all", "protocol": "all"})
+                await cards.actions({"day": 1, "mode": "s3", "environment": "all", "protocol": "all"}) # refresh cache with new s3 objects
                 await cards.actions({"day": 1, "mode": "download", "environment": "all", "protocol": "all"})
                 await aioredis.publish("notifications", data)  # publish messages to pubsub
                 await cards.actions({"mode": "cleanup"})

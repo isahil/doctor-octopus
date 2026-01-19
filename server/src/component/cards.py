@@ -26,7 +26,18 @@ class Cards:
 
     @performance_log
     async def actions(self, expected_filter_data: dict) -> Union[list[dict], None]:
-        """Action to fetch and cache cards based on the expected filter data"""
+        """Action to fetch and cache cards based on the expected filter data
+        Args:
+            expected_filter_data (dict): filter data containing mode, environment, day, product, protocol
+        Returns:
+            Union[list[dict], None]: list of cards if mode is 'cache', None otherwise
+        
+        s3: fetch cards from S3 and cache them in Redis.
+        cache: fetch cards from redis cache and return them. Only CLIENT should use this mode.
+        download: download missing cards from S3 to local server.
+        cleanup: cleanup old local test report directories.
+        
+        """
         mode = expected_filter_data.get("mode")
         logger.info(f"Fetch cards expected filter: {expected_filter_data}")
         if mode == "s3":
