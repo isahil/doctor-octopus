@@ -160,9 +160,11 @@ def process_json(json_report: dict, card_date: str) -> dict:
         counters = aggregate.get("counters")  # e.g. {'vusers.completed': 100, 'vusers.failed': 5, ...}
         duration = aggregate.get("lastCounterAt", 0) - aggregate.get("firstCounterAt", 0)
         stats["duration"] = duration
-        # Use aggregate.firstCounterAt for startTime.
+        # Use aggregate.firstCounterAt for startTime. Convert from milliseconds to seconds.
         first_counter_timestamp = aggregate.get("firstCounterAt")
-        stats["startTime"] = convert_unix_to_iso8601_time(first_counter_timestamp) if first_counter_timestamp else ""
+        stats["startTime"] = (
+            convert_unix_to_iso8601_time(first_counter_timestamp // 1000) if first_counter_timestamp else ""
+        )
 
         del json_report["intermediate"]
         del aggregate["summaries"]
