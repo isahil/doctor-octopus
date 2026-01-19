@@ -18,15 +18,8 @@ function Card({ card, index, filter, setAlert }) {
     environment = "n_a",
     app = "n_a",
     product = "n_a",
+    duration = 0,
   } = stats // scoreboard values
-
-  // Calculate duration: for perf protocol, use aggregate timestamps; otherwise use stats.duration
-  let duration = 0
-  if (protocol === "perf" && !startTime) {
-    duration = (aggregate.lastMetricAt - aggregate.firstMetricAt)
-  } else {
-    duration = stats?.duration || 0
-  }
 
   const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected
@@ -121,7 +114,9 @@ function Card({ card, index, filter, setAlert }) {
         </span>
         <div className="card-footer">
           <span className="branch">{git_branch}</span>
-          <span className="duration">{Math.ceil(duration / 1000)} sec</span>
+          <span className="duration">
+            {Math.floor(duration / 60000)}m {Math.floor((duration % 60000) / 1000)}s
+          </span>
           <span className="time-stamp">{formatted_date_time}</span>
         </div>
         <div className="github-info">

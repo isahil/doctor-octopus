@@ -49,7 +49,7 @@ class Cards:
         elif mode == "cleanup":
             cleanup_old_test_report_directories(max_local_dirs)
         else:
-            logger.error(f"Unknown mode: {mode}. Expected 'cache', 'download', or 'cleanup'.")
+            logger.error(f"Unknown mode: {mode}. Expected 's3', 'cache', 'download', or 'cleanup'.")
 
     def ping(self) -> bool:
         logger.info("Cards component is alive")

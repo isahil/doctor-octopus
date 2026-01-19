@@ -158,7 +158,8 @@ def process_json(json_report: dict, card_date: str) -> dict:
     if runner == "artillery":
         aggregate = json_report.get("aggregate", {})
         counters = aggregate.get("counters")  # e.g. {'vusers.completed': 100, 'vusers.failed': 5, ...}
-        stats["duration"] = aggregate.get("lastCounterAt", 0) - aggregate.get("firstCounterAt", 0)
+        duration = aggregate.get("lastCounterAt", 0) - aggregate.get("firstCounterAt", 0)
+        stats["duration"] = duration
 
         del json_report["intermediate"]
         del aggregate["summaries"]
@@ -171,9 +172,12 @@ def process_json(json_report: dict, card_date: str) -> dict:
                 stats["unexpected"] = value
             else:
                 stats[key] = value
+        # Convert Unix timestamp to ISO 8601 format for client.
+        created_timestamp = json_report.get("created")
+        stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
 
     if not stats.get("startTime"):
-        # client card requires startTime to be set
+        # Fall back: client card requires startTime to be set for sorting logic.
         time = convert_unix_to_iso8601_time(get_unix_time())
         stats["startTime"] = time
         logger.info(f"[{card_date}] has no startTime in stats, setting to current time: {time}")
