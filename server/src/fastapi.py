@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
-import config
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
@@ -16,11 +15,11 @@ router = APIRouter()
 
 @router.get("/card", response_class=PlainTextResponse, status_code=200)
 async def get_a_card(
-    source: str = Query(
+    mode: str = Query(
         ...,
-        title="Source",
-        description="Source of the html report file to be retrieved",
-        example="local/remote",
+        title="Mode",
+        description="Mode of the html report file to be retrieved: cache/local",
+        example="cache",
     ),
     root_dir: str = Query(
         None,
@@ -32,28 +31,30 @@ async def get_a_card(
     test_report_dir = os.path.basename(root_dir)
     local_r_directories = local_report_directories()
 
-    if source == "remote" and test_report_dir not in local_r_directories:
+    if mode == "cache" and test_report_dir not in local_r_directories:
         logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
         test_report_dir = remote.download_s3_folder(root_dir)
+    elif mode == "cache" and test_report_dir in local_r_directories:
+        logger.info(f"Card available in local cache: {test_report_dir}")
     else:
-        logger.info(f"Card available in local: {test_report_dir}")
+        logger.info(f"TODO: local mode: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return f"{mount_path}/index.html"
 
 
 @router.get("/cards", response_class=JSONResponse, status_code=200)
 async def get_all_cards(
-    source: str = Query(
+    mode: str = Query(
         ...,
-        title="Source",
-        description="Retrieve all the HTML & JSON reports from the source",
-        example="remote",
+        title="Mode",
+        description="Cards action mode to perform: s3/cache/download/cleanup",
+        example="cache",
     ),
     environment: str = Query(
-        "qa",
+        ...,
         title="Environment",
-        description="Test environment to filter the reports by",
-        example="qa",
+        description="Test environment to filter the reports by: qa/dev/uat/all",
+        example="all",
     ),
     day: int = Query(
         ...,
@@ -61,88 +62,79 @@ async def get_all_cards(
         description="Filter the reports age based on the given day number",
         example=3,
     ),
-    app: str = Query(
-        "all",
-        title="App",
-        description="Application to filter the reports by",
-        example="clo,loan",
+    product: str = Query(
+        ...,
+        title="Product",
+        description="Product to filter the reports by: clo/loan/all",
+        example="all",
     ),
     protocol: str = Query(
-        "all",
+        ...,
         title="Protocol",
-        description="Protocol to filter the reports by",
-        example="ui,api",
+        description="Protocol to filter the reports by: ui/api/perf/all",
+        example="all",
     ),
 ):
     """Get available report cards based on the source requested"""
-    cache_environments = config.test_environments if environment == "all" else [environment]
-    cards_instance = instances.fastapi_app.state.cards
-    if cards_instance:
-        all_cards = []
-        for cache_environment in cache_environments:
-            expected_filter_data = {
-                "source": source,
-                "environment": cache_environment,
-                "day": day,
-                "app": app,
-                "protocol": protocol,
-            }
-            logger.info(f"Getting all cards with filter data: {expected_filter_data}")
-            fetched_cards = cards_instance.get_cards_from_cache(expected_filter_data)
-            if fetched_cards:
-                all_cards.extend(fetched_cards)
+    expected_filter_data = {
+        "mode": mode,
+        "environment": environment,
+        "day": day,
+        "product": product,
+        "protocol": protocol,
+    }
+    logger.info(f"Getting all cards with filter data: {expected_filter_data}")
+    cards = instances.fastapi_app.state.cards
+    all_cards = await cards.actions(expected_filter_data)
 
-        if len(all_cards) == 0:
-            logger.error("No cards found in redis cache.")
-            return JSONResponse(
-                content={
-                    "error": "No cards found in redis cache.",
-                    "cards": [],
-                },
-                status_code=200,
-            )
-
+    if len(all_cards) == 0:
+        logger.error("No cards found in redis cache.")
         return JSONResponse(
             content={
-                "message": "Cards retrieved successfully",
-                "cards": all_cards,
+                "error": "No cards found in redis cache.",
+                "cards": [],
             },
             status_code=200,
         )
-    else:
-        logger.info("Cards class not found in app state.")
-        return JSONResponse(
-            content={
-                "message": "Cards class instance not found in app state.",
-                "cards": [],
-            },
-            status_code=500,
-        )
+
+    return JSONResponse(
+        content={
+            "message": "Cards retrieved successfully",
+            "cards": all_cards,
+        },
+        status_code=200,
+    )
 
 
 @router.get("/cache-reload", response_class=JSONResponse, status_code=200)
 async def reload_cards_cache(
-    source: str = Query(
-        ...,
-        title="Source",
-        description="Retrieve all the HTML & JSON reports from the source",
-        example="remote",
-    ),
     day: int = Query(
         ...,
         title="Filter",
         description="Filter the reports age based on the given string",
         example=7,
     ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        example="all",
+    ),
     environment: str = Query(
-        "qa",
+        "all",
         title="Environment",
-        description="Environment to filter the reports",
-        example="qa",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        example="all",
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        example="all",
     ),
 ):
     """Get available report cards based on the source requested"""
-    expected_filter_data = {"environment": environment, "day": day, "source": source}
+    expected_filter_data = {"environment": environment, "day": day, "mode": "s3", "protocol": protocol, "product": product }
     cards = instances.fastapi_app.state.cards
     await cards.actions(expected_filter_data)
 

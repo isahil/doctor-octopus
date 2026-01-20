@@ -114,7 +114,7 @@
 
 .environment-filters-wrapper,
 .day-filters-wrapper,
-.app-filters-wrapper,
+.product-filters-wrapper,
 .protocol-filters-wrapper {
   display: flex;
   flex-direction: row;
@@ -140,7 +140,7 @@
   left: 250px;
 }
 
-.app-filters-wrapper {
+.product-filters-wrapper {
   left: 350px;
 }
 

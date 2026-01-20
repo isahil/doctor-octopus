@@ -14,12 +14,12 @@ def test_cards_endpoint_error_handling(setup_teardown):
         {"name": "missing_source_parameter", "params": {"environment": "qa", "day": 1}, "expected_status": 422},
         {
             "name": "invalid_day_parameter",
-            "params": {"source": "remote", "environment": "qa", "day": "invalid"},
+            "params": {"mode": "remote", "environment": "qa", "day": "invalid"},
             "expected_status": 422,
         },
         {
             "name": "empty_cache_scenario",
-            "params": {"source": "remote", "environment": "nonexistent", "day": 1},
+            "params": {"mode": "remote", "environment": "nonexistent", "day": 1},
             "expected_status": 200,  # Should return empty cards array
         },
     ]

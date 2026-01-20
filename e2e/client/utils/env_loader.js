@@ -3,6 +3,11 @@ dotenv.config({ path: [".env", "../.env"] });
 import { get_est_date_time } from "./index.js";
 import { ensure_dir } from "./fs_helper.js";
 
+export const get_client_url = () => {
+	const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = process.env;
+	return `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`;
+}
+
 export const get_environment = () => {
 	const { ENVIRONMENT = "qa" } = process.env;
 	return ENVIRONMENT;
@@ -32,7 +37,7 @@ export const get_test_reports_dir = () => {
 	process.env["TEST_REPORTS_DIR"] = full_test_reports_dir;
 	console.log(`Ensured reports directory at: ${full_test_reports_dir}`);
 
-	return full_test_reports_dir;
+	return full_test_reports_dir; // ./test_reports/1-2-2026_3-42-21_PM/
 };
 
 export const get_db_username = () => {

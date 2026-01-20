@@ -30,10 +30,10 @@ async def notify_s3_object_updates():
 
                 initial_total_s3_objects = current_total_s3_objects
 
-                await cards.actions({"day": 1, "source": "remote"})
-                await cards.actions({"day": 1, "source": "download"})
-                await aioredis.publish("notifications", data) # publish messages to pubsub
-                await cards.actions({"day": 1, "source": "cleanup"})
+                await cards.actions({"day": 1, "mode": "s3", "environment": "all", "protocol": "all"}) # refresh cache with new s3 objects
+                await cards.actions({"day": 1, "mode": "download", "environment": "all", "protocol": "all"})
+                await aioredis.publish("notifications", data)  # publish messages to pubsub
+                await cards.actions({"mode": "cleanup"})
                 # if instances.sio:
                 #     await instances.sio.emit("alert", {"new_alert": True})
             await asyncio.sleep(notification_frequency_time)
@@ -52,7 +52,9 @@ async def notification_stream(request: Request, client_id: str):
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
     logger.info(f"Client [{client_id}] connected to SSE stream")
-    active_clients_count, max_active_clients_count, lifetime_do_client_count = instances.redis.refresh_redis_client_metrics()
+    active_clients_count, max_active_clients_count, lifetime_do_client_count = (
+        instances.redis.refresh_redis_client_metrics()
+    )
 
     data = {
         "type": "client",
@@ -65,14 +67,14 @@ async def notification_stream(request: Request, client_id: str):
     logger.info(f"Sending initial connection data: {data}")
     await aioredis.publish("notifications", data)
     # Send initial connection message
-    yield f'event: connected\ndata: {data}\n\n'
+    yield f"event: connected\ndata: {data}\n\n"
 
     try:
         while True:
             if await request.is_disconnected():
                 logger.info(f"Client [{client_id}] disconnected from SSE stream")
                 break
-            message = await pubsub.get_message(ignore_subscribe_messages=True) # receive messages from pubsub
+            message = await pubsub.get_message(ignore_subscribe_messages=True)  # receive messages from pubsub
             if message and message["type"] == "message":
                 # logger.info(f"Stream received message from Redis sub: {message['data']}")
                 data = message["data"].decode("utf-8")

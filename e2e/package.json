@@ -1,38 +1,43 @@
 {
-  "name": "client-playwright",
-  "version": "1.0.0",
-  "description": "Doctor Octopus Client Tests",
-  "main": "index.js",
-  "type": "module",
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "test": "node client/utils/runner.js",
-    "api:smoke": "npm test api_smoke pytest",
-    "api:sanity": "npm test api_sanity pytest",
-    "api:regression": "npm test api_regression pytest",
-    "perf:cards": "node perf/runner.js perf/cards.yml dev",
-    "perf:fixme": "node perf/runner.js perf/fixme.yml dev",
-    "unit": "npm run unit:client && npm run unit:server",
-    "unit:client": "npm test unit:regression playwright",
-    "unit:server": "npm test unit_regression pytest",
-    "ui:smoke": "npm test ui:smoke",
-    "ui:sanity": "npm test ui:sanity",
-    "ui:regression": "npm test ui:regression"
-  },
-  "author": "Imran Sahil",
-  "license": "ISC",
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.606.0",
-    "ci": "^2.3.0",
-    "csv-parse": "^6.1.0",
-    "dotenv": "^16.4.5",
-    "playwright": "^1.44.1",
-    "postgres": "^3.4.7"
-  },
-  "devDependencies": {
-    "@artilleryio/playwright-reporter": "^1.1.3",
-    "is-ci": "^4.1.0"
-  }
+	"name": "client-playwright",
+	"version": "1.0.0",
+	"description": "Doctor Octopus Client Tests",
+	"main": "index.js",
+	"type": "module",
+	"directories": {
+		"test": "tests"
+	},
+	"scripts": {
+		"build": "node build.js",
+		"build:watch": "node build.js --watch",
+		"test": "node client/utils/runner.js",
+		"api:smoke": "npm test api_smoke pytest",
+		"api:sanity": "npm test api_sanity pytest",
+		"api:regression": "npm test api_regression pytest",
+		"perf:cards-api": "npm run build && node perf/runner.js perf/cards-api.yml",
+		"perf:cards-ui": "npm run build && node perf/runner.js perf/cards-ui.yml",
+		"perf:fixme-ws": "npm run build && node perf/runner.js perf/fixme-ws.yml",
+		"unit": "npm run unit:client && npm run unit:server",
+		"unit:client": "npm test unit:regression playwright",
+		"unit:server": "npm test unit_regression pytest",
+		"ui:smoke": "npm test ui:smoke",
+		"ui:sanity": "npm test ui:sanity",
+		"ui:regression": "npm test ui:regression",
+		"perf-report": "node perf/reporter/perf_reporter.js"
+	},
+	"author": "Imran Sahil",
+	"license": "ISC",
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.606.0",
+		"ci": "^2.3.0",
+		"csv-parse": "^6.1.0",
+		"dotenv": "^16.4.5",
+		"playwright": "^1.44.1",
+		"postgres": "^3.4.7"
+	},
+	"devDependencies": {
+		"@artilleryio/playwright-reporter": "^1.1.3",
+		"esbuild": "^0.27.2",
+		"is-ci": "^4.1.0"
+	}
 }

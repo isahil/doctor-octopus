@@ -12,15 +12,15 @@
       "label": "env",
       "options": ["all", "dev", "qa", "uat", "sit", "prod"]
     },
-    "app": {
-      "name": "app",
+    "product": {
+      "name": "product",
       "label": "app",
       "options": ["all", "loan", "clo"]
     },
     "protocol": {
       "name": "protocol",
       "label": "suites",
-      "options": ["all", "ui", "api", "fix", "db", "unit"]
+      "options": ["all", "ui", "api", "fix", "db", "perf", "unit"]
     }
   }
 }

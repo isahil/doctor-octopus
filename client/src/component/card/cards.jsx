@@ -12,10 +12,10 @@ const Cards = () => {
   const [totalCards, setTotalCards] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState({
-    source: "remote",
+    mode: "cache",
     day: 1,
     environment: "all",
-    app: "all",
+    product: "all",
     protocol: "all",
   })
   const [alert, setAlert] = useState({ new: false, opening: false, active_clients: 0 })
@@ -74,8 +74,8 @@ const Cards = () => {
     setTotalCards(0)
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
-    const { source, environment, day, app, protocol } = filters
-    const url = `${server_url}/cards/?source=${source}&day=${day}&environment=${environment}&app=${app}&protocol=${protocol}`
+    const { mode, environment, day, product, protocol } = filters
+    const url = `${server_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
     const request = await fetch(url)
     const response = await request.json()
     if (!request.ok) {

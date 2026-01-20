@@ -65,10 +65,14 @@ DOCTOR-OCTOPUS
 Start the application by running:
 
 1. Using compose
-`docker compose up --build`.
+
+    `docker compose up --build` : run a docker compose container with a fresh build
+
+    `docker compose --env-file .env up --build -d` : run a docker compose container with an env file values loaded from root, fresh build and in daemon mode.
 
 2. Using a specific image tag
-`docker run -p 3000:3000 -p 8000:8000 --env-file=./.env app:tag`
+
+    `docker run -p 3000:3000 -p 8000:8000 --env-file=./.env app:tag` : run a docker image with ports 3000 & 8000 mapping, load env file values from the root directory.
 
 The app will be available at http://localhost:3000.
 

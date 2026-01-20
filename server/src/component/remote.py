@@ -6,6 +6,8 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 import redis as _redis
 from config import (
+    test_environments,
+    test_protocols,
     test_reports_dir,
     test_reports_redis_key,
     rate_limit_file_batch_size,
@@ -14,7 +16,7 @@ from src.component.validation import validate
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
-from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_est_date_time, get_unix_time
+from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_unix_time
 import src.utils.redis as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
@@ -45,7 +47,7 @@ def format_s3_object_filter_data(obj):
     }
 
 
-async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> list[dict]:
+async def get_cards_from_s3_and_cache(expected_filter_data: dict) -> list[dict]:
     """Get all report cards object from the S3 bucket"""
 
     s3_objects = S3.list_all_s3_objects()
@@ -65,7 +67,6 @@ async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> lis
         if report_dir_date not in cards_pool:
             cards_pool[report_dir_date] = {
                 "filter_data": received_card,
-                "html_report": f"{report_dir_date}/index.html",
                 "json_report": {},
                 "root_dir": received_card["s3_root_dir"],
             }
@@ -77,83 +78,112 @@ async def get_all_s3_cards(expected_filter_data: dict, rate_limit_wait=0) -> lis
 
 
 async def process_card(card_tuple) -> Union[dict, None]:
+    """
+    Check if the card is already cached in Redis. If not, download the JSON report from S3,
+    process it, and cache it in Redis
+
+    :param card_tuple: Tuple containing card date and card value
+    """
     import instances
 
     redis: redis_module.RedisClient = instances.redis
     redis_client: _redis.StrictRedis = instances.redis.redis_client
 
     card_date, card_value = card_tuple
+    protocol = card_value["filter_data"].get("protocol")
     try:
         object_name = card_value["filter_data"].get("object_name")
-        environment = card_value["filter_data"].get("environment", "")
-        reports_cache_key = f"{test_reports_redis_key}:{environment}"  # e.g. trading-apps-reports:qa
-        if not object_name:
-            return None
+        environment = card_value["filter_data"].get("environment")
+        if not object_name or not environment or not protocol:
+            logger.error(f"object_name, environment, or protocol missing for protocol: {protocol} [{card_date}]")
+            return
+        reports_cache_key = f"{test_reports_redis_key}:{environment}:{protocol}"  # e.g. trading-apps-reports:qa:ui
 
         if not redis_client.hexists(reports_cache_key, card_date):
             j_report = json.loads(S3.get_a_s3_object(object_name))
             j_report = process_json(j_report, card_date)
             card_value["json_report"] = j_report
+            logger.info(f"Caching card in Redis for protocol: {protocol} [{card_date}]")
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
-            return card_value
-        else:
-            # logger.info(f"Card found in Redis cache: {card_date}")
-            return None
+
     except (KeyError, json.JSONDecodeError) as e:
-        logger.info(f"Error processing card {card_date}: {type(e).__name__} - {str(e)}")
-        return None
+        logger.info(f"Error processing card for protocol: {protocol} [{card_date}] - {type(e).__name__} - {str(e)}")
+
+
+def identify_runner(json_report: dict, card_date: str) -> str:
+    """Identify the test runner from the JSON report structure. Must not use stats key as it is common across runners."""
+    keys = list(json_report.keys())
+    if "config" in keys and "suites" in keys:
+        return "playwright"
+    if "collectors" in keys and "tests" in keys:
+        return "pytest"
+    if "aggregate" in keys and "intermediate" in keys:
+        return "artillery"
+    else:
+        logger.info(f"[{card_date}] Unable to identify test runner from JSON report structure.")
+        return "unknown"
 
 
 def process_json(json_report: dict, card_date: str) -> dict:
     """Process the JSON report to remove unnecessary details and normalize stats"""
 
-    runner = "unknown"
-
-    # Normalize stats object for pytest reports
     if "stats" not in json_report:
-        json_report["stats"] = {"startTime": "", "unexpected": 0, "skipped": 0, "flaky": 0}
+        json_report["stats"] = {"startTime": "", "expected": 0, "unexpected": 0, "skipped": 0, "flaky": 0}
 
-    stats = json_report["stats"]
-    keys = list(json_report.keys())
+    stats = json_report.get("stats", {})
+    runner = identify_runner(json_report, card_date)
+    stats["runner"] = runner
 
-    if "config" in keys and "suites" in keys:
-        runner = "playwright"
+    if runner == "playwright":
         del json_report["config"]
         del json_report["suites"]
 
-    if "collectors" in keys and "tests" in keys:
-        runner = "pytest"
+    if runner == "pytest":
         del json_report["collectors"]
         del json_report["tests"]
+        summary = json_report.get("summary", {})  # e.g. {'passed': 10, 'failed': 2, 'deselected': 1, ...}
+        duration = json_report.get("duration")
+        stats["duration"] = duration
 
-        # Transform summary data into stats with same key names
-        if "summary" in json_report:
-            summary = json_report["summary"]
+        for key, value in summary.items():
+            if key == "passed":
+                stats["expected"] = value
+            elif key == "failed":
+                stats["unexpected"] = value
+            elif key == "deselected":
+                stats["skipped"] = value
+            else:
+                stats[key] = value
 
-            # Copy summary fields to stats
-            for key, value in summary.items():
-                if key == "passed":
-                    stats["expected"] = value
-                elif key == "failed":
-                    stats["unexpected"] = value
-                elif key == "deselected":
-                    stats["skipped"] = value
-                else:
-                    stats[key] = value
-        else:
-            logger.info("No summary found in pytest json report to normalize stats.")
+    if runner == "artillery":
+        aggregate = json_report.get("aggregate", {})
+        counters = aggregate.get("counters")  # e.g. {'vusers.completed': 100, 'vusers.failed': 5, ...}
+        duration = aggregate.get("lastCounterAt", 0) - aggregate.get("firstCounterAt", 0)
+        stats["duration"] = duration
+        # Use aggregate.firstCounterAt for startTime. Convert from milliseconds to seconds.
+        first_counter_timestamp = aggregate.get("firstCounterAt")
+        stats["startTime"] = (
+            convert_unix_to_iso8601_time(first_counter_timestamp // 1000) if first_counter_timestamp else ""
+        )
 
-        # Convert Unix timestamp to ISO 8601 format
-        created_timestamp = json_report.get("created")
-        stats["startTime"] = convert_unix_to_iso8601_time(created_timestamp) if created_timestamp else ""
-        stats["duration"] = json_report.get("duration", 0)
+        del json_report["intermediate"]
+        del aggregate["summaries"]
+        del aggregate["histograms"]
+
+        for key, value in counters.items():
+            if key == "vusers.completed":
+                stats["expected"] = value
+            elif key == "vusers.failed":
+                stats["unexpected"] = value
+            else:
+                stats[key] = value
 
     if not stats.get("startTime"):
-        # TODO: Use the actual test start time if available
+        # Fall back: client card requires startTime to be set for sorting logic.
         time = convert_unix_to_iso8601_time(get_unix_time())
         stats["startTime"] = time
         logger.info(f"[{card_date}] has no startTime in stats, setting to current time: {time}")
-    stats["runner"] = runner
+
     return json_report
 
 
@@ -213,3 +243,44 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
                 time.sleep(rate_limit)
     logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
     return test_report_dir
+
+
+def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
+    """Get the cards from the memory. If the memorty data doesn't match, fetch the cards from the cache"""
+    import instances
+
+    environment = expected_filter_data.get("environment")
+    protocol = expected_filter_data.get("protocol")
+    day = int(expected_filter_data.get("day", 1))
+
+    if not environment or not protocol:
+        logger.error(
+            "Environment and Protocol must be specified in expected_filter_data for get_cards_from_cache function"
+        )
+        return []
+
+    envs_to_check = test_environments if environment == "all" else [environment]
+    protocols_to_check = test_protocols if protocol == "all" else [protocol]
+    filtered_cards: list[dict] = []
+
+    redis = instances.redis
+
+    # Iterate through all environment and protocol combinations
+    for env in envs_to_check:
+        for proto in protocols_to_check:
+            reports_cache_key = f"{test_reports_redis_key}:{env}:{proto}"  # e.g. trading-apps-reports:qa:ui
+            logger.info(f"Fetch cards from cache env: {env} | day: {day} | protocol: {proto}")
+
+            cached_cards = redis.get_all_cached_cards(reports_cache_key)
+            if cached_cards and isinstance(cached_cards, dict):
+                for _, received_card_data in cached_cards.items():
+                    received_card_data = json.loads(received_card_data)
+                    received_filter_data = received_card_data.get("filter_data")
+                    error = validate(received_filter_data, expected_filter_data)
+                    if error:
+                        # logger.warning(f"Card filter data validation failed: {error}")
+                        continue
+                    filtered_cards.append(received_card_data)
+
+    sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    return sorted_cards

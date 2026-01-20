@@ -1,12 +1,12 @@
 import "./card.css"
-import { github_icon } from "../../util/icons"
+import { github_icon, grafana_icon } from "../../util/icons"
 
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
-  const { source } = filter
+  const { mode, protocol } = filter
   const { json_report, root_dir } = card
-  const { stats, ci } = json_report
+  const { stats, ci, aggregate } = json_report
   const {
     expected = 0,
     flaky = 0,
@@ -17,13 +17,16 @@ function Card({ card, index, filter, setAlert }) {
     test_suite = "n_a",
     environment = "n_a",
     app = "n_a",
+    product = "n_a",
     duration = 0,
   } = stats // scoreboard values
+
   const project_name = test_suite ?? "N/A"
   const total_tests = expected + flaky + unexpected
   const date = new Date(startTime)
   const formatted_date_time = date.toLocaleString() // formatting
   const run_url = ci?.run_url ?? "" // GitHub Action run URL
+  const grafana_url = stats?.app_grafana_url // Grafana Dashboard URL
   const sdet = ci?.sdet ?? ""
 
   const handle_view_report_click = async () => {
@@ -32,7 +35,7 @@ function Card({ card, index, filter, setAlert }) {
     })
 
     const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
-    const response = await fetch(`${server_url}/card?source=${source}&root_dir=${root_dir}`)
+    const response = await fetch(`${server_url}/card?mode=${mode}&root_dir=${root_dir}`)
     const report_path = await response.text()
     const full_report_url = `${server_url}${report_path}`
     try {
@@ -52,6 +55,17 @@ function Card({ card, index, filter, setAlert }) {
     e.stopPropagation()
     if (run_url) {
       window.open(run_url, "_blank")
+    }
+  }
+
+  const handle_grafana_click = (e) => {
+    // const valid_url = grafana_url.startsWith("http") ? grafana_url : ""
+    console.log(`Grafana button clicked.. url: ${grafana_url}`)
+    e.stopPropagation()
+    if (grafana_url) {
+      window.open(grafana_url, "_blank")
+    } else {
+      alert("Grafana URL is not available for this report.")
     }
   }
 
@@ -96,22 +110,38 @@ function Card({ card, index, filter, setAlert }) {
           </button>
         </div>
         <span className="card-title">
-          {app ? `${app} -` : ""} {environment}{" "}
+          {(product || app) ? `${product || app} -` : ""} {environment}{" "}
         </span>
         <div className="card-footer">
           <span className="branch">{git_branch}</span>
-          <span className="duration">{Math.ceil(duration / 1000)} sec</span>
+          <span className="duration">
+            {Math.floor(duration / 60000)}m {Math.floor((duration % 60000) / 1000)}s
+          </span>
           <span className="time-stamp">{formatted_date_time}</span>
         </div>
         <div className="github-info">
           {run_url && (
             <button
               className="github-icon-button"
+              href={run_url}
               onClick={handle_github_click}
               title="View GitHub Workflow"
               aria-label="View GitHub Workflow"
             >
               {github_icon(18, 18)}
+            </button>
+          )}
+        </div>
+        <div className="grafana-info">
+          {grafana_url && (
+            <button
+              className="grafana-icon-button"
+              href={grafana_url}
+              onClick={handle_grafana_click}
+              title="View Grafana Dashboard"
+              aria-label="View Grafana Dashboard"
+            >
+              {grafana_icon(18, 18)}
             </button>
           )}
         </div>
