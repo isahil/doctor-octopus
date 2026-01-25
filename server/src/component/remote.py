@@ -13,6 +13,7 @@ from config import (
     rate_limit_file_batch_size,
 )
 from src.component.validation import validate
+from src.utils.helper import performance_log
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
@@ -27,7 +28,7 @@ def total_s3_objects() -> int:
     return len(total)
 
 
-def format_s3_object_filter_data(obj):
+def transform_s3_objects_to_filter_dict(obj) -> Union[dict, None]:
     """Process only JSON report objects from S3 bucket"""
     object_name = obj["Key"]
     path_parts = object_name.split("/")
@@ -47,34 +48,38 @@ def format_s3_object_filter_data(obj):
     }
 
 
-async def get_cards_from_s3_and_cache(expected_filter_data: dict) -> list[dict]:
-    """Get all report cards object from the S3 bucket"""
+def validate_transformed_cards_w_filter_dict(transformed_cards: list[dict], expected_filter_dict: dict) -> dict:
+    """Validate the received S3 object filter data against expected filter data"""
+    with ThreadPoolExecutor() as executor:
+        validation_results = list(
+            executor.map(lambda card: (card, validate(card, expected_filter_dict)), transformed_cards)
+        )
+    validated_cards = [card for card, error in validation_results if error is None]
 
+    cards_pool = {}  # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
+    for validated_card in validated_cards:
+        report_dir_date = validated_card["day"]
+        if report_dir_date not in cards_pool:
+            cards_pool[report_dir_date] = {
+                "filter_data": validated_card,
+                "json_report": {},
+                "root_dir": validated_card["s3_root_dir"],
+            }
+    return cards_pool
+
+
+@performance_log
+async def get_cards_from_s3_and_cache(expected_filter_dict: dict):
+    """Get all report cards object from the S3 bucket"""
     s3_objects = S3.list_all_s3_objects()
 
     # Process objects in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor() as executor:
-        received_cards = list(filter(None, executor.map(format_s3_object_filter_data, s3_objects)))
+        transformed_cards = list(filter(None, executor.map(transform_s3_objects_to_filter_dict, s3_objects)))
 
-    # Group objects by report_dir_date. Do we need html_report key since json_report has the value?
-    cards_pool = {}  # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
-    for received_card in received_cards:
-        error = validate(received_card, expected_filter_data)
-        if error:
-            continue
-
-        report_dir_date = received_card["day"]
-        if report_dir_date not in cards_pool:
-            cards_pool[report_dir_date] = {
-                "filter_data": received_card,
-                "json_report": {},
-                "root_dir": received_card["s3_root_dir"],
-            }
-
-    report_cards = list(cards_pool.items())
-    processed_cards = await asyncio.gather(*[process_card(card_tuple) for card_tuple in report_cards])
-    finalized_cards = [processed_card for processed_card in processed_cards if processed_card is not None]
-    return finalized_cards
+    validated_cards_dict = validate_transformed_cards_w_filter_dict(transformed_cards, expected_filter_dict)
+    validated_cards_list = list(validated_cards_dict.items())
+    await asyncio.gather(*[process_card(card_tuple) for card_tuple in validated_cards_list])
 
 
 async def process_card(card_tuple) -> Union[dict, None]:

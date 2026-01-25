@@ -25,27 +25,27 @@ class Cards:
     product: str = ""
 
     @performance_log
-    async def actions(self, expected_filter_data: dict) -> Union[list[dict], None]:
+    async def actions(self, expected_filter_dict: dict) -> Union[list[dict], None]:
         """Action to fetch and cache cards based on the expected filter data
         Args:
-            expected_filter_data (dict): filter data containing mode, environment, day, product, protocol
+            expected_filter_dict (dict): filter data containing mode, environment, day, product, protocol
         Returns:
             Union[list[dict], None]: list of cards if mode is 'cache', None otherwise
-        
+
         s3: fetch cards from S3 and cache them in Redis.
         cache: fetch cards from redis cache and return them. Only CLIENT should use this mode.
         download: download missing cards from S3 to local server.
         cleanup: cleanup old local test report directories.
-        
+
         """
-        mode = expected_filter_data.get("mode")
-        logger.info(f"Fetch cards expected filter: {expected_filter_data}")
+        mode = expected_filter_dict.get("mode")
+        logger.info(f"Fetch cards expected filter: {expected_filter_dict}")
         if mode == "s3":
-            await get_cards_from_s3_and_cache(expected_filter_data)
+            await get_cards_from_s3_and_cache(expected_filter_dict)
         elif mode == "cache":
-            return get_cards_from_cache(expected_filter_data)
+            return get_cards_from_cache(expected_filter_dict)
         elif mode == "download":
-            self.download_missing_cards(expected_filter_data)
+            self.download_missing_cards(expected_filter_dict)
         elif mode == "cleanup":
             cleanup_old_test_report_directories(max_local_dirs)
         else:
@@ -55,15 +55,15 @@ class Cards:
         logger.info("Cards component is alive")
         return True
 
-    def missing_cards(self, local_cards: dict, expected_filter_data: dict) -> list[str]:
+    def missing_cards(self, local_cards: dict, expected_filter_dict: dict) -> list[str]:
         import instances
 
         redis = instances.redis
-        environment = expected_filter_data.get("environment")
-        protocol = expected_filter_data.get("protocol")
+        environment = expected_filter_dict.get("environment")
+        protocol = expected_filter_dict.get("protocol")
         if not environment or not protocol:
             logger.error(
-                "Environment and Protocol must be specified in expected_filter_data for missing_cards function"
+                "Environment and Protocol must be specified in expected_filter_dict for missing_cards function"
             )
             return []
         reports_cache_key = f"{test_reports_redis_key}:{environment}:{protocol}"  # trading-app-reports:qa:ui
@@ -78,28 +78,28 @@ class Cards:
                 cached_card_s3_root_dir = cached_card_filter_data.get(
                     "s3_root_dir", ""
                 )  # 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM'
-                error = validate(cached_card_filter_data, expected_filter_data)
+                error = validate(cached_card_filter_data, expected_filter_dict)
                 if error:
                     continue
                 if cached_card_date not in local_cards:
                     _missing_cards.append(cached_card_s3_root_dir)
         else:
-            logger.info(f"No cards found in Redis cache w. filter: {expected_filter_data}.")
+            logger.info(f"No cards found in Redis cache w. filter: {expected_filter_dict}.")
         return _missing_cards
 
-    def download_missing_cards(self, expected_filter_data: dict, rate_limit_wait=rate_limit_wait_time) -> None:
+    def download_missing_cards(self, expected_filter_dict: dict, rate_limit_wait=rate_limit_wait_time) -> list[str]:
         """
         Download the missing cards from S3 and cache them on the server using three levels of parallelism:
         (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
         """
-        local_cards = get_all_local_cards(expected_filter_data)
-        environment = expected_filter_data.get("environment")
-        protocol = expected_filter_data.get("protocol")
+        local_cards = get_all_local_cards(expected_filter_dict)
+        environment = expected_filter_dict.get("environment")
+        protocol = expected_filter_dict.get("protocol")
         envs_to_check = test_environments if environment == "all" else [environment]
         protocols_to_check = test_protocols if protocol == "all" else [protocol]
 
         def process_environment_protocol_cache(env, proto):
-            expected_filter_data_c = expected_filter_data.copy()
+            expected_filter_data_c = expected_filter_dict.copy()
             expected_filter_data_c["environment"] = env
             expected_filter_data_c["protocol"] = proto
             return self.missing_cards(local_cards, expected_filter_data_c)
@@ -142,15 +142,17 @@ class Cards:
                 f"Downloaded cards folder batch {i // rate_limit_folder_batch_size + 1} successfully ✅ Rate limiting wait time {rate_limit_wait}s..."
             )
             time.sleep(rate_limit_wait)
+        # logger.info(f"All missing cards: {missing_cards_from_cache}")
+        return missing_cards_from_cache
 
-    def set_cards(self, expected_filter_data: dict):
+    def set_cards(self, expected_filter_dict: dict):
         """Force update the cards in Cards app memory state. Warning: memory intensive. Not being used currently."""
-        self.stored_cards_collection = get_cards_from_cache(expected_filter_data)
-        self.set_filter_data(expected_filter_data)
+        self.stored_cards_collection = get_cards_from_cache(expected_filter_dict)
+        self.set_filter_data(expected_filter_dict)
         return self.stored_cards_collection
 
-    def set_filter_data(self, expected_filter_data: dict) -> dict:
+    def set_filter_data(self, expected_filter_dict: dict) -> dict:
         """Set the filter data to the app state"""
-        for key, value in expected_filter_data.items():
+        for key, value in expected_filter_dict.items():
             setattr(self, key, value)
-        return expected_filter_data
+        return expected_filter_dict
