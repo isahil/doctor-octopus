@@ -13,6 +13,7 @@ class RedisClient:
     from src.utils.logger import logger
 
     redis_client: redis.StrictRedis
+    cards_cached_redis_key: str = config.test_reports_cached_redis_key
 
     def __init__(self, host=redis_host, port=redis_port):
         self.connect(host, port)
@@ -53,6 +54,11 @@ class RedisClient:
         value = self.redis_client.get(key)
         return value.decode("utf-8") if isinstance(value, bytes) else value
 
+    def get_all_set_items(self, key: str) -> list:
+        """Get all items from a Redis set"""
+        result = self.redis_client.smembers(key)
+        return [item.decode("utf-8") if isinstance(item, bytes) else item for item in result]
+
     def increment_key(self, key, increment: int = 1, expire_day: Union[int, None] = None):
         new_value = self.redis_client.incr(key, increment)
         if expire_day:
@@ -82,6 +88,7 @@ class RedisClient:
     def create_card_cache(self, cards_cache_key: str, card_cache_field: str, card_cache_value: str) -> None:
         was_set = self.redis_client.hsetnx(cards_cache_key, card_cache_field, card_cache_value)
         if was_set:
+            self.redis_client.sadd(self.cards_cached_redis_key, card_cache_field)
             self.logger.info(f"Cached: {card_cache_field}")
 
     def get_a_cached_card(self, cards_cache_key: str, card_cache_field: str) -> Union[dict, None]:

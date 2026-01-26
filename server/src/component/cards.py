@@ -2,10 +2,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Union
 import json
 import time
+import warnings
 from config import (
     max_local_dirs,
     test_protocols,
     test_reports_redis_key,
+    test_reports_cached_redis_key,
     test_environments,
     rate_limit_folder_batch_size,
     rate_limit_wait_time,
@@ -45,7 +47,7 @@ class Cards:
         elif mode == "cache":
             return get_cards_from_cache(expected_filter_dict)
         elif mode == "download":
-            self.download_missing_cards(expected_filter_dict)
+            self.download_missing_cached_cards(expected_filter_dict)
         elif mode == "cleanup":
             cleanup_old_test_report_directories(max_local_dirs)
         else:
@@ -56,6 +58,12 @@ class Cards:
         return True
 
     def missing_cards(self, local_cards: dict, expected_filter_dict: dict) -> list[str]:
+        warnings.warn(
+            "missing_cards() is deprecated and will be removed in a future version. Use cards_to_download() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         import instances
 
         redis = instances.redis
@@ -88,6 +96,11 @@ class Cards:
         return _missing_cards
 
     def download_missing_cards(self, expected_filter_dict: dict, rate_limit_wait=rate_limit_wait_time) -> list[str]:
+        warnings.warn(
+            "download_missing_cards() is deprecated and will be removed in a future version. Use download_missing_cached_cards() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         """
         Download the missing cards from S3 and cache them on the server using three levels of parallelism:
         (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
@@ -115,10 +128,13 @@ class Cards:
             cards_missing_per_env_proto, []
         )  # Flatten the list of lists into a single list []
 
-        def calculate_total_batches(total_items, batch_size):
-            return (total_items + batch_size - 1) // batch_size
+        self.download_cards(missing_cards_from_cache)
+        return missing_cards_from_cache
 
-        total_batches = calculate_total_batches(len(missing_cards_from_cache), rate_limit_folder_batch_size)
+    def download_cards(self, missing_cards_from_cache: list[str]) -> None:
+        """Download specific cards from S3 given their root directories."""
+
+        total_batches = self.calculate_total_batches(len(missing_cards_from_cache), rate_limit_folder_batch_size)
         logger.info(
             f"Missing cards to download: {len(missing_cards_from_cache)} total in {total_batches} batches -> {missing_cards_from_cache}"
         )
@@ -139,11 +155,48 @@ class Cards:
                     except Exception as e:
                         logger.error(f"Error downloading card: {e}", exc_info=True)
             logger.info(
-                f"Downloaded cards folder batch {i // rate_limit_folder_batch_size + 1} successfully ✅ Rate limiting wait time {rate_limit_wait}s..."
+                f"Downloaded cards folder batch {i // rate_limit_folder_batch_size + 1} successfully ✅ Rate limiting wait time {rate_limit_wait_time}s..."
             )
-            time.sleep(rate_limit_wait)
-        # logger.info(f"All missing cards: {missing_cards_from_cache}")
-        return missing_cards_from_cache
+            time.sleep(rate_limit_wait_time)
+
+    def calculate_total_batches(self, total_items, batch_size):
+        return (total_items + batch_size - 1) // batch_size
+
+    def cards_to_download(self, expected_filter_dict: dict) -> list[str]:
+        """Determine which cards need to be downloaded from S3 based on the expected filter data."""
+        import instances
+
+        redis = instances.redis
+
+        local_cards = get_all_local_cards(expected_filter_dict)
+        cached_cards: list[str] = redis.get_all_set_items(test_reports_cached_redis_key)
+        transformed_cards_dict = self.transform_cached_cards_to_filter_dict(cached_cards)
+
+        validation_results = [
+            (card_date, validate(transformed_cards_dict[card_date]["filter_data"], expected_filter_dict))
+            for card_date in transformed_cards_dict.keys()
+        ]
+        validated_card_dates = [card_date for card_date, error in validation_results if not error]
+
+        missing_card_dates = [card_date for card_date in validated_card_dates if card_date not in local_cards]
+        logger.info(f"Missing card dates not in local: {missing_card_dates}")
+
+        return missing_card_dates
+
+    def transform_cached_cards_to_filter_dict(self, cards_dates: list[str]) -> dict[str, dict]:
+        """Transform a list of card S3 root directories to their corresponding filter dicts."""
+        cards_pool = {}
+        for card_date in cards_dates:
+            filter_dict = {"day": card_date}
+            if card_date not in cards_pool:
+                cards_pool[card_date] = {"filter_data": filter_dict}
+        return cards_pool
+
+    def download_missing_cached_cards(self, expected_filter_dict: dict) -> list[str]:
+        """Download missing cards that are already cached in Redis."""
+        cards_to_download = self.cards_to_download(expected_filter_dict)
+        self.download_cards(cards_to_download)
+        return cards_to_download
 
     def set_cards(self, expected_filter_dict: dict):
         """Force update the cards in Cards app memory state. Warning: memory intensive. Not being used currently."""
