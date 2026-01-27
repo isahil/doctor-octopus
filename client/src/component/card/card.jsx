@@ -4,9 +4,9 @@ import { github_icon, grafana_icon } from "../../util/icons"
 const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
-  const { mode, protocol } = filter
+  const { mode } = filter
   const { json_report, root_dir } = card
-  const { stats, ci, aggregate } = json_report
+  const { stats, ci } = json_report
   const {
     expected = 0,
     flaky = 0,

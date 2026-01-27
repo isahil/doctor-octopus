@@ -33,8 +33,8 @@ test.describe("Doctor Octopus Reports Page UI Test", () => {
 			await cards.click_filters_option("protocol", "all");
 
 			await expect.soft(page.locator(".card").first()).toBeVisible();
-			const card_count = await cards.get_card_count();
-			await expect
+			const card_count = await cards.get_cards_count();
+			expect
 				.soft(card_count, "There should be some cards displayed after applying filters")
 				.toBeGreaterThan(0);
 		});

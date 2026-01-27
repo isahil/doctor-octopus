@@ -76,13 +76,13 @@ export const get_aws_sdet_bucket_region = () => {
 };
 
 export const get_aws_sdet_bucket_access_key_id = () => {
-	const { AWS_SDET_BUCKET_ACCESS_KEY_ID } = process.env;
-	return AWS_SDET_BUCKET_ACCESS_KEY_ID;
+	const { AWS_ACCESS_KEY_ID } = process.env;
+	return AWS_ACCESS_KEY_ID;
 };
 
 export const get_aws_sdet_bucket_secret_access_key = () => {
-	const { AWS_SDET_BUCKET_SECRET_ACCESS_KEY } = process.env;
-	return AWS_SDET_BUCKET_SECRET_ACCESS_KEY;
+	const { AWS_SECRET_ACCESS_KEY } = process.env;
+	return AWS_SECRET_ACCESS_KEY;
 };
 
 export const get_github_run_id = () => {

@@ -65,7 +65,7 @@ export const execute_runner = async ({ test_suite, environment, tags }) => {
 		? `--tags ci:true,env:${environment},actor:${actor},dev:imran,component:${feature}${artillery_tags}`
 		: `--tags actor:${actor}${artillery_tags}`;
 
-	const artillery_record = record ? ` --record --key ${artillery_cloud_api_key}` : "";
+	const artillery_record = is_ci && record ? ` --record --key ${artillery_cloud_api_key}` : "";
 
 	const debug_mode = gh_actions_debug_mode()
 		? feature == "cards"

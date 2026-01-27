@@ -17,16 +17,16 @@ def get_unix_time():
     return unix_timestamp
 
 def convert_unix_to_iso8601_time(unix_timestamp: float) -> str:
-    """Convert a Unix timestamp to ISO 8601 format with milliseconds and 'Z' suffix
-    Example: 1704067200.0 -> '2024-01-01T00:00:00.000Z'
+    """Convert a Unix timestamp to ISO 8601 format with milliseconds
+    Example: 1704067200.0 -> '2024-01-01T00:00:00.000'
     """
     from datetime import datetime
 
-    iso_format = datetime.fromtimestamp(unix_timestamp).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+    iso_format = datetime.fromtimestamp(unix_timestamp).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
     return iso_format
 
 def convert_iso8601_to_unix_time(iso_timestamp: str) -> float:
-    """Convert an ISO 8601 formatted timestamp to Unix timestamp
+    """Convert an ISO 8601 formatted timestamp to Unix timestamp. Z suffix indicates UTC.
     Example: '2024-01-01T00:00:00.000Z' -> 1704067200.0
     """
     from datetime import datetime
