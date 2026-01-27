@@ -12,11 +12,14 @@ def performance_log(func):
         logger.info(f"'{func_name}' performance logging started...")
         result = await func(*args, **kwargs)
         end_time = time.time()
-        execution_time = (end_time - start_time) / 60
+        execution_time = end_time - start_time
         if execution_time < 60:
-            logger.info(f"'{func_name}' finished execution in {execution_time:.4f} seconds.")
+            time_str = f"{execution_time:.4f} seconds"
+        elif execution_time < 3600:
+            time_str = f"{execution_time / 60:.4f} minutes"
         else:
-            logger.info(f"'{func_name}' finished execution in {execution_time / 60:.4f} minutes.")
+            time_str = f"{execution_time / 3600:.4f} hours"
+        logger.info(f"'{func_name}' finished execution in {time_str}.")
         return result
 
     return wrapper
