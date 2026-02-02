@@ -2,7 +2,6 @@ import asyncio
 import time
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 import redis as _redis
 from config import (

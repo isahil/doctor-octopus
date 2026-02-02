@@ -162,12 +162,17 @@ class Cards:
     def calculate_total_batches(self, total_items, batch_size):
         return (total_items + batch_size - 1) // batch_size
 
+    def download_missing_cached_cards(self, expected_filter_dict: dict) -> list[str]:
+        """Download missing local cards that are already cached in Redis."""
+        cards_to_download = self.cards_to_download(expected_filter_dict)
+        self.download_cards(cards_to_download)
+        return cards_to_download
+
     def cards_to_download(self, expected_filter_dict: dict) -> list[str]:
         """Determine which cards need to be downloaded from S3 based on the expected filter data."""
         import instances
 
         redis = instances.redis
-
         local_cards = get_all_local_cards(expected_filter_dict)
         cached_cards: list[str] = redis.get_all_set_items(test_reports_cached_redis_key)
         transformed_cards_dict = self.transform_cached_cards_to_filter_dict(cached_cards)
@@ -177,7 +182,6 @@ class Cards:
             for card_date in transformed_cards_dict.keys()
         ]
         validated_card_dates = [card_date for card_date, error in validation_results if not error]
-
         missing_card_dates = [card_date for card_date in validated_card_dates if card_date not in local_cards]
         logger.info(f"Missing card dates not in local: {missing_card_dates}")
 
@@ -189,14 +193,8 @@ class Cards:
         for card_date in cards_dates:
             filter_dict = {"day": card_date}
             if card_date not in cards_pool:
-                cards_pool[card_date] = {"filter_data": filter_dict}
+                cards_pool[card_date] = {"filter_data": filter_dict}  # TODO: remove hardcoded filter_data obj
         return cards_pool
-
-    def download_missing_cached_cards(self, expected_filter_dict: dict) -> list[str]:
-        """Download missing cards that are already cached in Redis."""
-        cards_to_download = self.cards_to_download(expected_filter_dict)
-        self.download_cards(cards_to_download)
-        return cards_to_download
 
     def set_cards(self, expected_filter_dict: dict):
         """Force update the cards in Cards app memory state. Warning: memory intensive. Not being used currently."""
