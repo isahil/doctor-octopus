@@ -6,6 +6,7 @@ test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the re
 
 root_redis_key: str = "doctor-octopus"
 test_reports_redis_key = f"{root_redis_key}:trading-apps-reports"
+test_reports_cached_redis_key = f"{test_reports_redis_key}:cached"
 do_current_clients_count_key = f"{root_redis_key}:stats:current_clients_count"
 do_lifetime_clients_count_key = f"{root_redis_key}:stats:lifetime_clients_count"
 do_max_concurrent_clients_key = f"{root_redis_key}:stats:max_concurrent_clients_count"
@@ -37,6 +38,7 @@ __all__ = [
     "test_environments",
     "test_reports_dir",
     "test_reports_redis_key",
+    "test_reports_cached_redis_key",
     "the_lab_log_file_name",
     "the_doc_log_file_name",
     "pubsub_frequency_time",

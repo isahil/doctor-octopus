@@ -62,7 +62,7 @@ body {
 }
 
 .metric-value {
-    font-size: 28px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--octopus-green);
     margin: 8px 0;
@@ -424,17 +424,6 @@ footer {
     flex-wrap: wrap;
 }
 
-.metric-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.metric-value {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--octopus-green);
-}
-
 .percentile-item {
     padding: 12px 0;
 }
@@ -486,7 +475,7 @@ footer {
     }
 
     .metric-value {
-        font-size: 20px;
+        font-size: 14px;
     }
 
     thead th {
@@ -518,7 +507,7 @@ footer {
     }
 
     .metric-value {
-        font-size: 18px;
+        font-size: 14px;
     }
 
     thead th {

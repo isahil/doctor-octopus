@@ -2,7 +2,6 @@ import asyncio
 import time
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 import redis as _redis
 from config import (
@@ -13,6 +12,7 @@ from config import (
     rate_limit_file_batch_size,
 )
 from src.component.validation import validate
+from src.utils.helper import performance_log
 from src.utils.s3 import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
@@ -27,9 +27,23 @@ def total_s3_objects() -> int:
     return len(total)
 
 
-def format_s3_object_filter_data(obj):
+@performance_log
+async def get_cards_from_s3_and_cache(expected_filter_dict: dict):
+    """Get all report cards object from the S3 bucket"""
+    s3_objects = S3.list_all_s3_objects()
+    transformed_cards = transform_s3_objects_to_filter_dict(s3_objects)
+    validated_cards_dict = validate_transformed_cards_w_filter_dict(transformed_cards, expected_filter_dict)
+    validated_cards_list = list(validated_cards_dict.items())
+    await asyncio.gather(*[process_card(card_tuple) for card_tuple in validated_cards_list])
+
+
+def transform_s3_objects_to_filter_dict(s3_objects: list[dict]) -> list[dict]:
     """Process only JSON report objects from S3 bucket"""
-    object_name = obj["Key"]
+    return [card for s3_object in s3_objects if (card := transform_s3_object_to_filter_dict(s3_object)) is not None]
+
+
+def transform_s3_object_to_filter_dict(s3_object: dict) -> Union[dict, None]:
+    object_name = s3_object["Key"]
     path_parts = object_name.split("/")
 
     if (len(path_parts) < 6) or not object_name.endswith("report.json"):
@@ -47,37 +61,25 @@ def format_s3_object_filter_data(obj):
     }
 
 
-async def get_cards_from_s3_and_cache(expected_filter_data: dict) -> list[dict]:
-    """Get all report cards object from the S3 bucket"""
+def validate_transformed_cards_w_filter_dict(transformed_cards: list[dict], expected_filter_dict: dict) -> dict:
+    """Validate the received S3 object filter data against expected filter data"""
+    validation_results = [(card, validate(card, expected_filter_dict)) for card in transformed_cards]
+    validated_cards = [card for card, error in validation_results if error is None]
 
-    s3_objects = S3.list_all_s3_objects()
-
-    # Process objects in parallel using ThreadPoolExecutor
-    with ThreadPoolExecutor() as executor:
-        received_cards = list(filter(None, executor.map(format_s3_object_filter_data, s3_objects)))
-
-    # Group objects by report_dir_date. Do we need html_report key since json_report has the value?
     cards_pool = {}  # { "report_dir_date": { "json_report": {"object_name": "object_name_value"}, "html_report": "object_name_value", "root_dir": "" }}
-    for received_card in received_cards:
-        error = validate(received_card, expected_filter_data)
-        if error:
-            continue
-
-        report_dir_date = received_card["day"]
+    for validated_card in validated_cards:
+        report_dir_date = validated_card["day"]
         if report_dir_date not in cards_pool:
             cards_pool[report_dir_date] = {
-                "filter_data": received_card,
+                "filter_data": validated_card,
                 "json_report": {},
-                "root_dir": received_card["s3_root_dir"],
+                "root_dir": validated_card["s3_root_dir"],
             }
 
-    report_cards = list(cards_pool.items())
-    processed_cards = await asyncio.gather(*[process_card(card_tuple) for card_tuple in report_cards])
-    finalized_cards = [processed_card for processed_card in processed_cards if processed_card is not None]
-    return finalized_cards
+    return cards_pool
 
 
-async def process_card(card_tuple) -> Union[dict, None]:
+async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
     """
     Check if the card is already cached in Redis. If not, download the JSON report from S3,
     process it, and cache it in Redis
@@ -197,7 +199,7 @@ def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) ->
     folder = []
     for obj in s3_objects:
         object_key = obj["Key"]
-        if object_key.startswith(s3_root_dir):
+        if s3_root_dir in object_key:
             folder.append(object_key)
 
     return folder
@@ -209,10 +211,9 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
     the objects inside root_dir to local, maintaining the same folder
     structure as in S3 bucket.
     """
-    # s3_objects = S3.list_all_s3_objects(bucket_name)
     s3_report_dir_objects = find_s3_report_dir_objects(s3_root_dir, bucket_name)
     test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
-
+    
     def create_local_report_dir(relative_path: str) -> str:
         download_dir_root_path: str = "./"
         reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
@@ -232,9 +233,12 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
             # Transform the S3 object key into a local relative path by removing the s3_root_dir prefix and any leading slash.
             # For example, 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM/some_folder/some_file.ext'
             # becomes 'some_folder/some_file.ext' for local storage.
-            relative_path_parts = object_key[len(s3_root_dir) :].lstrip("/")
-            local_report_card_dir_rel_path = create_local_report_dir(relative_path_parts)
-            S3.download_file(object_key, local_report_card_dir_rel_path, bucket_name)
+            date_index = object_key.find(test_report_dir) # Find the index of the date folder in the object key
+            if date_index != -1:
+                # Extract everything after the date folder (e.g., 'index.html', 'subfolder/file.json')
+                relative_path_parts = object_key[date_index + len(test_report_dir):].lstrip("/")
+                local_report_card_dir_rel_path = create_local_report_dir(relative_path_parts)
+                S3.download_file(object_key, local_report_card_dir_rel_path, bucket_name)
 
             if rate_limit > 0:
                 logger.info(

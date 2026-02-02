@@ -544,7 +544,7 @@ export function generate_intermediate_results(intermediate) {
       <!-- Intermediate Results -->
       <section class="mb-8">
         <div class="section-title-container">
-          <h2 class="text-xl font-semibold text-gray-100 mb-4">Intermediate Results by Time Period</h2>
+          <h2 class="text-xl font-semibold text-gray-100 mb-4">VU TIMELINE</h2>
           ${generate_info_icon(explanations.intermediate_results.description)}
         </div>
         <div class="intermediate section-container">
