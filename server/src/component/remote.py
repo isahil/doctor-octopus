@@ -189,7 +189,7 @@ def process_json(json_report: dict, card_date: str) -> dict:
     return json_report
 
 
-def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) -> list[str]:
+def find_s3_report_dir_objects(card_date_folder: str, bucket_name=aws_bucket_name) -> list[str]:
     """
     Given a root_dir path for a folder in an S3 bucket, find all
     the objects inside root_dir and return a list of object keys if
@@ -199,26 +199,26 @@ def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) ->
     folder = []
     for obj in s3_objects:
         object_key = obj["Key"]
-        if s3_root_dir in object_key:
+        if card_date_folder in object_key:
             folder.append(object_key)
 
     return folder
 
 
-def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit=0) -> str:
+def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_limit=0) -> str:
     """
     Given a root_dir path for a folder in an S3 bucket, download all
     the objects inside root_dir to local, maintaining the same folder
     structure as in S3 bucket.
     """
-    s3_report_dir_objects = find_s3_report_dir_objects(s3_root_dir, bucket_name)
-    test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
+    s3_card_objects = find_s3_report_dir_objects(card_date_folder, bucket_name)
+    _card_date_folder = card_date_folder.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
     
     def create_local_report_dir(relative_path: str) -> str:
         download_dir_root_path: str = "./"
         reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
         local_reports_dir_path = os.path.join(
-            reports_dir_path, test_report_dir
+            reports_dir_path, _card_date_folder
         )  # "./test_reports/4-28-2025_10-01-41_AM"
         local_report_dir_rel_path = os.path.join(local_reports_dir_path, relative_path)
 
@@ -227,16 +227,16 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
             os.makedirs(local_report_sub_dir_path, exist_ok=True)
         return local_report_dir_rel_path
 
-    for i in range(0, len(s3_report_dir_objects), rate_limit_file_batch_size):
-        object_batch = s3_report_dir_objects[i : i + rate_limit_file_batch_size]
+    for i in range(0, len(s3_card_objects), rate_limit_file_batch_size):
+        object_batch = s3_card_objects[i : i + rate_limit_file_batch_size]
         for object_key in object_batch:
             # Transform the S3 object key into a local relative path by removing the s3_root_dir prefix and any leading slash.
             # For example, 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM/some_folder/some_file.ext'
             # becomes 'some_folder/some_file.ext' for local storage.
-            date_index = object_key.find(test_report_dir) # Find the index of the date folder in the object key
+            date_index = object_key.find(_card_date_folder) # Find the index of the date folder in the object key
             if date_index != -1:
                 # Extract everything after the date folder (e.g., 'index.html', 'subfolder/file.json')
-                relative_path_parts = object_key[date_index + len(test_report_dir):].lstrip("/")
+                relative_path_parts = object_key[date_index + len(_card_date_folder):].lstrip("/")
                 local_report_card_dir_rel_path = create_local_report_dir(relative_path_parts)
                 S3.download_file(object_key, local_report_card_dir_rel_path, bucket_name)
 
@@ -245,8 +245,8 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
                     f"S3 download folder batch {i // rate_limit_file_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting."
                 )
                 time.sleep(rate_limit)
-    logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
-    return test_report_dir
+    logger.info(f"All objects from [{card_date_folder}] in S3 bucket have been downloaded locally.")
+    return _card_date_folder
 
 
 def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
