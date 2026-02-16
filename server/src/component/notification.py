@@ -64,7 +64,7 @@ async def notification_pub_sub():
             if data:
                 logger.info(f"Received message from Redis sub: {data}")
                 try:
-                    card_data = eval(data)  # Parse JSON string to dict
+                    card_data = eval(data)  # {"card_date": "2024-06-01", "protocol": "ui", "environment": "dev"}
                     card_date_dir = card_data.get("card_date")
 
                     endpoints = [
@@ -74,7 +74,7 @@ async def notification_pub_sub():
                         ),
                         (
                             cache_endpoint,
-                            {"mode": "cache", "day": 1},
+                            {"day": 1, "environment": "all", "protocol": "all"},
                         ),
                     ]
 
@@ -98,7 +98,7 @@ async def notification_pub_sub():
                                 logger.error(f"Request failed with status {status_code}: {endpoint[0]}")
                 except Exception as e:
                     logger.error(f"Error processing notification: {str(e)}")
-                
+
                 await aioredis.publish("notifications", data)
 
             await asyncio.sleep(pubsub_frequency_time)
