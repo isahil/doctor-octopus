@@ -1,12 +1,14 @@
+import asyncio
 import json
 import os
 from datetime import datetime
-from fastapi import APIRouter, BackgroundTasks, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Query, Request, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
 from src.utils.logger import logger
+from src.utils.queue import is_downloading, mark_downloading, unmark_downloading, get_download_status
 import src.component.remote as remote
 import src.component.notification as notification
 
@@ -30,8 +32,21 @@ async def get_a_card(
 ):
     test_report_dir = os.path.basename(root_dir)
     local_r_directories = local_report_directories()
+    redis = instances.redis
 
     if mode == "cache" and test_report_dir not in local_r_directories:
+        if is_downloading(redis.redis_client, test_report_dir):
+            download_status = get_download_status(redis.redis_client, test_report_dir)
+            logger.info(f"Card {test_report_dir} is already being downloaded. Status: {download_status}")
+            raise HTTPException(
+                status_code=202,
+                detail={
+                    "message": f"Card {test_report_dir} is currently being downloaded by another request",
+                    "status": "downloading",
+                    "details": download_status,
+                },
+            )
+
         logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
         test_report_dir = remote.download_s3_folder(root_dir)
     elif mode == "cache" and test_report_dir in local_r_directories:
@@ -40,6 +55,92 @@ async def get_a_card(
         logger.info(f"TODO: local mode: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return f"{mount_path}/index.html"
+
+
+@router.post("/download", response_class=JSONResponse, status_code=202)
+async def start_download(
+    root_dir: str = Query(
+        ...,
+        title="S3 Root Directory",
+        description="S3 root directory path to download (e.g., 'trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM')",
+        example="trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM",
+    ),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+):
+    """
+    Start a background download of an S3 folder to local storage.
+    This endpoint queues a download task and returns immediately with a 202 status.
+    It prevents duplicate simultaneous downloads by tracking in-progress downloads in Redis.
+
+    Returns:
+        - 202: Download queued successfully (or already in progress/completed)
+        - 400: Invalid root_dir parameter
+    """
+    test_report_dir = os.path.basename(root_dir)
+    redis = instances.redis
+    local_r_directories = local_report_directories()
+
+    try:
+        if test_report_dir in local_r_directories:
+            logger.info(f"Download request for {test_report_dir}: already cached locally, skipping")
+            return JSONResponse(
+                content={
+                    "status": "success",
+                    "message": f"Folder {test_report_dir} is already cached locally",
+                    "cached": True,
+                },
+                status_code=200,
+            )
+
+        if is_downloading(redis.redis_client, test_report_dir):
+            download_status = get_download_status(redis.redis_client, test_report_dir)
+            logger.info(f"Download request for {test_report_dir}: already in progress")
+            return JSONResponse(
+                content={
+                    "status": "downloading",
+                    "message": f"Folder {test_report_dir} is already being downloaded",
+                    "details": download_status,
+                },
+                status_code=202,
+            )
+
+        from datetime import datetime as dt
+
+        mark_downloading(
+            redis.redis_client,
+            test_report_dir,
+            metadata={"started_at": dt.now().isoformat()},
+        )
+
+        async def _download_task():
+            try:
+                logger.info(f"Starting background download for {test_report_dir}")
+                remote.download_s3_folder(root_dir)
+                logger.info(f"Download completed for {test_report_dir}")
+            except Exception as e:
+                logger.error(f"Download failed for {test_report_dir}: {str(e)}")
+            finally:
+                # Always unmark, even if download failed
+                await asyncio.sleep(15)  # slight delay to ensure any in-progress status is visible before unmarking
+                unmark_downloading(redis.redis_client, test_report_dir)
+
+        background_tasks.add_task(_download_task)
+
+        return JSONResponse(
+            content={
+                "status": "queued",
+                "message": f"Download for folder {test_report_dir} has been queued",
+                "root_dir": test_report_dir,
+            },
+            status_code=202,
+        )
+
+    except Exception as e:
+        logger.error(f"Error starting download for {test_report_dir}: {str(e)}")
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=400,
+        )
 
 
 @router.get("/cards", response_class=JSONResponse, status_code=200)
@@ -75,7 +176,7 @@ async def get_all_cards(
         example="all",
     ),
 ):
-    """Get available report cards based on the source requested"""
+    """Get available report cards based on the mode requested"""
     expected_filter_dict = {
         "mode": mode,
         "environment": environment,
