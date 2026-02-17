@@ -41,7 +41,7 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 		s3_test_reports_dir,
 	);
 
-	// Request the server to download the uploaded cards
+	// Request the DO server to download the uploaded cards
 	try {
 		const server_url = process.env.SERVER_URL || "http://localhost:8000";
 		const download_url = `${server_url}/download?card_date=${reports_dir}`;
@@ -49,7 +49,7 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 
 		const response = await fetch(download_url, { method: "POST" });
 		if (response.ok || response.status === 202) {
-			console.log(`Successfully queued download for ${uploaded_s3_path}`);
+			console.log(`Successfully queued download for ${uploaded_s3_path} | status: ${response.status}`);
 		} else {
 			console.warn(`Failed to queue download: ${response.status} ${response.statusText}`);
 		}
