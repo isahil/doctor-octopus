@@ -38,7 +38,7 @@ const Cards = () => {
 
     event_source.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      if (data.type === "s3") {
+      if (data.type === "download") {
         setAlert((prev) => ({ ...prev, new: true }))
       } else if (data.type === "client") {
         const active = data?.active ?? 0

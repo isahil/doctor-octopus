@@ -13,6 +13,11 @@ do_max_concurrent_clients_key = f"{root_redis_key}:stats:max_concurrent_clients_
 redis_instance_key: str = f"{root_redis_key}:stats:redis_instance_count"
 aioredis_instance_key: str = f"{root_redis_key}:stats:aioredis_instance_count"
 redis_cache_ttl: int = 60  # Redis cache Time To Live (TTL) in days
+download_queue_in_progress_key_prefix: str = (
+    f"{root_redis_key}:downloads:in-progress"  # Redis key prefix for tracking in-progress downloads
+)
+download_queue_ttl: int = 600  # Time to live for download queue entries in seconds (10 minutes)
+cache_reload_queue_ttl: int = 300  # Time to live for cache-reload queue entries in seconds (5 minutes)
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
 test_protocols: list = ["api", "ui", "unit", "perf", "s3", "db", "fix"]  # list of test protocols.
@@ -24,11 +29,13 @@ max_local_dirs = 2000  # max number of downloaded test report directories to kee
 notification_frequency_time: int = 10  # frequency of S3 notifications update in seconds
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
-workers_limit: int = 7 if node_env == "production" else 1  # number of workers for the main server process
+workers_limit: int = 20 if node_env == "production" else 1  # number of workers for the main server process
 
 rate_limit_wait_time: float = 0.25  # seconds to wait between S3 downloads to avoid rate limiting
 rate_limit_folder_batch_size: int = 5  # number of S3 folders to download in a batch before waiting
 rate_limit_file_batch_size: int = 20  # number of S3 objects to download in a batch before waiting
+
+server_url: str = f"http://{os.environ.get('MAIN_SERVER_HOST', 'localhost')}:{os.environ.get('MAIN_SERVER_PORT', '8000')}"  # URL for the main server, used for API calls
 
 __all__ = [
     "do_lifetime_clients_count_key",
@@ -44,5 +51,6 @@ __all__ = [
     "pubsub_frequency_time",
     "redis_cache_ttl",
     "test_protocols",
-    "workers_limit"
+    "workers_limit",
+    "server_url",
 ]  # export the variables

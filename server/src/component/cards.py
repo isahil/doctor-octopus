@@ -27,12 +27,12 @@ class Cards:
     product: str = ""
 
     @performance_log
-    async def actions(self, expected_filter_dict: dict) -> Union[list[dict], None]:
+    async def actions(self, expected_filter_dict: dict) -> Union[list[dict], list[str], None]:
         """Action to fetch and cache cards based on the expected filter data
         Args:
             expected_filter_dict (dict): filter data containing mode, environment, day, product, protocol
         Returns:
-            Union[list[dict], None]: list of cards if mode is 'cache', None otherwise
+            Union[list[dict], list[str], None]: list of card dicts if mode is 'cache', list of card dates if mode is 's3', None otherwise
 
         s3: fetch cards from S3 and cache them in Redis.
         cache: fetch cards from redis cache and return them. Only CLIENT should use this mode.
@@ -43,7 +43,7 @@ class Cards:
         mode = expected_filter_dict.get("mode")
         logger.info(f"Fetch cards expected filter: {expected_filter_dict}")
         if mode == "s3":
-            await get_cards_from_s3_and_cache(expected_filter_dict)
+            return await get_cards_from_s3_and_cache(expected_filter_dict)
         elif mode == "cache":
             return get_cards_from_cache(expected_filter_dict)
         elif mode == "download":
@@ -124,31 +124,31 @@ class Cards:
             cards_missing_per_env_proto = list(
                 executor.map(lambda x: process_environment_protocol_cache(x[0], x[1]), env_proto_combinations)
             )  # List of lists: [[], [], []]
-        missing_cards_from_cache = sum(
+        missing_cache_card_dates = sum(
             cards_missing_per_env_proto, []
         )  # Flatten the list of lists into a single list []
 
-        self.download_cards(missing_cards_from_cache)
-        return missing_cards_from_cache
+        self.download_cards(missing_cache_card_dates)
+        return missing_cache_card_dates
 
-    def download_cards(self, missing_cards_from_cache: list[str]) -> None:
+    def download_cards(self, missing_cache_card_dates: list[str]) -> None:
         """Download specific cards from S3 given their root directories."""
 
-        total_batches = self.calculate_total_batches(len(missing_cards_from_cache), rate_limit_folder_batch_size)
+        total_batches = self.calculate_total_batches(len(missing_cache_card_dates), rate_limit_folder_batch_size)
         logger.info(
-            f"Missing cards to download: {len(missing_cards_from_cache)} total in {total_batches} batches -> {missing_cards_from_cache}"
+            f"Missing cards to download: {len(missing_cache_card_dates)} total in {total_batches} batches -> {missing_cache_card_dates}"
         )
 
         for i in range(
-            0, len(missing_cards_from_cache), rate_limit_folder_batch_size
+            0, len(missing_cache_card_dates), rate_limit_folder_batch_size
         ):  # Process in batches of value set for rate_limit_folder_batch_size
-            cards_folders_batch = missing_cards_from_cache[i : i + rate_limit_folder_batch_size]
+            cards_folders_batch = missing_cache_card_dates[i : i + rate_limit_folder_batch_size]
             logger.info(
                 f"Downloading cards folder batch {i // rate_limit_folder_batch_size + 1} with {len(cards_folders_batch)} cards"
             )
 
             with ThreadPoolExecutor() as executor:
-                futures = [executor.submit(download_s3_folder, card_root_dir) for card_root_dir in cards_folders_batch]
+                futures = [executor.submit(download_s3_folder, card_date_dir) for card_date_dir in cards_folders_batch]
                 for future in as_completed(futures):
                     try:
                         future.result()
@@ -164,9 +164,9 @@ class Cards:
 
     def download_missing_cached_cards(self, expected_filter_dict: dict) -> list[str]:
         """Download missing local cards that are already cached in Redis."""
-        cards_to_download = self.cards_to_download(expected_filter_dict)
-        self.download_cards(cards_to_download)
-        return cards_to_download
+        missing_cache_card_dates = self.cards_to_download(expected_filter_dict)
+        self.download_cards(missing_cache_card_dates)
+        return missing_cache_card_dates
 
     def cards_to_download(self, expected_filter_dict: dict) -> list[str]:
         """Determine which cards need to be downloaded from S3 based on the expected filter data."""
@@ -182,10 +182,10 @@ class Cards:
             for card_date in transformed_cards_dict.keys()
         ]
         validated_card_dates = [card_date for card_date, error in validation_results if not error]
-        missing_card_dates = [card_date for card_date in validated_card_dates if card_date not in local_cards]
-        logger.info(f"Missing card dates not in local: {missing_card_dates}")
+        missing_cache_card_dates = [card_date for card_date in validated_card_dates if card_date not in local_cards]
+        logger.info(f"Missing card dates not in local: {missing_cache_card_dates}")
 
-        return missing_card_dates
+        return missing_cache_card_dates
 
     def transform_cached_cards_to_filter_dict(self, cards_dates: list[str]) -> dict[str, dict]:
         """Transform a list of card S3 root directories to their corresponding filter dicts."""

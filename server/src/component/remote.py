@@ -28,13 +28,14 @@ def total_s3_objects() -> int:
 
 
 @performance_log
-async def get_cards_from_s3_and_cache(expected_filter_dict: dict):
-    """Get all report cards object from the S3 bucket"""
+async def get_cards_from_s3_and_cache(expected_filter_dict: dict) -> list[str]:
+    """Get all report cards object from the S3 bucket that were successfully processed and cached"""
     s3_objects = S3.list_all_s3_objects()
     transformed_cards = transform_s3_objects_to_filter_dict(s3_objects)
     validated_cards_dict = validate_transformed_cards_w_filter_dict(transformed_cards, expected_filter_dict)
     validated_cards_list = list(validated_cards_dict.items())
-    await asyncio.gather(*[process_card(card_tuple) for card_tuple in validated_cards_list])
+    results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in validated_cards_list])
+    return [card_date for card_date in results if card_date is not None]
 
 
 def transform_s3_objects_to_filter_dict(s3_objects: list[dict]) -> list[dict]:
@@ -79,10 +80,10 @@ def validate_transformed_cards_w_filter_dict(transformed_cards: list[dict], expe
     return cards_pool
 
 
-async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
+async def process_card(card_tuple: tuple[str, dict]) -> Union[str, None]:
     """
     Check if the card is already cached in Redis. If not, download the JSON report from S3,
-    process it, and cache it in Redis
+    process it, and cache it in Redis. Returns the card date if successfully processed.
 
     :param card_tuple: Tuple containing card date and card value
     """
@@ -98,7 +99,7 @@ async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
         environment = card_value["filter_data"].get("environment")
         if not object_name or not environment or not protocol:
             logger.error(f"object_name, environment, or protocol missing for protocol: {protocol} [{card_date}]")
-            return
+            return None
         reports_cache_key = f"{test_reports_redis_key}:{environment}:{protocol}"  # e.g. trading-apps-reports:qa:ui
 
         if not redis_client.hexists(reports_cache_key, card_date):
@@ -107,9 +108,12 @@ async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
             card_value["json_report"] = j_report
             logger.info(f"Caching card in Redis for protocol: {protocol} [{card_date}]")
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
+            return card_date
+        return None
 
     except (KeyError, json.JSONDecodeError) as e:
         logger.info(f"Error processing card for protocol: {protocol} [{card_date}] - {type(e).__name__} - {str(e)}")
+        return None
 
 
 def identify_runner(json_report: dict, card_date: str) -> str:
@@ -189,7 +193,7 @@ def process_json(json_report: dict, card_date: str) -> dict:
     return json_report
 
 
-def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) -> list[str]:
+def find_s3_report_dir_objects(card_date_folder: str, bucket_name=aws_bucket_name) -> list[str]:
     """
     Given a root_dir path for a folder in an S3 bucket, find all
     the objects inside root_dir and return a list of object keys if
@@ -199,26 +203,26 @@ def find_s3_report_dir_objects(s3_root_dir: str, bucket_name=aws_bucket_name) ->
     folder = []
     for obj in s3_objects:
         object_key = obj["Key"]
-        if s3_root_dir in object_key:
+        if card_date_folder in object_key:
             folder.append(object_key)
 
     return folder
 
 
-def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit=0) -> str:
+def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_limit=0) -> str:
     """
     Given a root_dir path for a folder in an S3 bucket, download all
     the objects inside root_dir to local, maintaining the same folder
     structure as in S3 bucket.
     """
-    s3_report_dir_objects = find_s3_report_dir_objects(s3_root_dir, bucket_name)
-    test_report_dir = s3_root_dir.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
+    s3_card_objects = find_s3_report_dir_objects(card_date_folder, bucket_name)
+    _card_date_folder = card_date_folder.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
     
     def create_local_report_dir(relative_path: str) -> str:
         download_dir_root_path: str = "./"
         reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
         local_reports_dir_path = os.path.join(
-            reports_dir_path, test_report_dir
+            reports_dir_path, _card_date_folder
         )  # "./test_reports/4-28-2025_10-01-41_AM"
         local_report_dir_rel_path = os.path.join(local_reports_dir_path, relative_path)
 
@@ -227,16 +231,16 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
             os.makedirs(local_report_sub_dir_path, exist_ok=True)
         return local_report_dir_rel_path
 
-    for i in range(0, len(s3_report_dir_objects), rate_limit_file_batch_size):
-        object_batch = s3_report_dir_objects[i : i + rate_limit_file_batch_size]
+    for i in range(0, len(s3_card_objects), rate_limit_file_batch_size):
+        object_batch = s3_card_objects[i : i + rate_limit_file_batch_size]
         for object_key in object_batch:
             # Transform the S3 object key into a local relative path by removing the s3_root_dir prefix and any leading slash.
             # For example, 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM/some_folder/some_file.ext'
             # becomes 'some_folder/some_file.ext' for local storage.
-            date_index = object_key.find(test_report_dir) # Find the index of the date folder in the object key
+            date_index = object_key.find(_card_date_folder) # Find the index of the date folder in the object key
             if date_index != -1:
                 # Extract everything after the date folder (e.g., 'index.html', 'subfolder/file.json')
-                relative_path_parts = object_key[date_index + len(test_report_dir):].lstrip("/")
+                relative_path_parts = object_key[date_index + len(_card_date_folder):].lstrip("/")
                 local_report_card_dir_rel_path = create_local_report_dir(relative_path_parts)
                 S3.download_file(object_key, local_report_card_dir_rel_path, bucket_name)
 
@@ -245,8 +249,8 @@ def download_s3_folder(s3_root_dir: str, bucket_name=aws_bucket_name, rate_limit
                     f"S3 download folder batch {i // rate_limit_file_batch_size + 1} completed. Waiting for {rate_limit} seconds to avoid rate limiting."
                 )
                 time.sleep(rate_limit)
-    logger.info(f"All objects from [{s3_root_dir}] in S3 bucket have been downloaded locally.")
-    return test_report_dir
+    logger.info(f"All objects from [{card_date_folder}] in S3 bucket have been downloaded locally.")
+    return _card_date_folder
 
 
 def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
@@ -273,7 +277,7 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
     for env in envs_to_check:
         for proto in protocols_to_check:
             reports_cache_key = f"{test_reports_redis_key}:{env}:{proto}"  # e.g. trading-apps-reports:qa:ui
-            logger.info(f"Fetch cards from cache env: {env} | day: {day} | protocol: {proto}")
+            
 
             cached_cards = redis.get_all_cached_cards(reports_cache_key)
             if cached_cards and isinstance(cached_cards, dict):
@@ -282,9 +286,8 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
                     received_filter_data = received_card_data.get("filter_data")
                     error = validate(received_filter_data, expected_filter_data)
                     if error:
-                        # logger.warning(f"Card filter data validation failed: {error}")
                         continue
                     filtered_cards.append(received_card_data)
-
+    logger.info(f"Fetched total {len(filtered_cards)} cards from cache. env: {environment} | day: {day} | protocols: {protocols_to_check}")
     sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
     return sorted_cards

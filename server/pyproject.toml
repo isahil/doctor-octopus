@@ -14,7 +14,7 @@ bidict = "0.23.1"
 boto3 = "1.40.22"
 botocore = "1.40.22"
 click = "8.1.8"
-fastapi-slim = "0.115.14"
+fastapi-slim = "0.128.8"
 h11 = "0.16.0"
 idna = "3.10"
 jmespath = "1.0.1"
@@ -35,6 +35,7 @@ urllib3 = "1.25.4"
 uvicorn = "0.35.0"
 wsproto = "1.2.0"
 ruff = "0.9.6"
+aiohttp = "^3.13.3"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
