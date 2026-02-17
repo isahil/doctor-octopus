@@ -29,14 +29,14 @@ async def get_a_card(
         description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
         example="2021-09-01T14:00:00",
     ),
-):
+) -> PlainTextResponse:
     test_report_dir = os.path.basename(root_dir)
     local_r_directories = local_report_directories()
     redis = instances.redis
 
     if mode == "cache" and test_report_dir not in local_r_directories:
         if is_downloading(redis.redis_client, test_report_dir):
-            download_status = get_download_status(redis.redis_client, test_report_dir)
+            download_status =  await get_download_status(redis.redis_client, test_report_dir)
             logger.info(f"Card {test_report_dir} is already being downloaded. Status: {download_status}")
             raise HTTPException(
                 status_code=202,
@@ -54,19 +54,19 @@ async def get_a_card(
     else:
         logger.info(f"TODO: local mode: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
-    return f"{mount_path}/index.html"
+    return PlainTextResponse(content=f"{mount_path}/index.html")
 
 
 @router.post("/download", response_class=JSONResponse, status_code=202)
 async def start_download(
-    root_dir: str = Query(
+    card_date: str = Query(
         ...,
-        title="S3 Root Directory",
-        description="S3 root directory path to download (e.g., 'trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM')",
+        title="S3 Card Directory",
+        description="S3 card directory path to download (e.g., 'trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM')",
         example="trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM",
     ),
     background_tasks: BackgroundTasks = BackgroundTasks(),
-):
+) -> JSONResponse:
     """
     Start a background download of an S3 folder to local storage.
     This endpoint queues a download task and returns immediately with a 202 status.
@@ -74,9 +74,9 @@ async def start_download(
 
     Returns:
         - 202: Download queued successfully (or already in progress/completed)
-        - 400: Invalid root_dir parameter
+        - 400: Invalid card_date parameter
     """
-    test_report_dir = os.path.basename(root_dir)
+    test_report_dir = os.path.basename(card_date)
     redis = instances.redis
     local_r_directories = local_report_directories()
 
@@ -93,7 +93,7 @@ async def start_download(
             )
 
         if is_downloading(redis.redis_client, test_report_dir):
-            download_status = get_download_status(redis.redis_client, test_report_dir)
+            download_status =  await get_download_status(redis.redis_client, test_report_dir)
             logger.info(f"Download request for {test_report_dir}: already in progress")
             return JSONResponse(
                 content={
@@ -115,13 +115,22 @@ async def start_download(
         async def _download_task():
             try:
                 logger.info(f"Starting background download for {test_report_dir}")
-                remote.download_s3_folder(root_dir)
-                logger.info(f"Download completed for {test_report_dir}")
+                remote.download_s3_folder(card_date)
+
+                try:
+                    download_notification = {
+                        "type": "download",
+                        "card_date": test_report_dir,
+                        "timestamp": datetime.now().timestamp(),
+                    }
+                    await instances.aioredis.publish("notifications", download_notification)
+                    logger.info(f"Published download completion notification for {test_report_dir}")
+                except Exception as e:
+                    logger.error(f"Failed to publish download completion notification: {str(e)}")
             except Exception as e:
                 logger.error(f"Download failed for {test_report_dir}: {str(e)}")
             finally:
                 # Always unmark, even if download failed
-                await asyncio.sleep(15)  # slight delay to ensure any in-progress status is visible before unmarking
                 unmark_downloading(redis.redis_client, test_report_dir)
 
         background_tasks.add_task(_download_task)
@@ -175,7 +184,7 @@ async def get_all_cards(
         description="Protocol to filter the reports by: ui/api/perf/all",
         example="all",
     ),
-):
+) -> JSONResponse:
     """Get available report cards based on the mode requested"""
     expected_filter_dict = {
         "mode": mode,
@@ -241,7 +250,7 @@ async def reload_cards_cache(
         description="Protocol to filter the reports: ui/api/perf/all",
         example="all",
     ),
-):
+) -> JSONResponse:
     """Get available report cards based on the source requested"""
     expected_filter_dict = {
         "environment": environment,
@@ -251,7 +260,14 @@ async def reload_cards_cache(
         "product": product,
     }
     cards = instances.fastapi_app.state.cards
-    await cards.actions(expected_filter_dict)
+    card_dates = await cards.actions(expected_filter_dict)
+    return JSONResponse(
+        content={
+            "message": f"Cached {len(card_dates)} cards based on the given filters",
+            "cards": card_dates,
+        },
+        status_code=200,
+    )
 
 
 @router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)
@@ -261,7 +277,7 @@ async def invalidate_redis_cache(
         description="Regex pattern to match the Redis keys for invalidation",
         example="doctor-octopus:trading-apps-reports:qa*",
     ),
-):
+) -> JSONResponse:
     logger.info(f"Invalidating Redis cache with pattern: {pattern}")
     redis_client = instances.redis.get_client()
 
@@ -293,7 +309,7 @@ async def execute_command(
         description="Command options to be executed",
         example='{"environment": "dev", "app": "clo", "proto": "perf", "suite": "smoke"}',
     ),
-):
+) -> JSONResponse:
     """Execute a command on the running server"""
     command = "n/a"
     try:
@@ -319,7 +335,7 @@ async def execute_command(
 
 
 @router.get("/notifications/{client_id}", response_class=StreamingResponse)
-async def notifications_sse(client_id: str, request: Request):
+async def notifications_sse(client_id: str, request: Request) -> StreamingResponse:
     """Server-Sent Events (SSE) endpoint to stream push notifications"""
     logger.info(f"Client [{client_id}] connected to /notifications S.S.E endpoint")
     return StreamingResponse(
@@ -330,7 +346,7 @@ async def notifications_sse(client_id: str, request: Request):
 
 
 @router.get("/health", response_class=JSONResponse, status_code=200)
-async def health_check():
+async def health_check() -> JSONResponse:
     start_time = datetime.now()
     health_data = {
         "status": "healthy",

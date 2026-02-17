@@ -27,12 +27,12 @@ class Cards:
     product: str = ""
 
     @performance_log
-    async def actions(self, expected_filter_dict: dict) -> Union[list[dict], None]:
+    async def actions(self, expected_filter_dict: dict) -> Union[list[dict], list[str], None]:
         """Action to fetch and cache cards based on the expected filter data
         Args:
             expected_filter_dict (dict): filter data containing mode, environment, day, product, protocol
         Returns:
-            Union[list[dict], None]: list of cards if mode is 'cache', None otherwise
+            Union[list[dict], list[str], None]: list of card dicts if mode is 'cache', list of card dates if mode is 's3', None otherwise
 
         s3: fetch cards from S3 and cache them in Redis.
         cache: fetch cards from redis cache and return them. Only CLIENT should use this mode.
@@ -43,7 +43,7 @@ class Cards:
         mode = expected_filter_dict.get("mode")
         logger.info(f"Fetch cards expected filter: {expected_filter_dict}")
         if mode == "s3":
-            await get_cards_from_s3_and_cache(expected_filter_dict)
+            return await get_cards_from_s3_and_cache(expected_filter_dict)
         elif mode == "cache":
             return get_cards_from_cache(expected_filter_dict)
         elif mode == "download":

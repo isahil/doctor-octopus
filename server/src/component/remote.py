@@ -28,13 +28,14 @@ def total_s3_objects() -> int:
 
 
 @performance_log
-async def get_cards_from_s3_and_cache(expected_filter_dict: dict):
-    """Get all report cards object from the S3 bucket"""
+async def get_cards_from_s3_and_cache(expected_filter_dict: dict) -> list[str]:
+    """Get all report cards object from the S3 bucket that were successfully processed and cached"""
     s3_objects = S3.list_all_s3_objects()
     transformed_cards = transform_s3_objects_to_filter_dict(s3_objects)
     validated_cards_dict = validate_transformed_cards_w_filter_dict(transformed_cards, expected_filter_dict)
     validated_cards_list = list(validated_cards_dict.items())
-    await asyncio.gather(*[process_card(card_tuple) for card_tuple in validated_cards_list])
+    results = await asyncio.gather(*[process_card(card_tuple) for card_tuple in validated_cards_list])
+    return [card_date for card_date in results if card_date is not None]
 
 
 def transform_s3_objects_to_filter_dict(s3_objects: list[dict]) -> list[dict]:
@@ -79,10 +80,10 @@ def validate_transformed_cards_w_filter_dict(transformed_cards: list[dict], expe
     return cards_pool
 
 
-async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
+async def process_card(card_tuple: tuple[str, dict]) -> Union[str, None]:
     """
     Check if the card is already cached in Redis. If not, download the JSON report from S3,
-    process it, and cache it in Redis
+    process it, and cache it in Redis. Returns the card date if successfully processed.
 
     :param card_tuple: Tuple containing card date and card value
     """
@@ -98,7 +99,7 @@ async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
         environment = card_value["filter_data"].get("environment")
         if not object_name or not environment or not protocol:
             logger.error(f"object_name, environment, or protocol missing for protocol: {protocol} [{card_date}]")
-            return
+            return None
         reports_cache_key = f"{test_reports_redis_key}:{environment}:{protocol}"  # e.g. trading-apps-reports:qa:ui
 
         if not redis_client.hexists(reports_cache_key, card_date):
@@ -107,9 +108,12 @@ async def process_card(card_tuple: tuple[str, dict]) -> Union[dict, None]:
             card_value["json_report"] = j_report
             logger.info(f"Caching card in Redis for protocol: {protocol} [{card_date}]")
             redis.create_card_cache(reports_cache_key, card_date, json.dumps(card_value))
+            return card_date
+        return None
 
     except (KeyError, json.JSONDecodeError) as e:
         logger.info(f"Error processing card for protocol: {protocol} [{card_date}] - {type(e).__name__} - {str(e)}")
+        return None
 
 
 def identify_runner(json_report: dict, card_date: str) -> str:
@@ -273,7 +277,7 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
     for env in envs_to_check:
         for proto in protocols_to_check:
             reports_cache_key = f"{test_reports_redis_key}:{env}:{proto}"  # e.g. trading-apps-reports:qa:ui
-            logger.info(f"Fetch cards from cache env: {env} | day: {day} | protocol: {proto}")
+            
 
             cached_cards = redis.get_all_cached_cards(reports_cache_key)
             if cached_cards and isinstance(cached_cards, dict):
@@ -282,9 +286,8 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
                     received_filter_data = received_card_data.get("filter_data")
                     error = validate(received_filter_data, expected_filter_data)
                     if error:
-                        # logger.warning(f"Card filter data validation failed: {error}")
                         continue
                     filtered_cards.append(received_card_data)
-
+    logger.info(f"Fetched total {len(filtered_cards)} cards from cache. env: {environment} | day: {day} | protocols: {protocols_to_check}")
     sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
     return sorted_cards

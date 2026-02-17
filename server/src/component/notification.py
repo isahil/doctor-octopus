@@ -1,20 +1,16 @@
 import asyncio
 import aiohttp
-from datetime import datetime
 from fastapi.requests import Request
 from redis.asyncio.client import PubSub
 import instances
 from src.component import remote
-from src.component.cards import Cards
 from src.utils.logger import logger
-from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
+from config import server_url, notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
 
 
 async def notification_publisher():
     """Update the total number of S3 objects and emit an alert if the count increases"""
     try:
-        aioredis = instances.aioredis
-        cards = Cards()
         initial_total_s3_objects = remote.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
 
@@ -22,23 +18,16 @@ async def notification_publisher():
             current_total_s3_objects = remote.total_s3_objects()
             if current_total_s3_objects > initial_total_s3_objects:
                 logger.info(f"NEW alert: {current_total_s3_objects} 🔔")
-                data = {
-                    "type": "s3",
-                    "count": current_total_s3_objects,
-                    "previous": initial_total_s3_objects,
-                    "timestamp": datetime.now().timestamp(),
-                }
 
                 initial_total_s3_objects = current_total_s3_objects
 
-                await cards.actions(
-                    {"day": 1, "mode": "s3", "environment": "all", "protocol": "all"}
-                )  # refresh cache with new s3 objects
-                await cards.actions({"day": 1, "mode": "download", "environment": "all", "protocol": "all"})
-                await aioredis.publish("notifications", data)  # publish messages to pubsub
-                await cards.actions({"mode": "cleanup"})
-                # if instances.sio:
-                #     await instances.sio.emit("alert", {"new_alert": True})
+                # Refresh S3 cache via API request
+                cache_response = await _call_cards_api("cache-reload", {"day": 1})
+                cards_to_download = cache_response.get("cards", [])
+
+                logger.info(f"Cards to download: {len(cards_to_download)} - {cards_to_download}")
+                await _queue_card_downloads(cards_to_download)
+
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
         logger.info("Notification process cancelled")
@@ -48,15 +37,68 @@ async def notification_publisher():
         raise
 
 
+async def _call_cards_api(endpoint: str, params: dict) -> dict:
+    """Make an async HTTP request to a cards API endpoint"""
+    try:
+        url = f"{server_url}/{endpoint}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=300)) as response:
+                if response.status in [200, 202]:
+                    logger.info(f"API request successful: {endpoint} with params {params}")
+                    return await response.json()
+                else:
+                    logger.error(f"API request failed for {endpoint}: status {response.status}")
+                    raise Exception(f"API request failed with status {response.status}")
+    except Exception as e:
+        logger.error(f"Error calling {endpoint} API: {str(e)}")
+        raise Exception(f"API request failed for {endpoint}: {str(e)}")
+
+
+async def _queue_card_downloads(cards_to_download: list[str]) -> None:
+    """Queue downloads for multiple cards via the /download API endpoint"""
+    if not cards_to_download:
+        logger.info("No cards to download")
+        return
+
+    download_endpoint = f"{server_url}/download"
+
+    tasks = []
+    async with aiohttp.ClientSession() as session:
+        for card_date in cards_to_download:
+            try:
+                task = session.post(
+                    download_endpoint, params={"card_date": card_date}, timeout=aiohttp.ClientTimeout(total=300)
+                )
+                tasks.append(task)
+            except Exception as e:
+                logger.error(f"Error queuing download for {card_date}: {str(e)}")
+
+        if tasks:
+            try:
+                responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+                for card_date, response in zip(cards_to_download, responses):
+                    status = getattr(response, "status", "unknown")
+                    if isinstance(response, Exception):
+                        logger.error(f"Download queue failed for {card_date}: {str(response)}")
+                    elif hasattr(response, "status") and status in [200, 202]:
+                        logger.info(f"Download queued successfully: {card_date}")
+                    else:
+                        status = getattr(response, "status", "unknown")
+                        logger.error(f"Download queue failed for {card_date}: status {status}")
+            except Exception as e:
+                logger.error(f"Error processing download responses: {str(e)}")
+
+
 async def notification_pub_sub():
-    """Subscribe to Redis pubsub and download missing cards upon notification from test runners"""
+    """Subscribe to Redis pubsub and download missing cards upon notification from test runners. NOT USED CURRENTLY."""
     aioredis = instances.aioredis
     pubsub: PubSub = await aioredis.pubsub()
     await pubsub.subscribe("notifications")
     logger.info("Subscribed to Redis pubsub channel 'notifications'")
-    server = "http://localhost:8000"
-    card_endpoint = f"{server}/card"
-    cache_endpoint = f"{server}/cache-reload"
+
+    card_endpoint = f"{server_url}/card"
+    cache_endpoint = f"{server_url}/cache-reload"
 
     try:
         while True:

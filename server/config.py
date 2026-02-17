@@ -34,6 +34,8 @@ rate_limit_wait_time: float = 0.25  # seconds to wait between S3 downloads to av
 rate_limit_folder_batch_size: int = 5  # number of S3 folders to download in a batch before waiting
 rate_limit_file_batch_size: int = 20  # number of S3 objects to download in a batch before waiting
 
+server_url: str = f"http://{os.environ.get('MAIN_SERVER_HOST', 'localhost')}:{os.environ.get('MAIN_SERVER_PORT', '8000')}"  # URL for the main server, used for API calls
+
 __all__ = [
     "do_lifetime_clients_count_key",
     "do_current_clients_count_key",
@@ -49,4 +51,5 @@ __all__ = [
     "redis_cache_ttl",
     "test_protocols",
     "workers_limit",
+    "server_url",
 ]  # export the variables
