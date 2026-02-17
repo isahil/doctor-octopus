@@ -34,7 +34,29 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 	const s3_test_reports_dir = `trading-apps/${test_reports_dir}/${product}/${environment}/${test_protocol}/${reports_dir}`;
 
 	if (!is_ci && !record) return process.exit(code ?? 1);
-	await upload_directory(aws_sdet_bucket_name, full_test_reports_dir, s3_test_reports_dir);
+
+	const uploaded_s3_path = await upload_directory(
+		aws_sdet_bucket_name,
+		full_test_reports_dir,
+		s3_test_reports_dir,
+	);
+
+	// Request the server to download the uploaded cards
+	try {
+		const server_url = process.env.SERVER_URL || "http://localhost:8000";
+		const download_url = `${server_url}/download?card_date=${reports_dir}`;
+		console.log(`Requesting Doctor Octopus to download card: ${download_url}`);
+
+		const response = await fetch(download_url, { method: "POST" });
+		if (response.ok || response.status === 202) {
+			console.log(`Successfully queued download for ${uploaded_s3_path}`);
+		} else {
+			console.warn(`Failed to queue download: ${response.status} ${response.statusText}`);
+		}
+	} catch (err) {
+		console.error(`Error requesting Doctor Octopus to download: ${err.message}`);
+	}
+
 	process.exit(code ?? 1);
 };
 
@@ -79,7 +101,7 @@ export const add_stats_to_json = ({ test_suite, json_report_path, runner }) => {
 
 export const add_stats_and_upload_report = async (
 	code,
-	{ test_suite, full_test_reports_dir, runner }
+	{ test_suite, full_test_reports_dir, runner },
 ) => {
 	const json_report_path = `${full_test_reports_dir}/report.json`;
 	add_stats_to_json({ test_suite, json_report_path, runner });
