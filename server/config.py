@@ -16,7 +16,8 @@ redis_cache_ttl: int = 60  # Redis cache Time To Live (TTL) in days
 download_queue_in_progress_key_prefix: str = (
     f"{root_redis_key}:downloads:in-progress"  # Redis key prefix for tracking in-progress downloads
 )
-download_queue_ttl: int = 3600  # Time to live for download queue entries in seconds (1 hour)
+download_queue_ttl: int = 600  # Time to live for download queue entries in seconds (10 minutes)
+cache_reload_queue_ttl: int = 300  # Time to live for cache-reload queue entries in seconds (5 minutes)
 
 test_environments: list = ["qa", "dev", "uat", "sit"]  # list of test environments.
 test_protocols: list = ["api", "ui", "unit", "perf", "s3", "db", "fix"]  # list of test protocols.

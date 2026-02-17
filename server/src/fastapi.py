@@ -8,7 +8,16 @@ import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
 from src.utils.logger import logger
-from src.utils.queue import is_downloading, mark_downloading, unmark_downloading, get_download_status
+from src.utils.queue import (
+    is_downloading,
+    mark_downloading,
+    unmark_downloading,
+    get_download_status,
+    is_operation_in_progress,
+    mark_operation,
+    unmark_operation,
+    params_to_identifier,
+)
 import src.component.remote as remote
 import src.component.notification as notification
 
@@ -36,7 +45,7 @@ async def get_a_card(
 
     if mode == "cache" and test_report_dir not in local_r_directories:
         if is_downloading(redis.redis_client, test_report_dir):
-            download_status =  await get_download_status(redis.redis_client, test_report_dir)
+            download_status = await get_download_status(redis.redis_client, test_report_dir)
             logger.info(f"Card {test_report_dir} is already being downloaded. Status: {download_status}")
             raise HTTPException(
                 status_code=202,
@@ -93,7 +102,7 @@ async def start_download(
             )
 
         if is_downloading(redis.redis_client, test_report_dir):
-            download_status =  await get_download_status(redis.redis_client, test_report_dir)
+            download_status = await get_download_status(redis.redis_client, test_report_dir)
             logger.info(f"Download request for {test_report_dir}: already in progress")
             return JSONResponse(
                 content={
@@ -101,16 +110,26 @@ async def start_download(
                     "message": f"Folder {test_report_dir} is already being downloaded",
                     "details": download_status,
                 },
-                status_code=202,
+                status_code=200,
             )
 
         from datetime import datetime as dt
 
-        mark_downloading(
+        acquired = mark_downloading(
             redis.redis_client,
             test_report_dir,
             metadata={"started_at": dt.now().isoformat()},
         )
+        if not acquired:
+            # Another request won the race between the is_downloading check and mark_downloading
+            logger.info(f"Download request for {test_report_dir}: lost race, already in progress")
+            return JSONResponse(
+                content={
+                    "status": "downloading",
+                    "message": f"Folder {test_report_dir} is already being downloaded",
+                },
+                status_code=200,
+            )
 
         async def _download_task():
             try:
@@ -251,7 +270,10 @@ async def reload_cards_cache(
         example="all",
     ),
 ) -> JSONResponse:
-    """Get available report cards based on the source requested"""
+    """Reload (refresh) the S3 cards cache.
+    If an identical reload is already in progress (same filter combination),
+    the request returns 202 immediately instead of duplicating work.
+    """
     expected_filter_dict = {
         "environment": environment,
         "day": day,
@@ -259,15 +281,56 @@ async def reload_cards_cache(
         "protocol": protocol,
         "product": product,
     }
-    cards = instances.fastapi_app.state.cards
-    card_dates = await cards.actions(expected_filter_dict)
-    return JSONResponse(
-        content={
-            "message": f"Cached {len(card_dates)} cards based on the given filters",
-            "cards": card_dates,
-        },
-        status_code=200,
+
+    redis = instances.redis
+    reload_id = params_to_identifier(expected_filter_dict)
+    operation = "cache-reload"
+
+    if is_operation_in_progress(redis.redis_client, operation, reload_id):
+        logger.info(f"Cache reload already in progress for filters {expected_filter_dict}")
+        return JSONResponse(
+            content={
+                "status": "in-progress",
+                "message": "A cache reload with these filters is already in progress",
+                "details": "Please wait for the current reload to complete before making another request with the same filters.",
+            },
+            status_code=202,
+        )
+
+    # Attempt to acquire the slot (SET NX); handles the race between check and mark
+    from datetime import datetime as dt
+
+    marked = mark_operation(
+        redis.redis_client,
+        operation,
+        reload_id,
+        metadata={"started_at": dt.now().isoformat(), "filters": expected_filter_dict},
     )
+    if not marked:
+        logger.info(f"Cache reload lost race for filters {expected_filter_dict}")
+        return JSONResponse(
+            content={
+                "status": "in-progress",
+                "message": "A cache reload with these filters is already in progress",
+                "details": "Please wait for the current reload to complete before making another request with the same filters.",
+            },
+            status_code=202,
+        )
+
+    try:
+        cards = instances.fastapi_app.state.cards
+        card_dates = await cards.actions(expected_filter_dict)
+        return JSONResponse(
+            content={
+                "message": f"Cached {len(card_dates)} cards based on the given filters",
+                "cards": card_dates,
+            },
+            status_code=200,
+        )
+    finally:
+        await asyncio.sleep(30)
+        # Always release the slot when done (success or failure)
+        unmark_operation(redis.redis_client, operation, reload_id)
 
 
 @router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)

@@ -50,7 +50,7 @@ async def _call_doctor_endpoint(endpoint: str, params: dict, method: str = "get"
 
             async with request(url, params=params, timeout=aiohttp.ClientTimeout(total=300)) as response:
                 if response.status in [200, 202]:
-                    logger.info(f"API request successful: {endpoint} with params {params}")
+                    logger.info(f"API request successful: {endpoint} with params {params} | status: {response.status}")
                     try:
                         return await response.json()
                     except Exception:
@@ -84,7 +84,7 @@ async def _queue_cards_download(cards_to_download: list[str]) -> None:
                 if isinstance(response, Exception):
                     logger.error(f"Download queue failed for {card_date}: {str(response)}")
                 else:
-                    logger.info(f"Download queued successfully: {card_date}")
+                    logger.info(f"Download queued successfully: {card_date} | status: {response}")
         except Exception as e:
             logger.error(f"Error processing download responses: {str(e)}")
 
