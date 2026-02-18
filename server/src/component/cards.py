@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Union
 import json
 import time
-import warnings
 from config import (
     max_local_dirs,
     test_protocols,
@@ -47,7 +46,7 @@ class Cards:
         elif mode == "cache":
             return get_cards_from_cache(expected_filter_dict)
         elif mode == "download":
-            self.download_missing_cached_cards(expected_filter_dict)
+            self.download_missing_cards(expected_filter_dict)
         elif mode == "cleanup":
             cleanup_old_test_report_directories(max_local_dirs)
         else:
@@ -58,12 +57,6 @@ class Cards:
         return True
 
     def missing_cards(self, local_cards: dict, expected_filter_dict: dict) -> list[str]:
-        warnings.warn(
-            "missing_cards() is deprecated and will be removed in a future version. Use cards_to_download() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
         import instances
 
         redis = instances.redis
@@ -95,12 +88,7 @@ class Cards:
             logger.info(f"No cards found in Redis cache w. filter: {expected_filter_dict}.")
         return _missing_cards
 
-    def download_missing_cards(self, expected_filter_dict: dict, rate_limit_wait=rate_limit_wait_time) -> list[str]:
-        warnings.warn(
-            "download_missing_cards() is deprecated and will be removed in a future version. Use download_missing_cached_cards() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+    def download_missing_cards(self, expected_filter_dict: dict) -> list[str]:
         """
         Download the missing cards from S3 and cache them on the server using three levels of parallelism:
         (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.

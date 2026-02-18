@@ -17,7 +17,7 @@ async def server_initialization():
     logger.info(f"Server is running on {os_name} OS")
 
     cards = cards_module.Cards()
-    await cards.actions({"day": 90, "mode": "s3", "environment": "all", "protocol": "all"})
+    await cards.actions({"day": 30, "mode": "s3", "environment": "all", "protocol": "all"})
     await cards.actions({"day": 3, "mode": "download", "environment": "all", "protocol": "all"})
     instances.redis.close()
 
