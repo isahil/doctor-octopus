@@ -48,8 +48,14 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 		console.log(`Requesting Doctor Octopus to download card: ${download_url}`);
 
 		const response = await fetch(download_url, { method: "POST" });
-		if (response.ok || response.status === 202) {
-			console.log(`Successfully queued download for ${uploaded_s3_path} | status: ${response.status}`);
+		if (response.status === 202) {
+			console.log(
+				`Successfully queued download for ${reports_dir} | status: ${response.status}`,
+			);
+		} else if (response.status === 200) {
+			console.log(
+				`Doctor Octopus already has the report card ${reports_dir} cached | status: ${response.status}`,
+			);
 		} else {
 			console.warn(`Failed to queue download: ${response.status} ${response.statusText}`);
 		}

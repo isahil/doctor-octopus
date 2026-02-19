@@ -2,7 +2,9 @@ import os
 
 node_env: str = os.environ.get("NODE_ENV", "")
 test_reports_dir: str = os.environ.get("TEST_REPORTS_DIR", "test_reports")
-test_reports_date_format = "%m-%d-%Y_%I-%M-%S_%p"  # date format used for the remote test reports directory
+test_reports_date_format = (
+    "%m-%d-%Y_%I-%M-%S-%f_%p"  # date format used for the remote test reports directory (includes milliseconds)
+)
 
 root_redis_key: str = "doctor-octopus"
 test_reports_redis_key = f"{root_redis_key}:trading-apps-reports"

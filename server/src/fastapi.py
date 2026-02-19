@@ -30,13 +30,13 @@ async def get_a_card(
         ...,
         title="Mode",
         description="Mode of the html report file to be retrieved: cache/local",
-        example="cache",
+        examples=["cache", "local"],
     ),
     root_dir: str = Query(
         None,
         title="S3 Root Directory",
         description="S3 Root directory of the report to be retrieved. Can be used by client to hit the static server directly",
-        example="2021-09-01T14:00:00",
+        examples=["2021-09-01T14:00:00"],
     ),
 ) -> PlainTextResponse:
     test_report_dir = os.path.basename(root_dir)
@@ -72,7 +72,7 @@ async def start_download(
         ...,
         title="S3 Card Directory",
         description="S3 card directory path to download (e.g., 'trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM')",
-        example="trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM",
+        examples=["12-31-2025_08-31-00_AM", "trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM"],
     ),
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> JSONResponse:
@@ -82,11 +82,13 @@ async def start_download(
     It prevents duplicate simultaneous downloads by tracking in-progress downloads in Redis.
 
     Returns:
-        - 202: Download queued successfully (or already in progress/completed)
+        - 200: Download already completed or in progress
+        - 202: Download queued successfully
         - 400: Invalid card_date parameter
     """
-    test_report_dir = os.path.basename(card_date)
     redis = instances.redis
+    cards = instances.fastapi_app.state.cards
+    test_report_dir = os.path.basename(card_date)
     local_r_directories = local_report_directories()
 
     try:
@@ -151,6 +153,7 @@ async def start_download(
             finally:
                 # Always unmark, even if download failed
                 unmark_downloading(redis.redis_client, test_report_dir)
+                cards.actions({"mode": "cleanup"})
 
         background_tasks.add_task(_download_task)
 
@@ -177,31 +180,31 @@ async def get_all_cards(
         ...,
         title="Mode",
         description="Cards action mode to perform: s3/cache/download/cleanup",
-        example="cache",
+        examples=["cache", "s3", "download", "cleanup"],
     ),
     environment: str = Query(
         ...,
         title="Environment",
         description="Test environment to filter the reports by: qa/dev/uat/all",
-        example="all",
+        examples=["qa", "dev", "uat", "all"],
     ),
     day: int = Query(
         ...,
         title="Day",
         description="Filter the reports age based on the given day number",
-        example=3,
+        examples=[1, 3, 7],
     ),
     product: str = Query(
         ...,
         title="Product",
         description="Product to filter the reports by: clo/loan/all",
-        example="all",
+        examples=["clo", "loan", "all"],
     ),
     protocol: str = Query(
         ...,
         title="Protocol",
         description="Protocol to filter the reports by: ui/api/perf/all",
-        example="all",
+        examples=["ui", "api", "perf", "all"],
     ),
 ) -> JSONResponse:
     """Get available report cards based on the mode requested"""
@@ -249,25 +252,25 @@ async def reload_cards_cache(
         ...,
         title="Filter",
         description="Filter the reports age based on the given string",
-        example=7,
+        examples=[1, 7],
     ),
     product: str = Query(
         "all",
         title="Product",
         description="Product to filter the reports: clo/loan/all",
-        example="all",
+        examples=["clo", "loan", "all"],
     ),
     environment: str = Query(
         "all",
         title="Environment",
         description="Environment to filter the reports: qa/dev/uat/all",
-        example="all",
+        examples=["qa", "dev", "uat", "all"],
     ),
     protocol: str = Query(
         "all",
         title="Protocol",
         description="Protocol to filter the reports: ui/api/perf/all",
-        example="all",
+        examples=["ui", "api", "perf", "all"],
     ),
 ) -> JSONResponse:
     """Reload (refresh) the S3 cards cache.
@@ -338,7 +341,7 @@ async def invalidate_redis_cache(
     pattern: str = Query(
         title="Pattern",
         description="Regex pattern to match the Redis keys for invalidation",
-        example="doctor-octopus:trading-apps-reports:qa*",
+        examples=["doctor-octopus:trading-apps-reports:qa*"],
     ),
 ) -> JSONResponse:
     logger.info(f"Invalidating Redis cache with pattern: {pattern}")
@@ -370,7 +373,7 @@ async def execute_command(
         ...,
         title="Options",
         description="Command options to be executed",
-        example='{"environment": "dev", "app": "clo", "proto": "perf", "suite": "smoke"}',
+        examples=['{"environment": "dev", "product": "clo", "proto": "perf", "suite": "smoke"}'],
     ),
 ) -> JSONResponse:
     """Execute a command on the running server"""
