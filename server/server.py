@@ -32,6 +32,7 @@ if __name__ == "__main__":
         port=main_server_port,
         lifespan="on",
         workers=workers_limit,
+        forwarded_allow_ips="*",
         reload=(node_env != "production"),
     )
 
