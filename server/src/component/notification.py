@@ -21,12 +21,15 @@ async def notification_publisher():
 
                 initial_total_s3_objects = current_total_s3_objects
 
-                # Refresh S3 cache via API request
-                cached_cards_res = await _call_doctor_endpoint("cache-reload", {"day": 1})
-                cards_to_download = cached_cards_res.get("cards", [])
+                try:
+                    # Refresh S3 cache via API request
+                    cached_cards_res = await _call_doctor_endpoint("cache-reload", {"day": 1})
+                    cards_to_download = cached_cards_res.get("cards", [])
 
-                logger.info(f"Cards to download: {len(cards_to_download)} - {cards_to_download}")
-                await _queue_cards_download(cards_to_download)
+                    logger.info(f"Cards to download: {len(cards_to_download)} - {cards_to_download}")
+                    await _queue_cards_download(cards_to_download)
+                except aiohttp.ClientError as e:
+                    logger.error(f"HTTP API error during cache reload or download queue: {str(e)}")
 
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
@@ -43,6 +46,7 @@ async def _call_doctor_endpoint(endpoint: str, params: dict, method: str = "get"
     """
     try:
         url = f"{server_url}/{endpoint}"
+        # url = "https://doctor-api.internal.octaura.com/{endpoint}"
         async with aiohttp.ClientSession() as session:
             request = getattr(session, method.lower(), None)
             if not request:
@@ -57,10 +61,16 @@ async def _call_doctor_endpoint(endpoint: str, params: dict, method: str = "get"
                         return {}
                 else:
                     logger.error(f"API request failed for {endpoint}: status {response.status}")
-                    raise Exception(f"API request failed with status {response.status}")
+                    raise aiohttp.ClientResponseError(
+                        request_info=response.request_info,
+                        history=response.history,
+                        status=response.status,
+                        message=f"API request failed for {endpoint}: status {response.status}",
+                        headers=response.headers,
+                    )
     except Exception as e:
         logger.error(f"Error calling {endpoint} API: {str(e)}")
-        raise Exception(f"API request failed for {endpoint}: {str(e)}")
+        raise aiohttp.ClientError(f"API error calling {endpoint} API: {str(e)}")
 
 
 async def _queue_cards_download(cards_to_download: list[str]) -> None:
@@ -87,7 +97,6 @@ async def _queue_cards_download(cards_to_download: list[str]) -> None:
                     logger.info(f"Download queued successfully: {card_date} | status: {response}")
         except Exception as e:
             logger.error(f"Error processing download responses: {str(e)}")
-
 
 
 async def notification_streamer(request: Request, client_id: str):

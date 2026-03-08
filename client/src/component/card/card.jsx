@@ -1,7 +1,7 @@
 import "./card.css"
 import { github_icon, grafana_icon } from "../../util/icons"
 
-const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
+const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT, NODE_ENV } = import.meta.env
 
 function Card({ card, index, filter, setAlert }) {
   const { mode } = filter
@@ -34,7 +34,9 @@ function Card({ card, index, filter, setAlert }) {
       return { ...prev, opening: true }
     })
 
-    const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
+    const server_url = NODE_ENV === "development"
+      ? `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
+      : "https://doctor-api.internal.octaura.com"
     const response = await fetch(`${server_url}/card?mode=${mode}&root_dir=${root_dir}`)
     const report_path = await response.text()
     const full_report_url = `${server_url}${report_path}`

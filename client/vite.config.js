@@ -13,6 +13,7 @@ export default defineConfig({
         secure: false,
       },
     },
+    allowedHosts: ["doctor.internal.octaura.com"]
   },
   build: {
     sourcemap: true,
