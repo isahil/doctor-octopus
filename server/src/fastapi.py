@@ -86,6 +86,8 @@ async def start_download(
         - 400: Invalid card_date parameter
     """
     from server import fastapi_app
+    from datetime import datetime as dt
+
     redis = instances.redis
     cards = fastapi_app.state.cards
     test_report_dir = os.path.basename(card_date)
@@ -115,8 +117,6 @@ async def start_download(
                 status_code=200,
             )
 
-        from datetime import datetime as dt
-
         acquired = mark_downloading(
             redis.redis_client,
             test_report_dir,
@@ -142,7 +142,7 @@ async def start_download(
                     download_notification = {
                         "type": "download",
                         "card_date": test_report_dir,
-                        "timestamp": datetime.now().timestamp(),
+                        "timestamp": dt.now().timestamp(),
                     }
                     await instances.aioredis.publish("notifications", download_notification)
                     logger.info(f"Published download completion notification for {test_report_dir}")
@@ -208,6 +208,8 @@ async def get_all_cards(
     ),
 ) -> JSONResponse:
     """Get available report cards based on the mode requested"""
+    from server import fastapi_app
+
     expected_filter_dict = {
         "mode": mode,
         "environment": environment,
@@ -216,7 +218,7 @@ async def get_all_cards(
         "protocol": protocol,
     }
     logger.info(f"Getting all cards with filter data: {expected_filter_dict}")
-    from server import fastapi_app
+
     cards = fastapi_app.state.cards
     all_cards = await cards.actions(expected_filter_dict)
     length = len(all_cards) if all_cards else 0
@@ -278,6 +280,9 @@ async def reload_cards_cache(
     If an identical reload is already in progress (same filter combination),
     the request returns 202 immediately instead of duplicating work.
     """
+    from datetime import datetime as dt
+    from server import fastapi_app
+
     expected_filter_dict = {
         "environment": environment,
         "day": day,
@@ -302,8 +307,6 @@ async def reload_cards_cache(
         )
 
     # Attempt to acquire the slot (SET NX); handles the race between check and mark
-    from datetime import datetime as dt
-
     marked = mark_operation(
         redis.redis_client,
         operation,
@@ -322,7 +325,6 @@ async def reload_cards_cache(
         )
 
     try:
-        from server import fastapi_app
         cards = fastapi_app.state.cards
         card_dates = await cards.actions(expected_filter_dict)
         return JSONResponse(
@@ -416,6 +418,7 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
 @router.get("/health", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
     from server import fastapi_app
+
     start_time = datetime.now()
     health_data = {
         "status": "healthy",

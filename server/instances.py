@@ -1,6 +1,3 @@
-# from fastapi import FastAPI
-# from socketio import ASGIApp, AsyncServer, AsyncRedisManager
-# from src.utils.lifespan import get_lifespan
 from src.utils.env_loader import get_server_mode, get_redis_host, get_debug_mode
 from src.utils.aioredis import AioRedis
 from src.utils.redis import RedisClient
@@ -14,21 +11,3 @@ redis: RedisClient = RedisClient()
 aioredis: AioRedis
 if server_mode != "setup":
     aioredis = AioRedis(redis_url)
-
-# sio: AsyncServer
-# fastapi_app: FastAPI
-# socketio_app: ASGIApp
-
-
-# if server_mode and server_mode != "setup":
-#     lifespan = get_lifespan()
-
-#     sio: AsyncServer = AsyncServer(
-#         async_mode="asgi",
-#         cors_allowed_origins="*",
-#         logger=True if debug == "true" else False,
-#         client_manager=AsyncRedisManager(redis_url),
-#     )
-#     socketio_app: ASGIApp = ASGIApp(sio, socketio_path="/ws/socket.io")
-
-#     fastapi_app: FastAPI = FastAPI(lifespan=lifespan, debug=True if debug == "true" else False)
