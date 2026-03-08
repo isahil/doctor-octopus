@@ -1,7 +1,6 @@
 import "./card.css"
 import { github_icon, grafana_icon } from "../../util/icons"
-
-const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT, NODE_ENV } = import.meta.env
+import { runtime_config } from "../../util/env_loader"
 
 function Card({ card, index, filter, setAlert }) {
   const { mode } = filter
@@ -29,17 +28,16 @@ function Card({ card, index, filter, setAlert }) {
   const grafana_url = stats?.app_grafana_url // Grafana Dashboard URL
   const sdet = ci?.sdet ?? ""
 
+  const { main_api_base_url } = runtime_config
+
   const handle_view_report_click = async () => {
     setAlert((prev) => {
       return { ...prev, opening: true }
     })
 
-    const server_url = NODE_ENV === "development"
-      ? `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
-      : "https://doctor-api.internal.octaura.com"
-    const response = await fetch(`${server_url}/card?mode=${mode}&root_dir=${root_dir}`)
+    const response = await fetch(`${main_api_base_url}/card?mode=${mode}&root_dir=${root_dir}`)
     const report_path = await response.text()
-    const full_report_url = `${server_url}${report_path}`
+    const full_report_url = `${main_api_base_url}${report_path}`
     try {
       const report_window = window.open(full_report_url, "_blank")
       if (!report_window) {
@@ -107,12 +105,13 @@ function Card({ card, index, filter, setAlert }) {
             onClick={handle_view_report_click}
             title="View Report"
             aria-label="View Report"
+            href={`${main_api_base_url}/card?mode=${mode}&root_dir=${root_dir}`}
           >
             View
           </button>
         </div>
         <span className="card-title">
-          {(product || app) ? `${product || app} -` : ""} {environment}{" "}
+          {product || app ? `${product || app} -` : ""} {environment}{" "}
         </span>
         <div className="card-footer">
           <span className="branch">{git_branch}</span>

@@ -4,8 +4,8 @@ import "./cards.css"
 import Filters from "./filter"
 import config from "../../config.json"
 import { to_roman_numeral } from "../../util/helper"
+import { runtime_config } from "../../util/env_loader"
 const { filters: filters_config } = config
-const { VITE_MAIN_SERVER_HOST, VITE_MAIN_SERVER_PORT } = import.meta.env
 
 const Cards = () => {
   const [cards, setCards] = useState([])
@@ -24,7 +24,7 @@ const Cards = () => {
 
   const filters_list = Object.values(filters_config)
 
-  const server_url = `http://${VITE_MAIN_SERVER_HOST}:${VITE_MAIN_SERVER_PORT}`
+  const { main_api_base_url } = runtime_config
 
   const start_notification_stream = () => {
     if (eventSource) {
@@ -33,7 +33,7 @@ const Cards = () => {
     }
     // Generate a client ID using current timestamp + random string. TODO: Use a more robust method for production.
     const client_id = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`
-    const event_source = new EventSource(`${server_url}/notifications/${client_id}`)
+    const event_source = new EventSource(`${main_api_base_url}/notifications/${client_id}`)
     setEventSource(event_source)
 
     event_source.onmessage = (event) => {
@@ -75,7 +75,7 @@ const Cards = () => {
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
     const { mode, environment, day, product, protocol } = filters
-    const url = `${server_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
+    const url = `${main_api_base_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
     const request = await fetch(url)
     const response = await request.json()
     if (!request.ok) {

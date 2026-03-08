@@ -19,7 +19,7 @@ load_dotenv(f"{local_dir}.dotenv/.{os.environ.get('ENVIRONMENT')}", verbose=Fals
 from src.utils.logger import logger  # noqa
 
 
-def get_env_variable(var_name, default_value=None):
+def get_env_variable(var_name, default_value=""):
     value = os.environ.get(var_name, default_value)
     # logger.trace(f"Retrieved environment variable '{var_name}': {value}")
     return value
@@ -42,7 +42,7 @@ def get_main_server_host():
 
 
 def get_main_server_port():
-    value = get_env_variable("MAIN_SERVER_PORT")
+    value = get_env_variable("MAIN_SERVER_PORT", "8000")
     if not value:
         raise ValueError("MAIN_SERVER_PORT environment variable is not set.")
     return int(value)
@@ -53,7 +53,7 @@ def get_redis_host():
 
 
 def get_redis_port():
-    return int(get_env_variable("SDET_REDIS_PORT", 6379))
+    return int(get_env_variable("SDET_REDIS_PORT", "6379"))
 
 
 def get_test_reports_dir():

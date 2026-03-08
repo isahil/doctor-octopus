@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import "./fixme.css"
 import new_order_tags from "../../data/new-order-tags.json"
 import cancel_order_tags from "../../data/cancel-order-tags.json"
