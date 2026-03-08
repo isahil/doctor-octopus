@@ -19,7 +19,7 @@ socketio_app: ASGIApp
 if server_mode != "setup":
     aioredis = AioRedis(redis_url)
 
-if server_mode != "setup" and server_mode is not None and server_mode != "":
+if server_mode and server_mode != "setup":
     lifespan = get_lifespan()
 
     sio: AsyncServer = AsyncServer(

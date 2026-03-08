@@ -331,7 +331,7 @@ async def reload_cards_cache(
             status_code=200,
         )
     finally:
-        await asyncio.sleep(30)
+        # await asyncio.sleep(30)
         # Always release the slot when done (success or failure)
         unmark_operation(redis.redis_client, operation, reload_id)
 
