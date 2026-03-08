@@ -48,7 +48,10 @@ async def lifespan_fixme(app: FastAPI):
     import asyncio
     import instances
     from server_fixme import sio
-    from src.utils.fix import FixClient # path needs to be updated for octopus-tests
+    from src.utils.fix import FixClient 
+    # path needs to be updated for octopus-tests
+    # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../octopus-tests/fix/')))
+    # from fix_client_async import FixClient # type: ignore
     from src.wsocket import WebSocketServer
 
     server_mode = get_server_mode()
