@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 from datetime import datetime
@@ -86,8 +85,9 @@ async def start_download(
         - 202: Download queued successfully
         - 400: Invalid card_date parameter
     """
+    from server import fastapi_app
     redis = instances.redis
-    cards = instances.fastapi_app.state.cards
+    cards = fastapi_app.state.cards
     test_report_dir = os.path.basename(card_date)
     local_r_directories = local_report_directories()
 
@@ -216,7 +216,8 @@ async def get_all_cards(
         "protocol": protocol,
     }
     logger.info(f"Getting all cards with filter data: {expected_filter_dict}")
-    cards = instances.fastapi_app.state.cards
+    from server import fastapi_app
+    cards = fastapi_app.state.cards
     all_cards = await cards.actions(expected_filter_dict)
     length = len(all_cards) if all_cards else 0
 
@@ -321,7 +322,8 @@ async def reload_cards_cache(
         )
 
     try:
-        cards = instances.fastapi_app.state.cards
+        from server import fastapi_app
+        cards = fastapi_app.state.cards
         card_dates = await cards.actions(expected_filter_dict)
         return JSONResponse(
             content={
@@ -413,6 +415,7 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
 
 @router.get("/health", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
+    from server import fastapi_app
     start_time = datetime.now()
     health_data = {
         "status": "healthy",
@@ -425,7 +428,7 @@ async def health_check() -> JSONResponse:
         # Various instance health checks for services
         states = ["redis", "aioredis", "cards"]
         for state in states:
-            if hasattr(instances.fastapi_app.state, state):
+            if hasattr(fastapi_app.state, state):
                 try:
                     result = False
                     if state == "redis":
@@ -433,7 +436,7 @@ async def health_check() -> JSONResponse:
                     elif state == "aioredis":
                         result = await instances.aioredis.ping()
                     elif state == "cards":
-                        result = getattr(instances.fastapi_app.state, state).ping()
+                        result = getattr(fastapi_app.state, state).ping()
                     health_data["services"][state] = "healthy" if result else "unhealthy"
                 except Exception as e:
                     logger.warning(f"{state} health check failed: {str(e)}")

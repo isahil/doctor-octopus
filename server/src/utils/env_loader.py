@@ -55,6 +55,10 @@ def get_redis_host():
 def get_redis_port():
     return int(get_env_variable("SDET_REDIS_PORT", "6379"))
 
+def get_redis_url():
+    sdet_redis_host = get_redis_host()
+    redis_url = f"redis://{sdet_redis_host}:6379/0"
+    return redis_url
 
 def get_test_reports_dir():
     """Get test reports directory, creating timestamped subdirectory if not already set

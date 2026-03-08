@@ -18,7 +18,7 @@ async def server_initialization():
 
     cards = cards_module.Cards()
     await cards.actions({"day": 30, "mode": "s3", "environment": "all", "protocol": "all"})
-    await cards.actions({"day": 3, "mode": "download", "environment": "all", "protocol": "all"})
+    await cards.actions({"day": 25, "mode": "download", "environment": "all", "protocol": "all"})
     instances.redis.close()
 
 

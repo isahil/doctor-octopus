@@ -47,7 +47,8 @@ async def lifespan_fixme(app: FastAPI):
     import aiofiles
     import asyncio
     import instances
-    from src.utils.fix import FixClient
+    from server_fixme import sio
+    from src.utils.fix import FixClient # path needs to be updated for octopus-tests
     from src.wsocket import WebSocketServer
 
     server_mode = get_server_mode()
@@ -71,7 +72,6 @@ async def lifespan_fixme(app: FastAPI):
     app.state.the_lab_log_file_path = the_lab_log_file_path
 
     logger.info("Starting FixMe client task...")
-    sio = instances.sio
     if not sio:
         logger.error("Socket.IO not initialized properly!")
         raise Exception("Socket.IO not initialized properly!")
