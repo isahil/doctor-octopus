@@ -105,7 +105,7 @@ function Card({ card, index, filter, setAlert }) {
             onClick={handle_view_report_click}
             title="View Report"
             aria-label="View Report"
-            href={`${main_api_base_url}/card?mode=${mode}&root_dir=${root_dir}`}
+            href={`${main_api_base_url}/test_reports/${root_dir.split("/").pop()}/index.html`}
           >
             View
           </button>
