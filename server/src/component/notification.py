@@ -5,6 +5,7 @@ from redis.asyncio.client import PubSub
 import instances
 from src.component import remote
 from src.utils.logger import logger
+from src.utils.queue import wait_till_operation_complete
 from config import server_url, notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
 
 
@@ -29,8 +30,23 @@ async def notification_publisher():
                     logger.info(f"Cards to download: {len(cards_to_download)} - {cards_to_download}")
                     await _queue_cards_download(cards_to_download)
                 except aiohttp.ClientError as e:
-                    logger.error(f"HTTP API error during cache reload or download queue: {str(e)}")
-
+                    logger.error(
+                        f"HTTP API error during cache reload or download queue: {str(e)} | will retry after waiting"
+                    )
+                    try:
+                        await wait_till_operation_complete(
+                            "cache-reload", {"day": 1}, max_wait=180
+                        )  # wait for cache reload to complete before proceeding
+                        missing_cards_res = await _call_doctor_endpoint(
+                            "missing-cards",
+                            {"day": 1, "product": "all", "environment": "all", "protocol": "all"},
+                            method="post",
+                        )  # try to trigger cache reload again
+                        cards_to_download = missing_cards_res.get("cards", [])
+                        logger.info(f"Cards to download after waiting: {len(cards_to_download)}")
+                        await _queue_cards_download(cards_to_download)
+                    except aiohttp.ClientError as e:
+                        logger.error(f"HTTP API error during retry after waiting: {str(e)}")
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
         logger.info("Notification process cancelled")

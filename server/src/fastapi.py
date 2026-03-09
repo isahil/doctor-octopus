@@ -415,6 +415,45 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
     )
 
 
+@router.get("/missing-cards", response_class=JSONResponse, status_code=200)
+async def get_missing_cards(
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        examples=[1, 7],
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
+) -> JSONResponse:
+    from server import fastapi_app
+    from src.component.cards import Cards
+
+    cards: Cards = fastapi_app.state.cards
+    missing_cards = cards.all_missing_cards(
+        {"day": day, "product": product, "environment": environment, "protocol": protocol}
+    )
+    return JSONResponse(
+        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
+    )
+
+
 @router.get("/health", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
     from server import fastapi_app

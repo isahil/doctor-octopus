@@ -88,10 +88,9 @@ class Cards:
             logger.info(f"No cards found in Redis cache w. filter: {expected_filter_dict}.")
         return _missing_cards
 
-    def download_missing_cards(self, expected_filter_dict: dict) -> list[str]:
+    def all_missing_cards(self, expected_filter_dict: dict) -> list[str]:
         """
-        Download the missing cards from S3 and cache them on the server using three levels of parallelism:
-        (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
+        Find all missing cards across specified day range, product, environments and protocols in the filters.
         """
         local_cards = get_all_local_cards(expected_filter_dict)
         environment = expected_filter_dict.get("environment")
@@ -115,7 +114,14 @@ class Cards:
         missing_cache_card_dates = sum(
             cards_missing_per_env_proto, []
         )  # Flatten the list of lists into a single list []
+        return missing_cache_card_dates
 
+    def download_missing_cards(self, expected_filter_dict: dict) -> list[str]:
+        """
+        Download the missing cards from S3 and cache them on the server using three levels of parallelism:
+        (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
+        """
+        missing_cache_card_dates = self.all_missing_cards(expected_filter_dict)
         self.download_cards(missing_cache_card_dates)
         return missing_cache_card_dates
 
