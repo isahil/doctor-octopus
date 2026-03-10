@@ -19,9 +19,8 @@ load_dotenv(f"{local_dir}.dotenv/.{os.environ.get('ENVIRONMENT')}", verbose=Fals
 from src.utils.logger import logger  # noqa
 
 
-def get_env_variable(var_name, default_value=""):
+def get_env_variable(var_name, default_value=None):
     value = os.environ.get(var_name, default_value)
-    # logger.trace(f"Retrieved environment variable '{var_name}': {value}")
     return value
 
 
