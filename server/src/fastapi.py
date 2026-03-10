@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
+from src.utils.helper import queue_cache_and_download
 from src.utils.logger import logger
 from src.utils.queue import (
     is_downloading,
@@ -63,6 +64,81 @@ async def get_a_card(
         logger.info(f"TODO: local mode: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return PlainTextResponse(content=f"{mount_path}/index.html")
+
+
+@router.get("/cards", response_class=JSONResponse, status_code=200)
+async def get_all_cards(
+    mode: str = Query(
+        ...,
+        title="Mode",
+        description="Cards action mode to perform: s3/cache/download/cleanup",
+        examples=["cache", "s3", "download", "cleanup"],
+    ),
+    environment: str = Query(
+        ...,
+        title="Environment",
+        description="Test environment to filter the reports by: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    day: int = Query(
+        ...,
+        title="Day",
+        description="Filter the reports age based on the given day number",
+        examples=[1, 3, 7],
+    ),
+    product: str = Query(
+        ...,
+        title="Product",
+        description="Product to filter the reports by: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    protocol: str = Query(
+        ...,
+        title="Protocol",
+        description="Protocol to filter the reports by: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
+) -> JSONResponse:
+    """Get available report cards based on the mode requested"""
+    from server import fastapi_app
+
+    expected_filter_dict = {
+        "mode": mode,
+        "environment": environment,
+        "day": day,
+        "product": product,
+        "protocol": protocol,
+    }
+    logger.info(f"Getting all cards with filter data: {expected_filter_dict}")
+
+    cards = fastapi_app.state.cards
+    all_cards = await cards.actions(expected_filter_dict)
+    length = len(all_cards) if all_cards else 0
+
+    message = (
+        f"No cards returned for mode '{mode}' with the given filters."
+        if length == 0
+        else f"Total cards returned for mode '{mode}': {length}"
+    )
+    logger.info(message)
+
+    if length == 0:
+        logger.warning(message)
+        return JSONResponse(
+            content={
+                "error": message,
+                "cards": [],
+            },
+            status_code=200,
+        )
+
+    return JSONResponse(
+        content={
+            "message": "Cards retrieved successfully",
+            "cards": all_cards,
+        },
+        status_code=200,
+    )
 
 
 @router.post("/download", response_class=JSONResponse, status_code=202)
@@ -174,77 +250,75 @@ async def start_download(
         )
 
 
-@router.get("/cards", response_class=JSONResponse, status_code=200)
-async def get_all_cards(
-    mode: str = Query(
-        ...,
-        title="Mode",
-        description="Cards action mode to perform: s3/cache/download/cleanup",
-        examples=["cache", "s3", "download", "cleanup"],
-    ),
-    environment: str = Query(
-        ...,
-        title="Environment",
-        description="Test environment to filter the reports by: qa/dev/uat/all",
-        examples=["qa", "dev", "uat", "all"],
-    ),
+@router.get("/missing-cards", response_class=JSONResponse, status_code=200)
+async def get_missing_cards(
     day: int = Query(
         ...,
-        title="Day",
-        description="Filter the reports age based on the given day number",
-        examples=[1, 3, 7],
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        examples=[1, 7],
     ),
     product: str = Query(
-        ...,
+        "all",
         title="Product",
-        description="Product to filter the reports by: clo/loan/all",
+        description="Product to filter the reports: clo/loan/all",
         examples=["clo", "loan", "all"],
     ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
     protocol: str = Query(
-        ...,
+        "all",
         title="Protocol",
-        description="Protocol to filter the reports by: ui/api/perf/all",
+        description="Protocol to filter the reports: ui/api/perf/all",
         examples=["ui", "api", "perf", "all"],
     ),
 ) -> JSONResponse:
-    """Get available report cards based on the mode requested"""
     from server import fastapi_app
+    from src.component.cards import Cards
 
-    expected_filter_dict = {
-        "mode": mode,
-        "environment": environment,
-        "day": day,
-        "product": product,
-        "protocol": protocol,
-    }
-    logger.info(f"Getting all cards with filter data: {expected_filter_dict}")
-
-    cards = fastapi_app.state.cards
-    all_cards = await cards.actions(expected_filter_dict)
-    length = len(all_cards) if all_cards else 0
-
-    message = (
-        f"No cards returned for mode '{mode}' with the given filters."
-        if length == 0
-        else f"Total cards returned for mode '{mode}': {length}"
+    cards: Cards = fastapi_app.state.cards
+    missing_cards = cards.all_missing_cards(
+        {"day": day, "product": product, "environment": environment, "protocol": protocol}
     )
-    logger.info(message)
-
-    if length == 0:
-        logger.warning(message)
-        return JSONResponse(
-            content={
-                "error": message,
-                "cards": [],
-            },
-            status_code=200,
-        )
-
     return JSONResponse(
-        content={
-            "message": "Cards retrieved successfully",
-            "cards": all_cards,
-        },
+        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
+    )
+
+
+@router.get("/download-missing-cards", response_class=JSONResponse, status_code=200)
+async def download_missing_cards(
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        examples=[1, 7],
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
+) -> JSONResponse:
+    await queue_cache_and_download({"day": day, "product": product, "environment": environment, "protocol": protocol})
+    return JSONResponse(
+        content={"message": "Triggered download for missing cards"},
         status_code=200,
     )
 
@@ -412,45 +486,6 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
         notification.notification_streamer(request, client_id),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
-    )
-
-
-@router.get("/missing-cards", response_class=JSONResponse, status_code=200)
-async def get_missing_cards(
-    day: int = Query(
-        ...,
-        title="Filter",
-        description="Filter the reports age based on the given string",
-        examples=[1, 7],
-    ),
-    product: str = Query(
-        "all",
-        title="Product",
-        description="Product to filter the reports: clo/loan/all",
-        examples=["clo", "loan", "all"],
-    ),
-    environment: str = Query(
-        "all",
-        title="Environment",
-        description="Environment to filter the reports: qa/dev/uat/all",
-        examples=["qa", "dev", "uat", "all"],
-    ),
-    protocol: str = Query(
-        "all",
-        title="Protocol",
-        description="Protocol to filter the reports: ui/api/perf/all",
-        examples=["ui", "api", "perf", "all"],
-    ),
-) -> JSONResponse:
-    from server import fastapi_app
-    from src.component.cards import Cards
-
-    cards: Cards = fastapi_app.state.cards
-    missing_cards = cards.all_missing_cards(
-        {"day": day, "product": product, "environment": environment, "protocol": protocol}
-    )
-    return JSONResponse(
-        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
     )
 
 

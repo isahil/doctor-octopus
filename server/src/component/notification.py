@@ -5,12 +5,13 @@ from redis.asyncio.client import PubSub
 import instances
 from src.component import remote
 from src.utils.logger import logger
-from src.utils.queue import wait_till_operation_complete
-from config import server_url, notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
+from src.utils.helper import call_doctor_endpoint, queue_cards_download
+from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
 
 
 async def notification_publisher():
     """Update the total number of S3 objects and emit an alert if the count increases"""
+    filter = {"day": 1}
     try:
         initial_total_s3_objects = remote.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
@@ -24,27 +25,14 @@ async def notification_publisher():
 
                 try:
                     # Refresh S3 cache via API request
-                    cached_cards_res = await _call_doctor_endpoint("cache-reload", {"day": 1})
-                    cards_to_download = cached_cards_res.get("cards", [])
-
-                    logger.info(f"Cards to download: {len(cards_to_download)} - {cards_to_download}")
-                    await _queue_cards_download(cards_to_download)
+                    await call_doctor_endpoint("download-missing-cards", filter)
                 except aiohttp.ClientError as e:
                     logger.error(
                         f"HTTP API error during cache reload or download queue: {str(e)} | will retry after waiting"
                     )
                     try:
-                        await wait_till_operation_complete(
-                            "cache-reload", {"day": 1}, max_wait=180
-                        )  # wait for cache reload to complete before proceeding
-                        missing_cards_res = await _call_doctor_endpoint(
-                            "missing-cards",
-                            {"day": 1, "product": "all", "environment": "all", "protocol": "all"},
-                            method="post",
-                        )  # try to trigger cache reload again
-                        cards_to_download = missing_cards_res.get("cards", [])
-                        logger.info(f"Cards to download after waiting: {len(cards_to_download)}")
-                        await _queue_cards_download(cards_to_download)
+                        logger.info("Retrying cards download after failing once")
+                        await queue_cards_download(filter)
                     except aiohttp.ClientError as e:
                         logger.error(f"HTTP API error during retry after waiting: {str(e)}")
             await asyncio.sleep(notification_frequency_time)
@@ -54,65 +42,6 @@ async def notification_publisher():
     except Exception as e:
         logger.error(f"Error in notification process: {str(e)}")
         raise
-
-
-async def _call_doctor_endpoint(endpoint: str, params: dict, method: str = "get") -> dict:
-    """Make an async HTTP request to a cards API endpoint.
-    Supports `get` and `post` methods via the `method` argument.
-    """
-    try:
-        url = f"{server_url}/{endpoint}"
-        # url = "https://doctor-api.internal.octaura.com/{endpoint}"
-        async with aiohttp.ClientSession() as session:
-            request = getattr(session, method.lower(), None)
-            if not request:
-                raise ValueError(f"Unsupported HTTP method: {method}")
-
-            async with request(url, params=params, timeout=aiohttp.ClientTimeout(total=300)) as response:
-                if response.status in [200, 202]:
-                    logger.info(f"API request successful: {endpoint} with params {params} | status: {response.status}")
-                    try:
-                        return await response.json()
-                    except Exception:
-                        return {}
-                else:
-                    logger.error(f"API request failed for {endpoint}: status {response.status}")
-                    raise aiohttp.ClientResponseError(
-                        request_info=response.request_info,
-                        history=response.history,
-                        status=response.status,
-                        message=f"API request failed for {endpoint}: status {response.status}",
-                        headers=response.headers,
-                    )
-    except Exception as e:
-        logger.error(f"Error calling {endpoint} API: {str(e)}")
-        raise aiohttp.ClientError(f"API error calling {endpoint} API: {str(e)}")
-
-
-async def _queue_cards_download(cards_to_download: list[str]) -> None:
-    """Queue downloads for multiple cards via the /download API endpoint"""
-    if not cards_to_download:
-        logger.info("No cards to download")
-        return
-
-    tasks = []
-    for card_date in cards_to_download:
-        try:
-            tasks.append(_call_doctor_endpoint("download", {"card_date": card_date}, method="post"))
-        except Exception as e:
-            logger.error(f"Error queuing download for {card_date}: {str(e)}")
-
-    if tasks:
-        try:
-            responses = await asyncio.gather(*tasks, return_exceptions=True)
-
-            for card_date, response in zip(cards_to_download, responses):
-                if isinstance(response, Exception):
-                    logger.error(f"Download queue failed for {card_date}: {str(response)}")
-                else:
-                    logger.info(f"Download queued successfully: {card_date} | status: {response}")
-        except Exception as e:
-            logger.error(f"Error processing download responses: {str(e)}")
 
 
 async def notification_streamer(request: Request, client_id: str):
