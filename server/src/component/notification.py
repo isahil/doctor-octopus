@@ -16,6 +16,9 @@ async def notification_publisher():
         initial_total_s3_objects = remote.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
 
+        # app setup step on server start
+        await call_doctor_endpoint("download-missing-cards", filter)
+
         while True:
             current_total_s3_objects = remote.total_s3_objects()
             if current_total_s3_objects > initial_total_s3_objects:
@@ -28,13 +31,12 @@ async def notification_publisher():
                     await call_doctor_endpoint("download-missing-cards", filter)
                 except aiohttp.ClientError as e:
                     logger.error(
-                        f"HTTP API error during cache reload or download queue: {str(e)} | will retry after waiting"
+                        f"HTTP API error during cache reload or download queue: {str(e)} | will retry..."
                     )
                     try:
-                        logger.info("Retrying cards download after failing once")
                         await queue_cards_download(filter)
                     except aiohttp.ClientError as e:
-                        logger.error(f"HTTP API error during retry after waiting: {str(e)}")
+                        logger.error(f"HTTP API error during retry: {str(e)}")
             await asyncio.sleep(notification_frequency_time)
     except asyncio.CancelledError:
         logger.info("Notification process cancelled")
