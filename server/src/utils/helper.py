@@ -5,8 +5,7 @@ import instances
 from src.utils.logger import logger
 from config import server_url
 from src.utils.queue import (
-    get_operation_status,
-    params_to_identifier,
+    is_cache_reloading,
     wait_till_operation_complete,
 )
 
@@ -69,18 +68,18 @@ async def call_doctor_endpoint(endpoint: str, params: dict, method: str = "get")
 
 async def queue_cards_download(filter: dict) -> None:
     """Queue downloads for multiple cards via the /download API endpoint"""
-    from server import fastapi_app
     from src.component.cards import Cards
 
-    operation_status = get_operation_status(instances.redis.redis_client, "download", params_to_identifier(filter))
-    if operation_status:
-        logger.info(f"Download queue already in progress for the given filters. Status: {operation_status}")
-        await wait_till_operation_complete("download", filter, max_wait=300)
+    caching = is_cache_reloading(instances.redis.redis_client)
+    if caching:
+        logger.info(f"Caching queue in progress, will wait for it to finish... Status: {caching}")
+        await wait_till_operation_complete("cache-reload", "reload", max_wait=300)
     else:
-        logger.info("No download in progress for the given filters. Proceeding to mark and download missing cards.")
+        logger.info("No download in progress. Proceeding to mark and download missing cards.")
 
-    cards: Cards = fastapi_app.state.cards
+    cards: Cards = Cards()
     missing_cards = cards.all_missing_cards(filter)
+    logger.info(f"Found {len(missing_cards)} missing cards for filter {filter} - {missing_cards}")
 
     tasks = []
     for card_date in missing_cards:
@@ -88,6 +87,8 @@ async def queue_cards_download(filter: dict) -> None:
             tasks.append(call_doctor_endpoint("download", {"card_date": card_date}, method="post"))
         except Exception as e:
             logger.error(f"Error queuing download for {card_date}: {str(e)}")
+
+    logger.info(f"Queued {len(tasks)} download tasks for missing cards.")
 
     if tasks:
         try:
@@ -104,10 +105,7 @@ async def queue_cards_download(filter: dict) -> None:
 
 async def queue_cache_and_download(filter: dict) -> None:
     """Queue caching and downloading for multiple cards via the /cache_and_download API endpoint"""
-    cached_cards_res = await call_doctor_endpoint("cache-reload", {"day": 1})
+    cached_cards_res = await call_doctor_endpoint("cache-reload", filter)
     res = cached_cards_res.get("message", "No message in response")
-    logger.info(f"Cache reload response: {res}")
-    cards_to_download = cached_cards_res.get("cards", [])
-
-    logger.info(f"Cards to download: {len(cards_to_download)} - {cards_to_download}")
+    logger.info(f"API cache-reload response: {res}")
     await queue_cards_download(filter)

@@ -125,19 +125,25 @@ async def get_download_status(redis: Redis, card_date: str) -> Optional[dict]:
     return await get_operation_status(redis, "download", card_date)
 
 
-async def wait_till_operation_complete(operation: str, query: dict, max_wait: int, poll_interval: int = 5):
+async def is_cache_reloading(redis: Redis) -> bool:
+    """Check if a cache reload is in progress"""
+    return is_operation_in_progress(redis, "cache-reload", "reload")
+
+
+async def wait_till_operation_complete(operation: str, identifier: str, max_wait: int, poll_interval: int = 5):
     """Async helper to wait until a given operation+identifier is no longer in-progress.
     max_wait is the total time in seconds to wait before giving up (to avoid infinite loops).
     """
     redis = instances.redis
-    identifier = params_to_identifier(query)
+    redis_client = redis.redis_client
     loop = asyncio.get_running_loop()
     deadline = loop.time() + max_wait
 
-    while await get_operation_status(redis.redis_client, operation, identifier) is not None and loop.time() < deadline:
+    while await get_operation_status(redis_client, operation, identifier) is not None and loop.time() < deadline:
         remaining = deadline - loop.time()
         if remaining <= 0:
             break
         sleep_time = min(poll_interval, remaining)
-        logger.info(f"Waiting for {operation}/{identifier} to complete...")
+        logger.info(f"Waiting for {operation} to complete...")
         await asyncio.sleep(sleep_time)
+    logger.info(f"Finished waiting for {operation}")

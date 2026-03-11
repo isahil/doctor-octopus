@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from fastapi import APIRouter, BackgroundTasks, Query, Request, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
@@ -9,14 +9,14 @@ from src.component.local import local_report_directories
 from src.utils.helper import queue_cache_and_download
 from src.utils.logger import logger
 from src.utils.queue import (
+    is_cache_reloading,
     is_downloading,
     mark_downloading,
     unmark_downloading,
     get_download_status,
-    is_operation_in_progress,
     mark_operation,
     unmark_operation,
-    params_to_identifier,
+    wait_till_operation_complete,
 )
 import src.component.remote as remote
 import src.component.notification as notification
@@ -46,18 +46,11 @@ async def get_a_card(
     if mode == "cache" and test_report_dir not in local_r_directories:
         if is_downloading(redis.redis_client, test_report_dir):
             download_status = await get_download_status(redis.redis_client, test_report_dir)
-            logger.info(f"Card {test_report_dir} is already being downloaded. Status: {download_status}")
-            raise HTTPException(
-                status_code=202,
-                detail={
-                    "message": f"Card {test_report_dir} is currently being downloaded by another request",
-                    "status": "downloading",
-                    "details": download_status,
-                },
-            )
-
-        logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
-        test_report_dir = remote.download_s3_folder(root_dir)
+            logger.info(f"Card {test_report_dir} is already queued for download. Status: {download_status}")
+            await wait_till_operation_complete("download", test_report_dir, max_wait=300)
+        else:
+            logger.info(f"Card not in local. Downloading from S3: {test_report_dir}...")
+            test_report_dir = remote.download_s3_folder(root_dir)
     elif mode == "cache" and test_report_dir in local_r_directories:
         logger.info(f"Card available in local cache: {test_report_dir}")
     else:
@@ -229,7 +222,7 @@ async def start_download(
             finally:
                 # Always unmark, even if download failed
                 unmark_downloading(redis.redis_client, test_report_dir)
-                cards.actions({"mode": "cleanup"})
+                await cards.actions({"mode": "cleanup"})
 
         background_tasks.add_task(_download_task)
 
@@ -366,11 +359,11 @@ async def reload_cards_cache(
     }
 
     redis = instances.redis
-    reload_id = params_to_identifier(expected_filter_dict)
     operation = "cache-reload"
+    identifier = "reload"
 
-    if is_operation_in_progress(redis.redis_client, operation, reload_id):
-        logger.info(f"Cache reload already in progress for filters {expected_filter_dict}")
+    if is_cache_reloading(redis.redis_client):
+        logger.info("Cache reload already queued.")
         return JSONResponse(
             content={
                 "status": "in-progress",
@@ -384,7 +377,7 @@ async def reload_cards_cache(
     marked = mark_operation(
         redis.redis_client,
         operation,
-        reload_id,
+        identifier,
         metadata={"started_at": dt.now().isoformat(), "filters": expected_filter_dict},
     )
     if not marked:
@@ -411,7 +404,7 @@ async def reload_cards_cache(
     finally:
         # await asyncio.sleep(30)
         # Always release the slot when done (success or failure)
-        unmark_operation(redis.redis_client, operation, reload_id)
+        unmark_operation(redis.redis_client, operation, identifier)
 
 
 @router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)
