@@ -125,7 +125,7 @@ async def get_download_status(redis: Redis, card_date: str) -> Optional[dict]:
     return await get_operation_status(redis, "download", card_date)
 
 
-async def is_cache_reloading(redis: Redis) -> bool:
+def is_cache_reloading(redis: Redis) -> bool:
     """Check if a cache reload is in progress"""
     return is_operation_in_progress(redis, "cache-reload", "reload")
 

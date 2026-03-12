@@ -13,10 +13,11 @@ async def notification_publisher():
     """Update the total number of S3 objects and emit an alert if the count increases"""
     day_filter = {"day": 1, "product": "all", "environment": "all", "protocol": "all"}
     try:
+        # Initial cache reload and download queue on server start
+        await cache_and_download(day_filter)
+
         initial_total_s3_objects = remote.total_s3_objects()
         logger.info(f"S3 total current: {initial_total_s3_objects}")
-
-        await cache_and_download(day_filter)
 
         while True:
             current_total_s3_objects = remote.total_s3_objects()
