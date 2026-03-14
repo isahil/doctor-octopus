@@ -52,7 +52,10 @@ def get_redis_host():
 
 
 def get_redis_port():
-    return int(get_env_variable("SDET_REDIS_PORT", "6379"))
+    port = get_env_variable("SDET_REDIS_PORT", 6379)
+    if not port:
+        raise ValueError("SDET_REDIS_PORT environment variable is not set.")
+    return int(port)
 
 def get_redis_url():
     sdet_redis_host = get_redis_host()
@@ -95,7 +98,10 @@ def get_fixme_mode():
 
 
 def get_fixme_server_port():
-    return int(get_env_variable("FIXME_SERVER_PORT", "8001"))
+    port = get_env_variable("FIXME_SERVER_PORT", 8001)
+    if not port:
+        raise ValueError("FIXME_SERVER_PORT environment variable is not set.")
+    return int(port)
 
 
 def get_fix_side():
