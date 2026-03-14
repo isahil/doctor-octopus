@@ -12,6 +12,7 @@ from config import (
     rate_limit_file_batch_size,
 )
 from src.component.validation import validate
+from src.utils.file_helper import ensure_dir
 from src.utils.helper import performance_log
 from src.utils.s3 import S3
 from src.utils.logger import logger
@@ -225,10 +226,8 @@ def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_
             reports_dir_path, _card_date_folder
         )  # "./test_reports/4-28-2025_10-01-41_AM"
         local_report_dir_rel_path = os.path.join(local_reports_dir_path, relative_path)
-
         local_report_sub_dir_path = os.path.dirname(local_report_dir_rel_path)
-        if not os.path.exists(local_report_sub_dir_path):
-            os.makedirs(local_report_sub_dir_path, exist_ok=True)
+        ensure_dir(local_report_sub_dir_path)
         return local_report_dir_rel_path
 
     for i in range(0, len(s3_card_objects), rate_limit_file_batch_size):
