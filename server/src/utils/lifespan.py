@@ -16,8 +16,6 @@ async def lifespan_main(app: FastAPI):
     Steps after yield gets executed after the server shut down is initiated.
     1: Initialize the resources. 2: Yield control to the server. 3: Clean up steps.
     """
-    import instances
-
     server_mode = get_server_mode()
     node_env = get_node_env()
     environment = get_test_env()
@@ -26,12 +24,7 @@ async def lifespan_main(app: FastAPI):
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | ENVIRONMENT: {environment} ")
 
     cards = Cards()
-    redis = instances.redis
     app.state.cards = cards
-    app.state.redis = redis
-    app.state.aioredis = instances.aioredis
-
-    redis.reset_redis_client_metrics()
 
     yield  # Yield control to the FastAPI application
 
@@ -46,8 +39,11 @@ async def lifespan_fixme(app: FastAPI):
     """
     import aiofiles
     import asyncio
-    import instances
-    from src.utils.fix import FixClient
+    from server_fixme import sio
+    from src.utils.fix import FixClient 
+    # path needs to be updated for octopus-tests
+    # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../octopus-tests/fix/')))
+    # from fix_client_async import FixClient # type: ignore
     from src.wsocket import WebSocketServer
 
     server_mode = get_server_mode()
@@ -64,14 +60,10 @@ async def lifespan_fixme(app: FastAPI):
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | ENVIRONMENT: {environment} ")
 
     cards = Cards()
-    redis = instances.redis
     app.state.cards = cards
-    app.state.redis = redis
-    app.state.aioredis = instances.aioredis
     app.state.the_lab_log_file_path = the_lab_log_file_path
 
     logger.info("Starting FixMe client task...")
-    sio = instances.sio
     if not sio:
         logger.error("Socket.IO not initialized properly!")
         raise Exception("Socket.IO not initialized properly!")

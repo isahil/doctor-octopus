@@ -1,22 +1,22 @@
-import asyncio
 import json
 import os
 from datetime import datetime
-from fastapi import APIRouter, BackgroundTasks, Query, Request, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
+from src.utils.helper import queue_cache_and_download
 from src.utils.logger import logger
 from src.utils.queue import (
+    is_cache_reloading,
     is_downloading,
     mark_downloading,
     unmark_downloading,
     get_download_status,
-    is_operation_in_progress,
     mark_operation,
     unmark_operation,
-    params_to_identifier,
+    wait_till_operation_complete,
 )
 import src.component.remote as remote
 import src.component.notification as notification
@@ -46,132 +46,17 @@ async def get_a_card(
     if mode == "cache" and test_report_dir not in local_r_directories:
         if is_downloading(redis.redis_client, test_report_dir):
             download_status = await get_download_status(redis.redis_client, test_report_dir)
-            logger.info(f"Card {test_report_dir} is already being downloaded. Status: {download_status}")
-            raise HTTPException(
-                status_code=202,
-                detail={
-                    "message": f"Card {test_report_dir} is currently being downloaded by another request",
-                    "status": "downloading",
-                    "details": download_status,
-                },
-            )
-
-        logger.info(f"Card not in local. Downloading from S3: {test_report_dir}")
-        test_report_dir = remote.download_s3_folder(root_dir)
+            logger.info(f"Card {test_report_dir} is already queued for download. Status: {download_status}")
+            await wait_till_operation_complete("download", test_report_dir, max_wait=300)
+        else:
+            logger.info(f"Card not in local. Downloading from S3: {test_report_dir}...")
+            test_report_dir = remote.download_s3_folder(root_dir)
     elif mode == "cache" and test_report_dir in local_r_directories:
         logger.info(f"Card available in local cache: {test_report_dir}")
     else:
         logger.info(f"TODO: local mode: {test_report_dir}")
     mount_path = f"/test_reports/{test_report_dir}"
     return PlainTextResponse(content=f"{mount_path}/index.html")
-
-
-@router.post("/download", response_class=JSONResponse, status_code=202)
-async def start_download(
-    card_date: str = Query(
-        ...,
-        title="S3 Card Directory",
-        description="S3 card directory path to download (e.g., 'trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM')",
-        examples=["12-31-2025_08-31-00_AM", "trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM"],
-    ),
-    background_tasks: BackgroundTasks = BackgroundTasks(),
-) -> JSONResponse:
-    """
-    Start a background download of an S3 folder to local storage.
-    This endpoint queues a download task and returns immediately with a 202 status.
-    It prevents duplicate simultaneous downloads by tracking in-progress downloads in Redis.
-
-    Returns:
-        - 200: Download already completed or in progress
-        - 202: Download queued successfully
-        - 400: Invalid card_date parameter
-    """
-    redis = instances.redis
-    cards = instances.fastapi_app.state.cards
-    test_report_dir = os.path.basename(card_date)
-    local_r_directories = local_report_directories()
-
-    try:
-        if test_report_dir in local_r_directories:
-            logger.info(f"Download request for {test_report_dir}: already cached locally, skipping")
-            return JSONResponse(
-                content={
-                    "status": "success",
-                    "message": f"Folder {test_report_dir} is already cached locally",
-                    "cached": True,
-                },
-                status_code=200,
-            )
-
-        if is_downloading(redis.redis_client, test_report_dir):
-            download_status = await get_download_status(redis.redis_client, test_report_dir)
-            logger.info(f"Download request for {test_report_dir}: already in progress")
-            return JSONResponse(
-                content={
-                    "status": "downloading",
-                    "message": f"Folder {test_report_dir} is already being downloaded",
-                    "details": download_status,
-                },
-                status_code=200,
-            )
-
-        from datetime import datetime as dt
-
-        acquired = mark_downloading(
-            redis.redis_client,
-            test_report_dir,
-            metadata={"started_at": dt.now().isoformat()},
-        )
-        if not acquired:
-            # Another request won the race between the is_downloading check and mark_downloading
-            logger.info(f"Download request for {test_report_dir}: lost race, already in progress")
-            return JSONResponse(
-                content={
-                    "status": "downloading",
-                    "message": f"Folder {test_report_dir} is already being downloaded",
-                },
-                status_code=200,
-            )
-
-        async def _download_task():
-            try:
-                logger.info(f"Starting background download for {test_report_dir}")
-                remote.download_s3_folder(card_date)
-
-                try:
-                    download_notification = {
-                        "type": "download",
-                        "card_date": test_report_dir,
-                        "timestamp": datetime.now().timestamp(),
-                    }
-                    await instances.aioredis.publish("notifications", download_notification)
-                    logger.info(f"Published download completion notification for {test_report_dir}")
-                except Exception as e:
-                    logger.error(f"Failed to publish download completion notification: {str(e)}")
-            except Exception as e:
-                logger.error(f"Download failed for {test_report_dir}: {str(e)}")
-            finally:
-                # Always unmark, even if download failed
-                unmark_downloading(redis.redis_client, test_report_dir)
-                cards.actions({"mode": "cleanup"})
-
-        background_tasks.add_task(_download_task)
-
-        return JSONResponse(
-            content={
-                "status": "queued",
-                "message": f"Download for folder {test_report_dir} has been queued",
-                "root_dir": test_report_dir,
-            },
-            status_code=202,
-        )
-
-    except Exception as e:
-        logger.error(f"Error starting download for {test_report_dir}: {str(e)}")
-        return JSONResponse(
-            content={"error": str(e)},
-            status_code=400,
-        )
 
 
 @router.get("/cards", response_class=JSONResponse, status_code=200)
@@ -208,6 +93,8 @@ async def get_all_cards(
     ),
 ) -> JSONResponse:
     """Get available report cards based on the mode requested"""
+    from server import fastapi_app
+
     expected_filter_dict = {
         "mode": mode,
         "environment": environment,
@@ -216,7 +103,8 @@ async def get_all_cards(
         "protocol": protocol,
     }
     logger.info(f"Getting all cards with filter data: {expected_filter_dict}")
-    cards = instances.fastapi_app.state.cards
+
+    cards = fastapi_app.state.cards
     all_cards = await cards.actions(expected_filter_dict)
     length = len(all_cards) if all_cards else 0
 
@@ -242,6 +130,188 @@ async def get_all_cards(
             "message": "Cards retrieved successfully",
             "cards": all_cards,
         },
+        status_code=200,
+    )
+
+
+@router.post("/download", response_class=JSONResponse, status_code=202)
+async def start_download(
+    card_date: str = Query(
+        ...,
+        title="S3 Card Directory",
+        description="S3 card directory path to download (e.g., 'trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM')",
+        examples=["12-31-2025_08-31-00_AM", "trading-apps/test_reports/api/qa/12-31-2025_08-30-00_AM"],
+    ),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+) -> JSONResponse:
+    """
+    Start a background download of an S3 folder to local storage.
+    This endpoint queues a download task and returns immediately with a 202 status.
+    It prevents duplicate simultaneous downloads by tracking in-progress downloads in Redis.
+
+    Returns:
+        - 200: Download already completed or in progress
+        - 202: Download queued successfully
+        - 400: Invalid card_date parameter
+    """
+    from server import fastapi_app
+    from datetime import datetime as dt
+
+    redis = instances.redis
+    cards = fastapi_app.state.cards
+    test_report_dir = os.path.basename(card_date)
+    local_r_directories = local_report_directories()
+
+    try:
+        if test_report_dir in local_r_directories:
+            logger.info(f"Download request for {test_report_dir}: already cached locally, skipping")
+            return JSONResponse(
+                content={
+                    "status": "success",
+                    "message": f"Folder {test_report_dir} is already cached locally",
+                    "cached": True,
+                },
+                status_code=200,
+            )
+
+        if is_downloading(redis.redis_client, test_report_dir):
+            download_status = await get_download_status(redis.redis_client, test_report_dir)
+            logger.info(f"Download request for {test_report_dir}: already in progress")
+            return JSONResponse(
+                content={
+                    "status": "downloading",
+                    "message": f"Folder {test_report_dir} is already being downloaded",
+                    "details": download_status,
+                },
+                status_code=200,
+            )
+
+        acquired = mark_downloading(
+            redis.redis_client,
+            test_report_dir,
+            metadata={"started_at": dt.now().isoformat()},
+        )
+        if not acquired:
+            # Another request won the race between the is_downloading check and mark_downloading
+            logger.info(f"Download request for {test_report_dir}: lost race, already in progress")
+            return JSONResponse(
+                content={
+                    "status": "downloading",
+                    "message": f"Folder {test_report_dir} is already being downloaded",
+                },
+                status_code=200,
+            )
+
+        async def _download_task():
+            try:
+                logger.info(f"Starting background download for {test_report_dir}")
+                remote.download_s3_folder(card_date)
+
+                try:
+                    download_notification = {
+                        "type": "download",
+                        "card_date": test_report_dir,
+                        "timestamp": dt.now().timestamp(),
+                    }
+                    await instances.aioredis.publish("notifications", download_notification)
+                    logger.info(f"Published download completion notification for {test_report_dir}")
+                except Exception as e:
+                    logger.error(f"Failed to publish download completion notification: {str(e)}")
+            except Exception as e:
+                logger.error(f"Download failed for {test_report_dir}: {str(e)}")
+            finally:
+                # Always unmark, even if download failed
+                unmark_downloading(redis.redis_client, test_report_dir)
+                await cards.actions({"mode": "cleanup"})
+
+        background_tasks.add_task(_download_task)
+
+        return JSONResponse(
+            content={
+                "status": "queued",
+                "message": f"Download for folder {test_report_dir} has been queued",
+                "root_dir": test_report_dir,
+            },
+            status_code=202,
+        )
+
+    except Exception as e:
+        logger.error(f"Error starting download for {test_report_dir}: {str(e)}")
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=400,
+        )
+
+
+@router.get("/missing-cards", response_class=JSONResponse, status_code=200)
+async def get_missing_cards(
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        examples=[1, 7],
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
+) -> JSONResponse:
+    from server import fastapi_app
+    from src.component.cards import Cards
+
+    cards: Cards = fastapi_app.state.cards
+    missing_cards = cards.all_missing_cards(
+        {"day": day, "product": product, "environment": environment, "protocol": protocol}
+    )
+    return JSONResponse(
+        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
+    )
+
+
+@router.get("/download-missing-cards", response_class=JSONResponse, status_code=200)
+async def download_missing_cards(
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        examples=[1, 7],
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
+) -> JSONResponse:
+    await queue_cache_and_download({"day": day, "product": product, "environment": environment, "protocol": protocol})
+    return JSONResponse(
+        content={"message": "Triggered download for missing cards"},
         status_code=200,
     )
 
@@ -277,6 +347,9 @@ async def reload_cards_cache(
     If an identical reload is already in progress (same filter combination),
     the request returns 202 immediately instead of duplicating work.
     """
+    from datetime import datetime as dt
+    from server import fastapi_app
+
     expected_filter_dict = {
         "environment": environment,
         "day": day,
@@ -286,11 +359,11 @@ async def reload_cards_cache(
     }
 
     redis = instances.redis
-    reload_id = params_to_identifier(expected_filter_dict)
     operation = "cache-reload"
+    identifier = "reload"
 
-    if is_operation_in_progress(redis.redis_client, operation, reload_id):
-        logger.info(f"Cache reload already in progress for filters {expected_filter_dict}")
+    if is_cache_reloading(redis.redis_client):
+        logger.info("Cache reload already queued.")
         return JSONResponse(
             content={
                 "status": "in-progress",
@@ -301,12 +374,10 @@ async def reload_cards_cache(
         )
 
     # Attempt to acquire the slot (SET NX); handles the race between check and mark
-    from datetime import datetime as dt
-
     marked = mark_operation(
         redis.redis_client,
         operation,
-        reload_id,
+        identifier,
         metadata={"started_at": dt.now().isoformat(), "filters": expected_filter_dict},
     )
     if not marked:
@@ -321,7 +392,7 @@ async def reload_cards_cache(
         )
 
     try:
-        cards = instances.fastapi_app.state.cards
+        cards = fastapi_app.state.cards
         card_dates = await cards.actions(expected_filter_dict)
         return JSONResponse(
             content={
@@ -331,9 +402,9 @@ async def reload_cards_cache(
             status_code=200,
         )
     finally:
-        await asyncio.sleep(30)
+        # await asyncio.sleep(30)
         # Always release the slot when done (success or failure)
-        unmark_operation(redis.redis_client, operation, reload_id)
+        unmark_operation(redis.redis_client, operation, identifier)
 
 
 @router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)
@@ -413,6 +484,8 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
 
 @router.get("/health", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
+    from server import fastapi_app
+
     start_time = datetime.now()
     health_data = {
         "status": "healthy",
@@ -425,7 +498,7 @@ async def health_check() -> JSONResponse:
         # Various instance health checks for services
         states = ["redis", "aioredis", "cards"]
         for state in states:
-            if hasattr(instances.fastapi_app.state, state):
+            if hasattr(fastapi_app.state, state):
                 try:
                     result = False
                     if state == "redis":
@@ -433,7 +506,7 @@ async def health_check() -> JSONResponse:
                     elif state == "aioredis":
                         result = await instances.aioredis.ping()
                     elif state == "cards":
-                        result = getattr(instances.fastapi_app.state, state).ping()
+                        result = getattr(fastapi_app.state, state).ping()
                     health_data["services"][state] = "healthy" if result else "unhealthy"
                 except Exception as e:
                     logger.warning(f"{state} health check failed: {str(e)}")

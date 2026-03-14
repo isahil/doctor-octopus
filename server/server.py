@@ -1,5 +1,7 @@
 # This is the entry point of the main server process
 import os
+from fastapi import FastAPI
+from src.utils.lifespan import lifespan_main
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -7,9 +9,12 @@ from fastapi.staticfiles import StaticFiles
 
 os.environ["SERVER_MODE"] = "main"
 from config import workers_limit
-from src.utils.env_loader import get_main_server_port, get_node_env
-from instances import fastapi_app
+from src.utils.env_loader import get_debug_mode, get_main_server_port, get_node_env
 from src.fastapi import router as fastapi_router
+
+debug = get_debug_mode()
+
+fastapi_app: FastAPI = FastAPI(lifespan=lifespan_main, debug=True if debug == "true" else False)
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -32,6 +37,7 @@ if __name__ == "__main__":
         port=main_server_port,
         lifespan="on",
         workers=workers_limit,
+        forwarded_allow_ips="*",
         reload=(node_env != "production"),
     )
 

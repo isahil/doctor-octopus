@@ -9,8 +9,9 @@ import TerminalProvider from "./context/terminal-context.jsx"
 import Footer from "./component/footer/footer.jsx"
 import Lab from "./component/lab/lab.jsx"
 import XTerm from "./component/xterm/xterm.jsx"
+import { runtime_config } from "./util/env_loader.js"
 
-export const { VITE_FIXME_SERVER_HOST, VITE_FIXME_SERVER_PORT } = import.meta.env
+export const { fixme_server_host, fixme_server_port } = runtime_config
 
 function App() {
   const location = useLocation()
@@ -30,8 +31,8 @@ function App() {
             path="/the-lab"
             element={
               <SocketIOProvider
-                host={VITE_FIXME_SERVER_HOST}
-                port={VITE_FIXME_SERVER_PORT}
+                host={fixme_server_host}
+                port={fixme_server_port}
                 enabled={isLabRoute} // Only enable when on Lab route
               >
                 <TerminalProvider>

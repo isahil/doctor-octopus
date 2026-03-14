@@ -7,12 +7,14 @@ Supports any operation type via a generic key scheme:
     {root_redis_key}:operations:{operation}:in-progress:{identifier}
 """
 
+import asyncio
 import hashlib
 import json
 from typing import Optional
 from config import root_redis_key, download_queue_ttl, cache_reload_queue_ttl
 from redis import Redis
 from src.utils.logger import logger
+import instances
 
 
 # Default TTLs per operation type (seconds). Callers can override via `ttl` param.
@@ -121,3 +123,27 @@ def unmark_downloading(redis: Redis, card_date: str) -> bool:
 async def get_download_status(redis: Redis, card_date: str) -> Optional[dict]:
     """Get the current download metadata for a card_date."""
     return await get_operation_status(redis, "download", card_date)
+
+
+def is_cache_reloading(redis: Redis) -> bool:
+    """Check if a cache reload is in progress"""
+    return is_operation_in_progress(redis, "cache-reload", "reload")
+
+
+async def wait_till_operation_complete(operation: str, identifier: str, max_wait: int, poll_interval: int = 5):
+    """Async helper to wait until a given operation+identifier is no longer in-progress.
+    max_wait is the total time in seconds to wait before giving up (to avoid infinite loops).
+    """
+    redis = instances.redis
+    redis_client = redis.redis_client
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + max_wait
+
+    while await get_operation_status(redis_client, operation, identifier) is not None and loop.time() < deadline:
+        remaining = deadline - loop.time()
+        if remaining <= 0:
+            break
+        sleep_time = min(poll_interval, remaining)
+        logger.info(f"Waiting for {operation} to complete...")
+        await asyncio.sleep(sleep_time)
+    logger.info(f"Finished waiting for {operation}")

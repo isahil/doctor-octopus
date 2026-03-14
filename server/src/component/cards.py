@@ -88,10 +88,9 @@ class Cards:
             logger.info(f"No cards found in Redis cache w. filter: {expected_filter_dict}.")
         return _missing_cards
 
-    def download_missing_cards(self, expected_filter_dict: dict) -> list[str]:
+    def all_missing_cards(self, expected_filter_dict: dict) -> list[str]:
         """
-        Download the missing cards from S3 and cache them on the server using three levels of parallelism:
-        (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
+        Find all missing cards across specified day range, product, environments and protocols in the filters.
         """
         local_cards = get_all_local_cards(expected_filter_dict)
         environment = expected_filter_dict.get("environment")
@@ -115,7 +114,14 @@ class Cards:
         missing_cache_card_dates = sum(
             cards_missing_per_env_proto, []
         )  # Flatten the list of lists into a single list []
+        return missing_cache_card_dates
 
+    def download_missing_cards(self, expected_filter_dict: dict) -> list[str]:
+        """
+        Download the missing cards from S3 and cache them on the server using three levels of parallelism:
+        (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
+        """
+        missing_cache_card_dates = self.all_missing_cards(expected_filter_dict)
         self.download_cards(missing_cache_card_dates)
         return missing_cache_card_dates
 
@@ -151,13 +157,20 @@ class Cards:
         return (total_items + batch_size - 1) // batch_size
 
     def download_missing_cached_cards(self, expected_filter_dict: dict) -> list[str]:
-        """Download missing local cards that are already cached in Redis."""
+        """Download missing local cards that are already cached in Redis.
+        Alternative of download_missing_cards that checks against individual caches by env:proto hash combo.
+        This function uses the set cache to determine which cards to download, while download_missing_cards uses the hash cache and validation to determine which cards to download. The hash cache is more expensive to query but more accurate,
+        while the set cache is less expensive but may contain some cards that don't fully match the filter criteria.
+        This function will download all protocols' missing cards avaialble in the caches, while download_missing_cards will only download missing cards for the specified protocols in the config file.
+        """
         missing_cache_card_dates = self.cards_to_download(expected_filter_dict)
         self.download_cards(missing_cache_card_dates)
         return missing_cache_card_dates
 
     def cards_to_download(self, expected_filter_dict: dict) -> list[str]:
-        """Determine which cards need to be downloaded from S3 based on the expected filter data."""
+        """Determine which cards need to be downloaded from S3 based on the expected filter data.
+        returns ['12-31-2025_08-30-00_AM', ...]
+        """
         import instances
 
         redis = instances.redis
@@ -166,7 +179,7 @@ class Cards:
         transformed_cards_dict = self.transform_cached_cards_to_filter_dict(cached_cards)
 
         validation_results = [
-            (card_date, validate(transformed_cards_dict[card_date]["filter_data"], expected_filter_dict))
+            (card_date, validate(transformed_cards_dict[card_date], expected_filter_dict))
             for card_date in transformed_cards_dict.keys()
         ]
         validated_card_dates = [card_date for card_date, error in validation_results if not error]
@@ -176,12 +189,14 @@ class Cards:
         return missing_cache_card_dates
 
     def transform_cached_cards_to_filter_dict(self, cards_dates: list[str]) -> dict[str, dict]:
-        """Transform a list of card S3 root directories to their corresponding filter dicts."""
+        """Transform a list of card S3 root directories to their corresponding filter dicts.
+        returns {'12-31-2025_08-30-00_AM': {'day': '12-31-2025_08-30-00_AM'}, ...}
+        """
         cards_pool = {}
         for card_date in cards_dates:
             filter_dict = {"day": card_date}
             if card_date not in cards_pool:
-                cards_pool[card_date] = {"filter_data": filter_dict}  # TODO: remove hardcoded filter_data obj
+                cards_pool[card_date] = filter_dict
         return cards_pool
 
     def set_cards(self, expected_filter_dict: dict):

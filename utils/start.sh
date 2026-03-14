@@ -1,5 +1,11 @@
 #!/bin/bash
 DEBUG=$1
+APP_MODE=${2:-dev}
+
+client_script="client"
+if [ "$APP_MODE" = "prod" ]; then
+    client_script="client:prod"
+fi
 
 source ./utils/env-loader.sh
 
@@ -109,7 +115,7 @@ for process in client server notification; do
 done
 
 echo "[$(date)] Starting the client server..."
-nohup npm run client >> "$client_log_file" 2>&1 &
+nohup npm run "$client_script" >> "$client_log_file" 2>&1 &
 CLIENT_PID=$!
 if save_pid_with_validation "$CLIENT_PID" "client"; then
     echo "[$(date)] The client service process started. [$CLIENT_PID]"

@@ -1,6 +1,8 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 
+const allowed_hosts = process.env.VITE_ALLOWED_HOSTS || ".com"
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -13,6 +15,7 @@ export default defineConfig({
         secure: false,
       },
     },
+    allowedHosts: [allowed_hosts],
   },
   build: {
     sourcemap: true,

@@ -21,7 +21,6 @@ from src.utils.logger import logger  # noqa
 
 def get_env_variable(var_name, default_value=None):
     value = os.environ.get(var_name, default_value)
-    # logger.trace(f"Retrieved environment variable '{var_name}': {value}")
     return value
 
 
@@ -42,7 +41,7 @@ def get_main_server_host():
 
 
 def get_main_server_port():
-    value = get_env_variable("MAIN_SERVER_PORT")
+    value = get_env_variable("MAIN_SERVER_PORT", "8000")
     if not value:
         raise ValueError("MAIN_SERVER_PORT environment variable is not set.")
     return int(value)
@@ -53,8 +52,15 @@ def get_redis_host():
 
 
 def get_redis_port():
-    return int(get_env_variable("SDET_REDIS_PORT", 6379))
+    port = get_env_variable("SDET_REDIS_PORT", 6379)
+    if not port:
+        raise ValueError("SDET_REDIS_PORT environment variable is not set.")
+    return int(port)
 
+def get_redis_url():
+    sdet_redis_host = get_redis_host()
+    redis_url = f"redis://{sdet_redis_host}:6379/0"
+    return redis_url
 
 def get_test_reports_dir():
     """Get test reports directory, creating timestamped subdirectory if not already set
@@ -92,7 +98,10 @@ def get_fixme_mode():
 
 
 def get_fixme_server_port():
-    return int(get_env_variable("FIXME_SERVER_PORT", "8001"))
+    port = get_env_variable("FIXME_SERVER_PORT", 8001)
+    if not port:
+        raise ValueError("FIXME_SERVER_PORT environment variable is not set.")
+    return int(port)
 
 
 def get_fix_side():

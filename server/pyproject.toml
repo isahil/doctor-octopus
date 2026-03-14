@@ -1,3 +1,6 @@
+[tool.fastapi]
+entrypoint = "server:fastapi_app"
+
 [tool.poetry]
 name = "server"
 version = "1.0.0"
