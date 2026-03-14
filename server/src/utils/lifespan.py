@@ -16,8 +16,6 @@ async def lifespan_main(app: FastAPI):
     Steps after yield gets executed after the server shut down is initiated.
     1: Initialize the resources. 2: Yield control to the server. 3: Clean up steps.
     """
-    import instances
-
     server_mode = get_server_mode()
     node_env = get_node_env()
     environment = get_test_env()
@@ -26,12 +24,7 @@ async def lifespan_main(app: FastAPI):
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | ENVIRONMENT: {environment} ")
 
     cards = Cards()
-    redis = instances.redis
     app.state.cards = cards
-    app.state.redis = redis
-    app.state.aioredis = instances.aioredis
-
-    redis.reset_redis_client_metrics()
 
     yield  # Yield control to the FastAPI application
 
@@ -46,7 +39,6 @@ async def lifespan_fixme(app: FastAPI):
     """
     import aiofiles
     import asyncio
-    import instances
     from server_fixme import sio
     from src.utils.fix import FixClient 
     # path needs to be updated for octopus-tests
@@ -68,10 +60,7 @@ async def lifespan_fixme(app: FastAPI):
     logger.info(f"SERVER_MODE: {server_mode} | NODE_ENV: {node_env} | ENVIRONMENT: {environment} ")
 
     cards = Cards()
-    redis = instances.redis
     app.state.cards = cards
-    app.state.redis = redis
-    app.state.aioredis = instances.aioredis
     app.state.the_lab_log_file_path = the_lab_log_file_path
 
     logger.info("Starting FixMe client task...")

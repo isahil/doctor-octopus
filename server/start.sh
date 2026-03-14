@@ -16,7 +16,7 @@ if [ "$SERVER_MODE" = "main" ]; then
 
     if [ "$INITIALIZE" = "true" ]; then
         # echo "[$(date)] Initializing the app environment"
-        # poetry run python3 initialize.py
+        poetry run python3 initialize.py
         echo "[$(date)] Initialized the app environment"
     fi
 
