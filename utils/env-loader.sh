@@ -1,4 +1,5 @@
 # Load environment variables
+echo "Loading environment variables from .env file..."
 if [ -f /app/.env ]; then
     set -a
     source /app/.env
@@ -8,3 +9,4 @@ elif [ -f .env ]; then
     source .env
     set +a
 fi
+echo "Environment variables loaded successfully!"

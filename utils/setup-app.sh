@@ -9,6 +9,9 @@ START_TIME=$(date +%s)
 echo "Setting up Doctor Octopus in \""$MODE"\" mode. START TIME: [$(date)]"
 WORK_DIR=$(pwd)
 
+SERVER_PY_VERSION="3.9"
+FIXME_PY_VERSION="3.9"
+
 if [ "$MODE" = "all" ]; then
     sh utils/setup-server.sh
 fi
@@ -23,12 +26,25 @@ npm install
 echo "Root app directory set up finished!"
 
 if [ "$MODE" = "all" ] || [ "$MODE" = "app" ] || [ "$MODE" = "server" ]; then
-    echo "Setting up the Server..."
+    echo "Setting up the Main server..."
     cd server
 
-    echo "Installing the server poetry python dependencies..."
+    echo "Installing the Main server python dependencies using Poetry & Python $SERVER_PY_VERSION..."
+    echo "Setting python version to python@$SERVER_PY_VERSION"
+    poetry env use $SERVER_PY_VERSION
     poetry install
-    echo "Server set up finished!"
+    echo "Main server set up finished!"
+fi
+
+if [ "$MODE" = "all" ] || [ "$MODE" = "app" ] || [ "$MODE" = "server" ]; then
+    echo "Setting up the FixMe server..."
+    cd $WORK_DIR/fixme
+
+    echo "Installing the FixMe server python dependencies using Poetry & Python $FIXME_PY_VERSION..."
+    echo "Setting python version to python@$FIXME_PY_VERSION"
+    poetry env use $FIXME_PY_VERSION
+    poetry install
+    echo "FixME server set up finished!"
 fi
 
 if [ "$MODE" = "all" ] || [ "$MODE" = "app" ] || [ "$MODE" = "client" ]; then
@@ -58,8 +74,8 @@ echo "git: $(git --version)"
 echo "node: $(node --version)"
 echo "npm: $(npm --version)"
 echo "python3: $(python3 --version)"
-echo "python: $(python --version)"
 echo "pip3: $(pip3 --version)"
+echo "python: $(python --version)"
 echo "pip: $(pip --version)"
 echo "venv: $(python3 -m venv --help | head -n 1)"
 echo "poetry: $(poetry --version)"
