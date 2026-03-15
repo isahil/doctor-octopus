@@ -57,10 +57,12 @@ def get_redis_port():
         raise ValueError("SDET_REDIS_PORT environment variable is not set.")
     return int(port)
 
+
 def get_redis_url():
     sdet_redis_host = get_redis_host()
     redis_url = f"redis://{sdet_redis_host}:6379/0"
     return redis_url
+
 
 def get_test_reports_dir():
     """Get test reports directory, creating timestamped subdirectory if not already set
@@ -91,29 +93,6 @@ def get_test_env():
 
 def get_app_name():
     return get_env_variable("APP", "loan")
-
-
-def get_fixme_mode():
-    return get_env_variable("FIXME_MODE", "false") == "true"
-
-
-def get_fixme_server_port():
-    port = get_env_variable("FIXME_SERVER_PORT", 8001)
-    if not port:
-        raise ValueError("FIXME_SERVER_PORT environment variable is not set.")
-    return int(port)
-
-
-def get_fix_side():
-    return get_env_variable("FIX_SIDE", "client")
-
-
-def get_fix_mode():
-    return get_env_variable("FIX_MODE", "solicited")
-
-
-def get_fix_counter():
-    return get_env_variable("COUNTER", "1")
 
 
 def get_debug_mode():

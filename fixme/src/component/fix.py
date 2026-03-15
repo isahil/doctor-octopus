@@ -40,7 +40,9 @@ class Application:
                 loop.run_until_complete(async_emit(message))
 
     def submitOrder(self, order, validation, trade_validation):
-        logger.info(f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}")
+        logger.info(
+            f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}"
+        )
         self.broadcast(order)
         return order
 

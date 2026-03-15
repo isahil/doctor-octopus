@@ -7,7 +7,7 @@
 	"scripts": {
 		"client": "cd client && npm run dev",
 		"client:prod": "cd client && npm run build && npm run serve -- --host 0.0.0.0 --port 3000",
-		"fixme": "cd server && bash start.sh fixme false",
+		"fixme": "cd fixme && bash start.sh fixme false",
 		"format": "prettier --write .",
 		"healthcheck": "curl --fail http://localhost:8000/health || exit 1",
 		"lint": "npx eslint .",

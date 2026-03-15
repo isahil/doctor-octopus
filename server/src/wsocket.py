@@ -20,7 +20,6 @@ class WebSocketServer:
         self.sio.on("connect", self.connect)
         self.sio.on("disconnect", self.disconnect)
         self.sio.on("cards", self.cards)
-        self.sio.on("fixme", self.fixme_client)
         self.sio.on("the-lab", self.the_lab)
         logger.info(f"WebSocketServer initialized with SIO: {sio is not None}")
 
@@ -62,14 +61,6 @@ class WebSocketServer:
         else:
             logger.info("Cards class not found in app state.")
             await self.sio.emit("cards", False, room=sid)
-
-    async def fixme_client(self, sid, order, namespace="/"):
-        logger.info(f"Socket client [{sid}] sent data to fixme: {order}")
-        fix = await self.fastapi_app.state.fix
-        if not fix:
-            logger.info("fix instance not found in fastapi_app.state")
-            return
-        fix.submitOrder(order, {}, {})
 
     async def the_lab(self, sid, options, namespace="/"):
         """Run a command using The Lab to execute the playwright test suite"""
