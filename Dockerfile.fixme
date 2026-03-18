@@ -1,0 +1,61 @@
+# syntax=docker/dockerfile:1
+FROM python:3.9-slim
+
+ENV NODE_ENV=production
+
+# System dependencies. For some reason, nodejs & npm helps with poetry installation in py3.9. Will investigate later.
+RUN apt-get update && apt-get install -y \
+    bash \
+    curl \
+    nodejs \
+    npm \
+    lsof \
+    && curl -sSL 'https://install.python-poetry.org' | POETRY_HOME=/opt/poetry python - \
+    # Clean caches:
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Use system-wide poetry installation
+ENV PATH="/opt/poetry/bin:$PATH"
+
+WORKDIR /app
+
+# Create 'doctor' user and group EARLY
+RUN groupadd -r doctor && useradd -r -g doctor -m -d /home/doctor doctor
+
+# Create directories with proper ownership from the start
+# RUN mkdir -p fixme/logs && chown -R doctor:doctor /app
+
+# Copy server files with proper ownership
+COPY --chown=doctor:doctor fixme/readme.md fixme/server.py ./fixme/
+
+# Install Python dependencies AS ROOT but use accessible cache location
+RUN --mount=type=cache,target=/tmp/poetry-cache \
+    --mount=type=bind,source=fixme/pyproject.toml,target=fixme/pyproject.toml \
+    --mount=type=bind,source=fixme/poetry.lock,target=fixme/poetry.lock \
+    cd fixme && \
+    poetry config cache-dir /tmp/poetry-cache && \
+    poetry config virtualenvs.create true && \
+    poetry config virtualenvs.in-project true && \
+    poetry config virtualenvs.path /app/fixme/.venv && \
+    poetry install --no-interaction --no-ansi
+
+# Copy source files with proper ownership
+COPY --chown=doctor:doctor fixme/ ./fixme/
+
+# Fix any permission issues that might have occurred
+RUN chown -R doctor:doctor /app
+
+# Test Python packages are installed correctly in venv
+RUN /app/fixme/.venv/bin/python -c "import fastapi; print('FastAPI installed successfully')"
+
+# Use bash as default shell
+SHELL ["/bin/bash", "-c"]
+
+# Switch to non-root user
+USER doctor
+
+EXPOSE 8001
+
+CMD npm run fixme

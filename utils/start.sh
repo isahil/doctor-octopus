@@ -1,9 +1,9 @@
 #!/bin/bash
 DEBUG=$1
-APP_MODE=${2:-dev}
+NODE_ENV=${2:-dev}
 
 client_script="client"
-if [ "$APP_MODE" = "prod" ]; then
+if [ "$NODE_ENV" = "prod" ]; then
     client_script="client:prod"
 fi
 

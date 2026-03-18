@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+FROM node:20-slim
+
+ENV NODE_ENV=production
+
+RUN apt-get update && apt-get install -y \
+    bash \
+    npm \
+    curl \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN groupadd -r doctor && useradd -r -g doctor -m -d /home/doctor doctor
+
+COPY --chown=doctor:doctor client ./client
+
+RUN chown -R doctor:doctor /app
+
+SHELL ["/bin/bash", "-c"]
+
+# Switch to non-root user
+USER doctor
+
+EXPOSE 3000
+
+CMD npm run client:prod
