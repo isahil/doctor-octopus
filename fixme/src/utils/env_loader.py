@@ -5,7 +5,7 @@ load_dotenv(".env", verbose=False, override=True)
 
 
 def get_local_dir():
-    return os.environ.get("LOCAL_DIRECTORY", "../../octopus-tests/")
+    return os.environ.get("LOCAL_DIRECTORY", "")
 
 
 local_dir = (
