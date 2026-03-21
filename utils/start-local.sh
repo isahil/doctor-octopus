@@ -4,4 +4,4 @@ source ./utils/env-loader.sh
 
 echo "Starting development environment..."
 
-npm run start-local
+concurrently "cd client && npm run dev" "cd server && bash start.sh main true"

@@ -48,7 +48,7 @@ def get_main_server_port():
 
 
 def get_redis_host():
-    return get_env_variable("SDET_REDIS_HOST", "localhost")
+    return get_env_variable("SDET_REDIS_HOST", "")
 
 
 def get_redis_port():
