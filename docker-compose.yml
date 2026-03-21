@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+    client:
+        container_name: doctor-octopus-client
+        build:
+            context: .
+            dockerfile: Dockerfile.client
+        ports:
+            - "3000:3000"
+        environment:
+            - NODE_ENV=production
+        depends_on:
+            - server
+        networks:
+            - doctor-network
+        restart: unless-stopped
+
+    server:
+        container_name: doctor-octopus-server
+        build:
+            context: .
+            dockerfile: Dockerfile.server
+        ports:
+            - "8000:8000"
+        env_file:
+            - .env
+        environment:
+            - NODE_ENV=production
+            # - PYTHONUNBUFFERED=1
+            - SERVER_MODE=main
+            - MAIN_SERVER_PORT=8000
+            - SDET_REDIS_HOST=redis
+            - SDET_REDIS_PORT=6379
+        depends_on:
+            - redis
+        volumes:
+            - ./logs:/app/logs
+            - ./server/test_reports:/app/server/test_reports
+            - /etc/localtime:/etc/localtime:ro # Sync container time with host time
+        networks:
+            - doctor-network
+        restart: unless-stopped
+
+    fixme:
+        container_name: doctor-octopus-fixme
+        build:
+            context: .
+            dockerfile: Dockerfile.fixme
+        ports:
+            - "8001:8001"
+        environment:
+            - NODE_ENV=production
+            # - PYTHONUNBUFFERED=1
+            - SERVER_MODE=fixme
+            - FIXME_SERVER_PORT=8001
+        volumes:
+            - ./logs:/app/logs
+        networks:
+            - doctor-network
+        restart: unless-stopped
+
+    redis:
+        image: redis:alpine
+        container_name: doctor-octopus-redis
+        restart: always
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/data
+        command: redis-server --appendonly yes # override enables Redis's Append Only File (AOF) persistence for better durability
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 60s
+            timeout: 5s
+            retries: 5
+        networks:
+            - doctor-network
+
+volumes:
+    redis-data:
+    test_reports:
+
+networks:
+    doctor-network:
+        driver: bridge

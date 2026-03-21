@@ -5,8 +5,8 @@ ENV NODE_ENV=production
 
 RUN apt-get update && apt-get install -y \
     bash \
-    npm \
     curl \
+    npm \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
@@ -15,9 +15,19 @@ WORKDIR /app
 
 RUN groupadd -r doctor && useradd -r -g doctor -m -d /home/doctor doctor
 
-COPY --chown=doctor:doctor client ./client
+# Install client dependencies AS ROOT (for now) but fix cache location
+RUN --mount=type=bind,source=client/package.json,target=client/package.json \
+    --mount=type=bind,source=client/package-lock.json,target=client/package-lock.json \
+    --mount=type=cache,target=/tmp/.npm \
+    cd client && npm ci --omit=dev --cache /tmp/.npm
+
+# COPY --chown=doctor:doctor client ./client
+COPY --chown=doctor:doctor . .
 
 RUN chown -R doctor:doctor /app
+
+# install root level dependencies.
+RUN npm ci
 
 SHELL ["/bin/bash", "-c"]
 
@@ -26,4 +36,4 @@ USER doctor
 
 EXPOSE 3000
 
-CMD npm run client:prod
+CMD npm run start client true
