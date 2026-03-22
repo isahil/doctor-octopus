@@ -7,7 +7,7 @@ if [ -z "$SERVICE" ]; then
     exit 1
 fi
 
-DEBUG=${2:-false}
+DEBUG=${2:-false} # Run the processes in foreground for debugging if second argument is "true"
 
 source ./utils/env-loader.sh
 
@@ -20,18 +20,22 @@ if [ -f /.dockerenv ]; then
     case "$SERVICE" in
         "client")
             cd client && npm run build && npm run serve -- --host 0.0.0.0 --port 3000
+            # npm run client:prod
             exit $?
             ;;
         "server")
             cd server && poetry run python3 initialize.py && poetry run uvicorn server:fastapi_app --host 0.0.0.0 --port 8000
+            # npm run server
             exit $?
             ;;
         "fixme")
             cd fixme && poetry run uvicorn server:fastapi_app --host 0.0.0.0 --port 8001
+            # npm run fixme
             exit $?
             ;;
         "notification")
             cd server && poetry run python3 src/component/notification.py
+            # npm run notification
             exit $?
             ;;
         *)

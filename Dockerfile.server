@@ -7,8 +7,6 @@ ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y \
     bash \
     curl \
-    nodejs \
-    npm \
     lsof \
     && curl -sSL 'https://install.python-poetry.org' | POETRY_HOME=/opt/poetry python - \
     # Clean caches:
@@ -45,9 +43,6 @@ RUN --mount=type=cache,target=/tmp/poetry-cache \
 # Test Python packages are installed correctly in venv
 RUN /app/server/.venv/bin/python -c "import fastapi; print('FastAPI installed successfully')"
 
-# install root level dependencies.
-RUN npm ci
-
 # Use bash as default shell
 SHELL ["/bin/bash", "-c"]
 
@@ -56,4 +51,4 @@ USER doctor
 
 EXPOSE 8000
 
-CMD npm run start server true
+CMD cd server && poetry run python3 server.py
