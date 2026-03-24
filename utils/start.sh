@@ -7,7 +7,7 @@ if [ -z "$SERVICE" ]; then
     exit 1
 fi
 
-DEBUG=${2:-false} # Run the processes in foreground for debugging if second argument is "true"
+DEBUG=${2:-false} # Run the processes in foreground for Debugging/Docker if second argument is "true"
 
 source ./utils/env-loader.sh
 

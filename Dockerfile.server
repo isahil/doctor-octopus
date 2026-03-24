@@ -51,4 +51,4 @@ USER doctor
 
 EXPOSE 8000
 
-CMD cd server && poetry run python3 server.py
+CMD bash utils/start.sh server true

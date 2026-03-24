@@ -2,22 +2,22 @@
 FROM python:3.9-slim
 
 ENV NODE_ENV=production
+ENV POETRY_VERSION=2.2.1
 
 # System dependencies. For some reason, nodejs & npm helps with poetry installation in py3.9. Will investigate later.
 RUN apt-get update && apt-get install -y \
     bash \
+    ca-certificates \
     curl \
-    nodejs \
-    npm \
     lsof \
-    && curl -sSL 'https://install.python-poetry.org' | POETRY_HOME=/opt/poetry python - \
+    && pip install --no-cache-dir "poetry==$POETRY_VERSION" \
     # Clean caches:
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Use system-wide poetry installation
-ENV PATH="/opt/poetry/bin:$PATH"
+ENV PATH="/usr/local/bin:$PATH"
 
 WORKDIR /app
 
@@ -48,9 +48,6 @@ RUN chown -R doctor:doctor /app
 # Test Python packages are installed correctly in venv
 RUN /app/fixme/.venv/bin/python -c "import fastapi; print('FastAPI installed successfully')"
 
-# install root level dependencies.
-RUN npm ci
-
 # Use bash as default shell
 SHELL ["/bin/bash", "-c"]
 
@@ -59,4 +56,4 @@ USER doctor
 
 EXPOSE 8001
 
-CMD npm run start fixme true
+CMD bash utils/start.sh fixme true
