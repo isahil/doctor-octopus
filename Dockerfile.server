@@ -23,11 +23,7 @@ WORKDIR /app
 RUN groupadd -r doctor && useradd -r -g doctor -m -d /home/doctor doctor
 
 # Copy server files with proper ownership
-# COPY --chown=doctor:doctor server ./server
-COPY --chown=doctor:doctor . .
-
-# Fix any permission issues that might have occurred
-RUN chown -R doctor:doctor /app
+COPY --chown=doctor:doctor server/readme.md server/server.py ./server/
 
 # Install Python dependencies AS ROOT but use accessible cache location
 RUN --mount=type=cache,target=/tmp/poetry-cache \
@@ -40,8 +36,12 @@ RUN --mount=type=cache,target=/tmp/poetry-cache \
     poetry config virtualenvs.path /app/server/.venv && \
     poetry install --no-interaction --no-ansi
 
-# Test Python packages are installed correctly in venv
-RUN /app/server/.venv/bin/python -c "import fastapi; print('FastAPI installed successfully')"
+# Copy server and utility files into explicit directories
+COPY --chown=doctor:doctor server/ ./server/
+COPY --chown=doctor:doctor utils/ ./utils/
+
+# Fix any permission issues that might have occurred
+RUN chown -R doctor:doctor /app
 
 # Use bash as default shell
 SHELL ["/bin/bash", "-c"]

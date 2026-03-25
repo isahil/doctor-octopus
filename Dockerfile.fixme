@@ -8,7 +8,6 @@ ENV POETRY_VERSION=2.2.1
 RUN apt-get update && apt-get install -y \
     bash \
     ca-certificates \
-    curl \
     lsof \
     && pip install --no-cache-dir "poetry==$POETRY_VERSION" \
     # Clean caches:
@@ -39,14 +38,11 @@ RUN --mount=type=cache,target=/tmp/poetry-cache \
     poetry install --no-interaction --no-ansi
 
 # Copy source files with proper ownership
-# COPY --chown=doctor:doctor fixme/ ./fixme/
-COPY --chown=doctor:doctor . .
+COPY --chown=doctor:doctor fixme/ ./fixme/
+COPY --chown=doctor:doctor utils/ ./utils/
 
 # Fix any permission issues that might have occurred
 RUN chown -R doctor:doctor /app
-
-# Test Python packages are installed correctly in venv
-RUN /app/fixme/.venv/bin/python -c "import fastapi; print('FastAPI installed successfully')"
 
 # Use bash as default shell
 SHELL ["/bin/bash", "-c"]

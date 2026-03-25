@@ -5,7 +5,6 @@ ENV NODE_ENV=production
 
 RUN apt-get update && apt-get install -y \
     bash \
-    curl \
     npm \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
@@ -15,25 +14,22 @@ WORKDIR /app
 
 RUN groupadd -r doctor && useradd -r -g doctor -m -d /home/doctor doctor
 
-# Install client dependencies AS ROOT (for now) but fix cache location
+COPY --chown=doctor:doctor client/readme.md ./client/
+
 RUN --mount=type=bind,source=client/package.json,target=client/package.json \
     --mount=type=bind,source=client/package-lock.json,target=client/package-lock.json \
     --mount=type=cache,target=/tmp/.npm \
     cd client && npm ci --omit=dev --cache /tmp/.npm
 
-# COPY --chown=doctor:doctor client ./client
-COPY --chown=doctor:doctor . .
+COPY --chown=doctor:doctor client/ ./client/
+COPY --chown=doctor:doctor utils/ ./utils/
 
 RUN chown -R doctor:doctor /app
 
-# install root level dependencies.
-RUN npm ci
-
 SHELL ["/bin/bash", "-c"]
 
-# Switch to non-root user
 USER doctor
 
 EXPOSE 3000
 
-CMD npm run start client true
+CMD bash utils/start.sh client true
