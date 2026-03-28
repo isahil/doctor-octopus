@@ -1,6 +1,6 @@
 # Doctor Octopus - Copilot Instructions
 
-Doctor Octopus is a Playwright test runner and report viewer application. It provides **The Lab** (test execution), **Cards** (test report viewing), and **Terminal** (live log streaming) features to simplify running Playwright test suites and viewing their reports.
+Doctor Octopus is a automated test runner and HTML report viewer application. It provides **The Lab** (test execution), **Cards** (test report viewing), and **Terminal** (live log streaming) features to simplify running test suites and viewing their reports.
 
 ## Architecture Overview
 
@@ -9,7 +9,7 @@ Doctor Octopus is a Playwright test runner and report viewer application. It pro
 The application consists of three main services:
 
 1. **Server** (`server/`) - FastAPI backend (Python)
-   - Main REST API on port 8000
+   - Main REST API multi-threaded server on port 8000
    - Manages test execution, report handling, and S3 uploads
    - Components in `src/component/`: cards, local, remote, validation, notification
    - WebSocket server (`src/wsocket.py`) for real-time log streaming via SocketIO
@@ -21,10 +21,10 @@ The application consists of three main services:
    - Context providers in `src/context/`: LabContext, SocketIOContext, TerminalContext
    - XTerm.js for terminal emulation
 
-3. **FixMe** (`fixme/`) - Dedicated WebSocket server (Python)
+3. **FixMe** (`fixme/`) - Dedicated WebSocket server to communicate with FIX client application and stream logs (Python)
    - FastAPI app on port 8001
-   - Handles WebSocket connections for real-time log streaming during test execution
-   - Separate service to avoid blocking the main server
+   - Handles WebSocket connections for real-time log streaming during order execution
+   - Separate single threaded service to avoid blocking the main server
 
 ### Test Suite Structure
 
@@ -46,11 +46,11 @@ The `e2e/` directory contains all tests:
 
 1. User triggers test execution via Lab UI
 2. Client sends request to main server (port 8000)
-3. Server executes test suite and streams logs via FixMe WebSocket (port 8001)
+3. Server executes FIX order and streams logs via FixMe WebSocket (port 8001)
 4. Terminal displays live logs using XTerm.js + SocketIO
 5. On completion, test reports are uploaded to AWS S3
 6. Report metadata is cached in Redis for fast Cards page loading
-7. User views reports by clicking "View" button, which starts a local Playwright report server
+7. User views HTML reports by clicking "View" button, which will take the user to the statically hosted report server.
 
 ## Build, Test, and Lint Commands
 
@@ -58,7 +58,7 @@ The `e2e/` directory contains all tests:
 
 ```bash
 npm run setup        # Full setup (client, server, tests)
-npm run setup:all    # Same as setup
+npm run setup:all    # Same as setup + test
 npm run setup:client # Client only
 npm run setup:server # Server only
 npm run setup:test   # E2E tests only
@@ -68,9 +68,9 @@ npm run setup:test   # E2E tests only
 
 ```bash
 npm start              # Start all services (client + server + fixme)
-npm run start:local    # Start locally without Docker
-npm run start:prod     # Production build and start
-npm run start:docker   # Run via Docker Compose
+npm run start:local    # Start locally without Docker in developer mode
+npm run start:prod     # Production build and start on the server
+npm run start:docker   # Run the full app via Docker Compose
 
 # Individual services
 npm run client         # Client dev server (port 3000)
