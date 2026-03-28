@@ -1,0 +1,264 @@
+# Doctor Octopus - Copilot Instructions
+
+Doctor Octopus is a Playwright test runner and report viewer application. It provides **The Lab** (test execution), **Cards** (test report viewing), and **Terminal** (live log streaming) features to simplify running Playwright test suites and viewing their reports.
+
+## Architecture Overview
+
+### Multi-Component System
+
+The application consists of three main services:
+
+1. **Server** (`server/`) - FastAPI backend (Python)
+   - Main REST API on port 8000
+   - Manages test execution, report handling, and S3 uploads
+   - Components in `src/component/`: cards, local, remote, validation, notification
+   - WebSocket server (`src/wsocket.py`) for real-time log streaming via SocketIO
+   - Redis integration for caching test report cards
+
+2. **Client** (`client/`) - React frontend (JavaScript)
+   - Vite-based React app on port 3000
+   - Three main views: Cards (reports), Lab (test runner), Terminal (logs)
+   - Context providers in `src/context/`: LabContext, SocketIOContext, TerminalContext
+   - XTerm.js for terminal emulation
+
+3. **FixMe** (`fixme/`) - Dedicated WebSocket server (Python)
+   - FastAPI app on port 8001
+   - Handles WebSocket connections for real-time log streaming during test execution
+   - Separate service to avoid blocking the main server
+
+### Test Suite Structure
+
+The `e2e/` directory contains all tests:
+
+- **Playwright tests** (`e2e/client/tests/`): UI and unit tests for the client
+  - Test categories: `ui/`, `unit/`, `db/`
+  - Run via `npm run test` with project names (e.g., `ui:smoke`, `ui:regression`)
+  
+- **Pytest tests** (`e2e/server/tests/`): API and unit tests for the server
+  - Test markers: `api_smoke`, `api_sanity`, `api_regression`, `unit_regression`
+  - Run via pytest with markers (e.g., `npm run api:regression`)
+
+- **Performance tests** (`e2e/perf/`): Artillery-based load tests
+  - YAML configurations for different test scenarios
+  - Run via `npm run perf:cards-api`, `perf:cards-ui`, `perf:fixme-ws`
+
+### Data Flow
+
+1. User triggers test execution via Lab UI
+2. Client sends request to main server (port 8000)
+3. Server executes test suite and streams logs via FixMe WebSocket (port 8001)
+4. Terminal displays live logs using XTerm.js + SocketIO
+5. On completion, test reports are uploaded to AWS S3
+6. Report metadata is cached in Redis for fast Cards page loading
+7. User views reports by clicking "View" button, which starts a local Playwright report server
+
+## Build, Test, and Lint Commands
+
+### Setup
+
+```bash
+npm run setup        # Full setup (client, server, tests)
+npm run setup:all    # Same as setup
+npm run setup:client # Client only
+npm run setup:server # Server only
+npm run setup:test   # E2E tests only
+```
+
+### Running the Application
+
+```bash
+npm start              # Start all services (client + server + fixme)
+npm run start:local    # Start locally without Docker
+npm run start:prod     # Production build and start
+npm run start:docker   # Run via Docker Compose
+
+# Individual services
+npm run client         # Client dev server (port 3000)
+npm run server         # Main server (port 8000)
+npm run fixme          # FixMe WebSocket server (port 8001)
+npm run notification   # Notification service
+```
+
+### Testing
+
+**Full E2E Pipeline:**
+```bash
+npm test              # Runs e2e_pipeline.sh (all tests in sequence)
+cd e2e && sh e2e_pipeline.sh
+```
+
+**Playwright Tests** (from `e2e/`):
+```bash
+npm run ui:smoke       # UI smoke tests
+npm run ui:sanity      # UI sanity tests
+npm run ui:regression  # Full UI regression suite
+npm run unit:client    # Client unit tests (Playwright)
+npm test ui:smoke      # Run specific project via runner script
+```
+
+**Pytest Tests** (from `e2e/`):
+```bash
+npm run api:smoke      # API smoke tests
+npm run api:sanity     # API sanity tests
+npm run api:regression # Full API regression suite
+npm run unit:server    # Server unit tests (pytest)
+npm test api_regression pytest  # Direct pytest execution via runner
+```
+
+**Single Test File:**
+```bash
+# Playwright
+cd e2e && npx playwright test client/tests/ui/cards.spec.js --project=ui:smoke
+
+# Pytest
+cd e2e && poetry run pytest server/tests/test_cards.py -m api_smoke
+```
+
+**Performance Tests:**
+```bash
+npm run perf:cards-api  # API performance tests
+npm run perf:cards-ui   # UI performance tests
+npm run perf:fixme-ws   # WebSocket performance tests
+npm run perf-report     # Generate performance report
+```
+
+### Linting and Formatting
+
+```bash
+npm run lint     # ESLint for JavaScript files
+npm run format   # Prettier for all files
+
+# Server Python linting (from server/)
+cd server && poetry run ruff check .
+cd server && poetry run ruff format .
+```
+
+### Restarting Services
+
+```bash
+npm run restart            # Restart all services
+npm run restart:client     # Client only
+npm run restart:server     # Server only
+npm run restart:fixme      # FixMe only
+npm run restart:notification
+```
+
+### Stopping Services
+
+```bash
+npm run stop               # Stop all services
+npm run stop:server        # Stop server only
+npm run stop:fixme         # Stop FixMe only
+npm run stop:notification  # Stop notification service only
+```
+
+## Key Conventions
+
+### Python (Server/FixMe)
+
+- **Dependency Management**: Use Poetry (`pyproject.toml`)
+- **Linting**: Ruff configured with 120-character line length
+- **Environment Config**: `config.py` centralizes all environment variables and constants
+  - Redis keys use namespaced pattern: `doctor-octopus:*`
+  - Test protocols: `api`, `ui`, `unit`, `perf`, `s3`, `db`, `fix`
+  - Test environments: `qa`, `dev`, `uat`, `sit`
+- **Process Management**: Use PID files in `logs/` directory (e.g., `server.pid`, `fixme.pid`)
+- **Startup Scripts**: `start.sh` scripts handle service initialization and backgrounding
+- **Module Structure**: Components in `src/component/`, utilities in `src/utils/`
+
+### JavaScript (Client)
+
+- **Build Tool**: Vite for development and production builds
+- **Context Pattern**: React Context providers wrap route components for state management
+  - LabContext: Test execution state
+  - SocketIOContext: WebSocket connection management
+  - TerminalContext: Terminal state and log buffer
+- **Configuration**: Runtime config loaded from `config.json` via `util/env_loader.js`
+- **Component Organization**: Features grouped by function (navbar, card, lab, xterm, fixme, footer)
+- **Routing**: React Router v7 with conditional provider wrapping based on active route
+
+### E2E Tests
+
+- **Test Organization**: Group by protocol (`ui/`, `unit/`, `db/`) and marker (`smoke`, `sanity`, `regression`)
+- **Playwright Projects**: Named by test level (e.g., `ui:smoke`, `ui:regression`)
+  - Config in `playwright.config.js` with shared settings
+  - Test reports output to `TEST_REPORTS_DIR` env variable location
+  - Trace on first retry for debugging
+- **Pytest Markers**: Use decorators for test categorization (`@pytest.mark.api_smoke`)
+- **Test Runner**: Custom `runner.js` script orchestrates test execution
+- **Performance Tests**: Artillery YAML configs in `perf/`, Artillery Playwright integration enabled via env variable
+
+### Environment Variables
+
+Critical environment variables (set in `.env`):
+- `NODE_ENV`: `production` or `development`
+- `VITE_MAIN_SERVER_URL_DEV` / `VITE_MAIN_SERVER_URL_PROD`: Server URL for client
+- `TEST_REPORTS_DIR`: Where test reports are stored
+- `SDET_REDIS_HOST`, `SDET_REDIS_PORT`: Redis connection
+- AWS S3 credentials for report uploads
+- `DEBUG`: Set to `true` for foreground service execution
+
+### Docker
+
+- **Multi-Container Setup**: `docker-compose.yml` defines client, server, fixme, and redis services
+- **Networking**: All services on `doctor-network` bridge
+- **Volumes**: Logs and test reports mounted for persistence
+- **Detection**: Scripts check for `/.dockerenv` to run in foreground mode
+- **Health Checks**: Redis has health check configured
+
+### Redis Usage
+
+- **Cache**: Test report cards cached with 60-day TTL
+- **Stats**: Client counts, max concurrent clients tracked via Redis keys
+- **Queue Management**: Download and cache-reload queues with TTL tracking
+- **Pub/Sub**: Notifications published at configurable frequency (1s for pubsub, 10s for S3 notifications)
+
+### Log Streaming
+
+- **WebSocket Protocol**: SocketIO for bidirectional communication
+- **Dual Servers**: Main server (8000) for API, FixMe (8001) for WebSocket to prevent blocking
+- **Terminal Integration**: XTerm.js on frontend renders streamed logs
+- **Log Files**: Component-specific logs (`lab.log`, `doc.log`) in designated directories
+
+### S3 Integration
+
+- **Upload**: Test reports automatically uploaded after execution
+- **Download**: Reports fetched on-demand with rate limiting
+- **Rate Limiting**: Configurable batch sizes and wait times to avoid throttling
+- **Cleanup**: Max local directories limit (`max_local_dirs = 1000`) prevents disk bloat
+
+## Docker Workflow
+
+```bash
+# Build and run with compose
+docker compose up --build
+docker compose --env-file .env up --build -d  # With env file, detached
+
+# Build specific service image
+docker build -t doctor-octopus-server:latest -f Dockerfile.server .
+docker build -t doctor-octopus-client:latest -f Dockerfile.client .
+docker build -t doctor-octopus-fixme:latest -f Dockerfile.fixme .
+
+# Run specific image
+docker run -p 3000:3000 -p 8000:8000 --env-file=./.env doctor-octopus:tag
+```
+
+## Utilities
+
+Shell scripts in `utils/`:
+- `setup-app.sh`: Initial setup for all components
+- `start.sh`, `start-local.sh`: Service startup orchestration
+- `stop.sh`: Service shutdown with PID cleanup
+- `restart-service.sh`: Individual service restart
+- `env-loader.sh`: Environment variable loading
+- `log.sh`: Log viewing utility
+- `prompt.sh`: Interactive prompt utility
+
+## Common Debugging
+
+- **Service not starting**: Check PID files in `logs/` directory
+- **Port conflicts**: Ensure ports 3000, 8000, 8001, 6379 are available
+- **Redis connection**: Verify Redis is running (`docker ps` or `redis-cli ping`)
+- **Log streaming issues**: Check FixMe service is running and WebSocket connection established
+- **Test report not loading**: Check S3 credentials and network access
+- **Cache stale**: Redis cache has 60-day TTL, manually clear with `redis-cli` if needed
