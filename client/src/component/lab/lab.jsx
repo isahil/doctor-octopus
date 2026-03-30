@@ -32,11 +32,7 @@ const Lab = () => {
   }, [sio])
 
   return (
-    <div
-      className={`lab component ${
-        run_button_enabled ? "enabled" : "disabled" // enable the run button if the last card has been selected
-      }`}
-    >
+    <div className={"lab component enabled"}>
       <div className="lab-title">THE LAB</div>
       <div className="lab-header">
         {Object.entries(selectedOptions).map((entry, i) => {

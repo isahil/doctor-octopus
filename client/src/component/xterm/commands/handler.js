@@ -1,5 +1,6 @@
 import LabSettings from "../../lab/lab.json"
 import { interactive_mode } from "./interactive.js"
+import config from "../../../config.json"
 
 let interactive_mode_status = false
 
@@ -51,10 +52,11 @@ export const command_handler = ({
       terminal.clear()
       break
     case input === "fixme":
-      update_options_handler(0, "qa")
-      update_options_handler(1, "loan")
+      const { environment, product, suites } = config.defaults.fixme
+      update_options_handler(0, environment)
+      update_options_handler(1, product)
       update_options_handler(2, "fix")
-      update_options_handler(3, "client")
+      update_options_handler(3, suites)
       terminal.write("\r\x1B[1;3;32m Doc:\x1B[1;3;37m Starting FixMe session...\x1B[0m\r")
       break
     case input === "exit":

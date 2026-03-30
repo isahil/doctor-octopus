@@ -4,12 +4,15 @@ import { FitAddon } from "@xterm/addon-fit"
 import "./xterm.css"
 import { useOptionsUpdate, useSocketIO, useTerminal } from "../../hooks"
 import { command_handler } from "./commands/handler.js"
+import config from "../../config.json"
 
 const XTerm = () => {
   const terminalRef = useRef(null)
   const { update_options_handler, clear_selected_options, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
-  const { terminal, setTerminal } = useTerminal() // TerminalContext that store the terminal object
+  const { setTerminal } = useTerminal() // TerminalContext that store the terminal object
   const { sio } = useSocketIO()
+
+  const { xterm_command: default_command } = config.defaults
 
   const xterm = (terminal) => {
     if (!terminal) return
@@ -81,24 +84,33 @@ const XTerm = () => {
           break
       }
     })
+
+    terminal.write(default_command)
+    command_handler({
+      terminal,
+      input: default_command,
+      update_options_handler,
+      clear_selected_options,
+      handle_run_click,
+    })
+    terminal.write(`\r\n\x1B[1;3;31m You\x1B[0m $ `)
   }
 
   useEffect(() => {
     if (terminalRef.current && sio) {
-      const terminal = new Terminal()
-      setTerminal(terminal)
+      const xterm_instance = new Terminal()
+      setTerminal(xterm_instance)
       const fitAddon = new FitAddon()
-      terminal.loadAddon(fitAddon)
+      xterm_instance.loadAddon(fitAddon)
       fitAddon.fit()
-      xterm(terminal)
-    }
+      xterm(xterm_instance)
 
-    return () => {
-      if (terminal) {
-        terminal.dispose()
+      return () => {
+        xterm_instance.dispose()
+        setTerminal(null)
       }
     }
-  }, [sio, terminalRef])
+  }, [sio])
 
   return <div ref={terminalRef} id="terminal" className="xterm component"></div>
 }
