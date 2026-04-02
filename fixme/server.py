@@ -1,4 +1,4 @@
-# This is the entry point of the util server process
+# This is the entry point of the fixme server process
 import os
 import uvicorn
 from fastapi import FastAPI

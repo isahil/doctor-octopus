@@ -111,8 +111,13 @@ const Cards = () => {
   if (isLoading) {
     return (
       <div className="loading-screen">
-        {/* <p>Loading...</p> */}
-        <div className="batman"></div>
+        <div className="stethoscope-loader" aria-hidden="true">
+          <div className="stethoscope-tube"></div>
+          <div className="stethoscope-stem"></div>
+          <div className="stethoscope-chest"></div>
+          <div className="stethoscope-pulse"></div>
+        </div>
+        <p className="loading-caption">Auscultating latest reports...</p>
       </div>
     )
   }
