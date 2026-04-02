@@ -16,7 +16,7 @@ async def lifespan_fixme(app: FastAPI):
     Lifespan event handler for the FIXME FastAPI server.
     """
     import aiofiles
-    import asyncio
+    # import asyncio
     from server import sio
     from src.component.fix import FixClient
     # path to the working FIX application class directory
@@ -58,8 +58,10 @@ async def lifespan_fixme(app: FastAPI):
             "sio": sio,
         }
     )
-    fix_task = asyncio.create_task(fix_client.start_mock_client())
-    app.state.fix = fix_task
+
+    # fix_task = asyncio.create_task(fix_client.start_mock_client())
+    # app.state.fix = fix_task
+    app.state.fix = await fix_client.start_mock_client()
 
     yield
 

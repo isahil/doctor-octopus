@@ -23,7 +23,7 @@ class WebSocketServer:
         logger.info(f"\tConnected to W.S. client... [{sid}]")
         await self.sio.emit(
             "message",
-            f"FIXME W.S. server connected!",
+            "FIXME W.S. server connected!",
             room=sid,
         )
 
@@ -50,5 +50,7 @@ class WebSocketServer:
         )  # start background task to run the command
         the_lab_log_file_path: str = self.fastapi_app.state.the_lab_log_file_path
 
-        await start_streaming_log_file(self.sio, sid, subscription, the_lab_log_file_path)
+        await start_streaming_log_file(
+            self.sio, sid, subscription, the_lab_log_file_path
+        )
         await command_task

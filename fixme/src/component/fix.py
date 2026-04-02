@@ -54,8 +54,8 @@ class FixClient:
     sio = None
 
     def __init__(self, settings):
-        self.env = settings.get("env", "prod")
-        self.app = settings.get("app", "fix")
+        self.env = settings.get("environment", "qa")
+        self.app = settings.get("app", "loan")
         self.fix_side = settings.get("fix_side", "buy")
         self.sio = settings.get("sio", None)
 
