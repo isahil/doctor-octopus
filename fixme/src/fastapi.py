@@ -8,6 +8,7 @@ from src.utils.logger import logger
 
 router = APIRouter()
 
+
 @router.get("/execute", response_class=PlainTextResponse, status_code=202)
 async def execute_command(
     background_tasks: BackgroundTasks,
@@ -15,7 +16,9 @@ async def execute_command(
         ...,
         title="Options",
         description="Command options to be executed",
-        examples=['{"environment": "dev", "product": "clo", "proto": "perf", "suite": "smoke"}'],
+        examples=[
+            '{"environment": "dev", "product": "clo", "proto": "perf", "suite": "smoke"}'
+        ],
     ),
 ) -> JSONResponse:
     """Execute a command on the running server"""
@@ -27,7 +30,9 @@ async def execute_command(
             logger.info(f"Command to be executed: {command}")
     except json.JSONDecodeError as e:
         logger.info(f"Invalid JSON input: {e}")
-        return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
+        return JSONResponse(
+            content={"command": command, "error": str(e)}, status_code=500
+        )
 
     try:
         background_tasks.add_task(run_a_command_on_local, command)
@@ -39,11 +44,12 @@ async def execute_command(
             status_code=202,
         )
     except Exception as e:
-        return JSONResponse(content={"command": command, "error": str(e)}, status_code=500)
-    
+        return JSONResponse(
+            content={"command": command, "error": str(e)}, status_code=500
+        )
 
 
-@router.get("/health", response_class=JSONResponse, status_code=200)
+@router.get("/health-check", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
     from server import fastapi_app
 
@@ -66,7 +72,9 @@ async def health_check() -> JSONResponse:
                         logger.info("Performing health check for FixMe client...")
                         result = True  # Placeholder for actual health check logic
 
-                    health_data["services"][state] = "healthy" if result else "unhealthy"
+                    health_data["services"][state] = (
+                        "healthy" if result else "unhealthy"
+                    )
                 except Exception as e:
                     logger.warning(f"{state} health check failed: {str(e)}")
                     health_data["services"][state] = "unhealthy"

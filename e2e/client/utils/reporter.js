@@ -44,7 +44,7 @@ export const upload_report = async (code, { test_suite, full_test_reports_dir })
 	// Request the DO server to download the uploaded cards
 	try {
 		const server_url = process.env.SERVER_URL || "http://localhost:8000";
-		const download_url = `${server_url}/download?card_date=${reports_dir}`;
+		const download_url = `${server_url}/download-a-card?card_date=${reports_dir}`;
 		console.log(`Requesting Doctor Octopus to download card: ${download_url}`);
 
 		const response = await fetch(download_url, { method: "POST" });

@@ -1,6 +1,3 @@
-[tool.fastapi]
-entrypoint = "server:fastapi_app"
-
 [tool.poetry]
 name = "fixme"
 version = "1.0.0"
