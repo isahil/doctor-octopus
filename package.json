@@ -23,7 +23,7 @@
 		"restart:notification": "bash utils/restart-service.sh notification",
 		"server": "cd server && bash start.sh main true",
 		"start": "bash utils/start.sh",
-		"start:docker": "docker-compose --env-file ./.env up --build -d",
+		"start:docker": "docker compose --env-file ./.env up --build -d",
 		"start:local": "bash utils/start-local.sh",
 		"start:prod": "npm run start all false",
 		"setup": "bash utils/setup-app.sh",
