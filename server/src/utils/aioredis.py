@@ -1,14 +1,13 @@
 import redis.asyncio as aioredis
 from redis.asyncio.client import PubSub
 import json
-from typing import Union
 from src.utils.logger import logger
 
 
 class AioRedis:
     import config
 
-    aioredis_client: Union[aioredis.Redis, None]
+    aioredis_client: aioredis.Redis | None
     redis_url: str
     aioredis_instance_key: str = config.aioredis_instance_key
 
@@ -24,6 +23,19 @@ class AioRedis:
         aioredis_instance = await aioredis_client.incr(self.aioredis_instance_key, 1)
         logger.info(f"Connected to AioRedis at {self.redis_url}. Connected clients count: {aioredis_instance}")
         return aioredis_client
+
+    async def get(self, key: str, decode: bool = True) -> str | bytes | None:
+        # SCAN can return keys as bytes; normalize before issuing GET.
+        if isinstance(key, memoryview):
+            key = key.tobytes()
+        if isinstance(key, bytes):
+            key = key.decode("utf-8")
+
+        client = await self.get_client()
+        value = await client.get(key)
+        if decode and isinstance(value, bytes):
+            value = value.decode("utf-8")
+        return value
 
     async def close(self) -> None:
         if self.aioredis_client:
@@ -46,7 +58,7 @@ class AioRedis:
             logger.error("AioRedis connection is down")
             return False
 
-    async def publish(self, channel, message: Union[str, dict]) -> int:
+    async def publish(self, channel: str, message: str | dict) -> int:
         """Publish a message to a Redis channel"""
         if isinstance(message, dict):
             message = json.dumps(message)

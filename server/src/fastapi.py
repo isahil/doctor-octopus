@@ -6,9 +6,10 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
 from src.component.local import local_report_directories
-from src.utils.helper import queue_cache_and_download
+from src.utils.helper import queue_cache_and_download, call_doctor_endpoint
 from src.utils.logger import logger
 from src.utils.queue import (
+    cards_download_queue,
     is_cache_reloading,
     is_downloading,
     mark_downloading,
@@ -51,7 +52,7 @@ async def get_a_card(
             await wait_till_operation_complete("download", test_report_dir, max_wait=300)
         else:
             logger.info(f"Card not in local. Downloading from S3: {test_report_dir}...")
-            test_report_dir = remote.download_s3_folder(root_dir)
+            test_report_dir = await call_doctor_endpoint("/download-a-card", {"card_date": root_dir}, method="post")
     elif mode == "cache" and test_report_dir in local_r_directories:
         logger.info(f"Card available in local cache: {test_report_dir}")
     else:
@@ -135,7 +136,7 @@ async def get_all_cards(
     )
 
 
-@router.get("/cards-not-downloaded", response_class=JSONResponse, status_code=200)
+@router.get("/cards-undownloaded", response_class=JSONResponse, status_code=200)
 async def download_missed_cards(
     day: int = Query(
         ...,
@@ -172,6 +173,16 @@ async def download_missed_cards(
     )
     return JSONResponse(
         content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
+    )
+
+
+@router.get("/cards-download-queue", response_class=JSONResponse, status_code=200)
+async def cards_being_downloaded() -> JSONResponse:
+    """Get the list of cards that are currently being downloaded to the local server based on the given filters."""
+
+    downloading_cards = await cards_download_queue()
+    return JSONResponse(
+        content={"message": "cards download queue...", "queued": downloading_cards}, status_code=200
     )
 
 
