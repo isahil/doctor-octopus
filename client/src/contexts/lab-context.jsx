@@ -5,7 +5,7 @@ export const LabOptionsContext = createContext()
 export const OptionsUpdateContext = createContext()
 
 /**
- * LabProvider component/context to handle and share the state of the selected lab options
+ * LabProvider components/context to handle and share the state of the selected lab options
  * @param {*} param0 object that contains the children components
  * @returns
  */

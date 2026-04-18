@@ -1,6 +1,6 @@
 import "./card.css"
-import { github_icon, grafana_icon } from "../../util/icons"
-import { runtime_config } from "../../util/env_loader"
+import { github_icon, grafana_icon } from "../../utils/icons"
+import { runtime_config } from "../../utils/env_loader"
 
 function Card({ card, index, filter, setAlert }) {
   const { mode } = filter

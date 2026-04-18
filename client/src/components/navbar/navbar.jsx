@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import "./navbar.css"
-import { github_icon, grafana_icon } from "../../util/icons"
+import { github_icon, grafana_icon } from "../../utils/icons"
 
 const { VITE_GITHUB_LINK, VITE_GRAFANA_LINK } = import.meta.env
 

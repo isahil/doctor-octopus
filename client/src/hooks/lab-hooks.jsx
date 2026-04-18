@@ -1,5 +1,5 @@
 import { useContext } from "react"
-import { LabOptionsContext, OptionsUpdateContext } from "../context"
+import { LabOptionsContext, OptionsUpdateContext } from "../contexts"
 
 /**
  * custom hooks for handling the lab options context/state

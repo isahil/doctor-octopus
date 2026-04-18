@@ -68,7 +68,7 @@ async def call_doctor_endpoint(endpoint: str, params: dict, method: str = "get")
 
 async def queue_cards_download(filter: dict) -> None:
     """Queue downloads for multiple cards via the /download-a-card API endpoint"""
-    from src.component.cards import Cards
+    from src.services.cards import Cards
 
     caching = is_cache_reloading(instances.redis.redis_client)
     if caching:

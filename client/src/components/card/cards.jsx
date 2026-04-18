@@ -3,8 +3,8 @@ import Card from "./card"
 import "./cards.css"
 import Filters from "./filter"
 import config from "../../config.json"
-import { to_roman_numeral } from "../../util/helper"
-import { runtime_config } from "../../util/env_loader"
+import { to_roman_numeral } from "../../utils/helper"
+import { runtime_config } from "../../utils/env_loader"
 const { filters: filters_config } = config
 
 const Cards = () => {

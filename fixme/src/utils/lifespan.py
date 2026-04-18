@@ -18,7 +18,7 @@ async def lifespan_fixme(app: FastAPI):
     import aiofiles
     # import asyncio
     from server import sio
-    from src.component.fix import FixClient
+    from src.services.fix import FixClient
     # path to the working FIX application class directory
     # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../octopus-tests/fix/')))
     # from fix_client_async import FixClient # type: ignore

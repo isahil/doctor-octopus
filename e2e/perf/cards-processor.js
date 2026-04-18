@@ -1,4 +1,4 @@
-import { Cards } from "../client/component/cards.js";
+import { Cards } from "../client/components/cards.js";
 
 const homepage_url = "http://localhost:3000";
 
