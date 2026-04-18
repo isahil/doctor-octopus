@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
-import { get_test_reports_dir, artillery_record_mode } from "./client/utils";
+import { get_test_reports_dir, artillery_record_mode } from "./utils";
 
 const TEST_REPORTS_DIR = get_test_reports_dir();
 const record = artillery_record_mode();

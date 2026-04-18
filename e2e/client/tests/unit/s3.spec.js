@@ -1,5 +1,5 @@
 import { test, expect } from "playwright/test";
-import { list_objects, get_object, upload_file } from "../../utils/S3";
+import { list_objects, get_object, upload_file } from "../../../utils/S3";
 
 const bucketName = "doctor-octopus";
 

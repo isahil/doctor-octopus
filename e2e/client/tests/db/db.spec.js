@@ -1,6 +1,6 @@
 import { test, expect } from "playwright/test";
-import sql from "../../utils/postgre_sql";
-import { fs_parse_csv } from "../../utils/fs_helper";
+import sql from "../../../utils/postgre_sql";
+import { fs_parse_csv } from "../../../utils/fs_helper";
 import path from "path";
 import { fileURLToPath } from "url";
 

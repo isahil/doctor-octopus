@@ -9,7 +9,7 @@ import {
 	get_test_reports_dir,
 	gh_actions_debug_mode,
 	upload_report,
-} from "../client/utils/index.js";
+} from "../utils/index.js";
 
 let test_suite = process.argv[2];
 const environment = process.argv[3] || "dev";
