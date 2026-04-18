@@ -11,9 +11,9 @@ from config import (
     rate_limit_folder_batch_size,
     rate_limit_wait_time,
 )
-from src.component.validation import validate
-from src.component.local import get_all_local_cards, cleanup_old_test_report_directories
-from src.component.remote import download_s3_folder, get_cards_from_s3_and_cache, get_cards_from_cache
+from src.components.validation import validate
+from src.components.local import get_all_local_cards, cleanup_old_test_report_directories
+from src.components.remote import download_s3_folder, get_cards_from_s3_and_cache, get_cards_from_cache
 from src.utils.helper import performance_log
 from src.utils.logger import logger
 

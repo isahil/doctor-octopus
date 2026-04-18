@@ -5,7 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 import instances
 from src.utils.executor import create_command, run_a_command_on_local
-from src.component.local import local_report_directories
+from src.components.local import local_report_directories
 from src.utils.helper import queue_cache_and_download, call_doctor_endpoint
 from src.utils.logger import logger
 from src.utils.queue import (
@@ -19,8 +19,8 @@ from src.utils.queue import (
     unmark_operation,
     wait_till_operation_complete,
 )
-import src.component.remote as remote
-import src.component.notification as notification
+import src.components.remote as remote
+import src.components.notification as notification
 
 router = APIRouter()
 
@@ -267,10 +267,10 @@ async def download_a_card(
                     }
                     await instances.aioredis.publish("notifications", download_notification)
                     logger.info(f"Published download completion notification for {test_report_dir}")
-                except Exception as e:
-                    logger.error(f"Failed to publish download completion notification: {str(e)}")
-            except Exception as e:
-                logger.error(f"Download failed for {test_report_dir}: {str(e)}")
+                except Exception as err:
+                    logger.error(f"Failed to publish download completion notification: {str(err)}")
+            except Exception as error:
+                logger.error(f"Download failed for {test_report_dir}: {str(error)}")
             finally:
                 # Always unmark, even if download failed
                 unmark_downloading(redis.redis_client, test_report_dir)

@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 os.environ["SERVER_MODE"] = "main"
 from config import workers_limit
 from src.utils.env_loader import get_debug_mode, get_main_server_port, get_node_env
-from src.fastapi import router as fastapi_router
+from src.fast_route import router
 
 debug = get_debug_mode()
 
@@ -24,7 +24,7 @@ fastapi_app.add_middleware(
     allow_headers=["*"],
 )
 fastapi_app.add_middleware(GZipMiddleware, minimum_size=1000)
-fastapi_app.include_router(fastapi_router)
+fastapi_app.include_router(router)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="Test Reports")
 
 if __name__ == "__main__":
@@ -42,5 +42,5 @@ if __name__ == "__main__":
     )
 
 # "author": "Imran Sahil"
-# "github": "https://github.com/isahil/doctor-octopus.git"
+# "GitHub": "https://github.com/isahil/doctor-octopus.git"
 # "description": "A test runner & report viewer application using FastAPI and SocketIO for the server and React for the client."

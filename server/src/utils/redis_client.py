@@ -69,7 +69,8 @@ class RedisClient:
         new_value = self.redis_client.decr(key, 1)
         return new_value
 
-    def seconds_until_midnight(self, days: int = 0):
+    @staticmethod
+    def seconds_until_midnight(days: int = 0):
         now = datetime.now()
         midnight = datetime.combine(now.date() + timedelta(days=days), datetime.min.time())
         seconds_until_midnight = int((midnight - now).total_seconds())

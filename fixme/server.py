@@ -12,7 +12,7 @@ from src.utils.env_loader import (
     get_node_env,
     get_redis_url,
 )
-from src.fastapi import router as fastapi_router
+from src.fast_route import router as fastrouter
 from src.utils.lifespan import lifespan_fixme
 
 debug = get_debug_mode()
@@ -37,7 +37,7 @@ fastapi_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-fastapi_app.include_router(fastapi_router)
+fastapi_app.include_router(fastrouter)
 fastapi_app.mount("/ws/socket.io", socketio_app)
 
 if __name__ == "__main__":

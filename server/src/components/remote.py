@@ -11,14 +11,14 @@ from config import (
     test_reports_redis_key,
     rate_limit_file_batch_size,
 )
-from src.component.validation import validate
+from src.components.validation import validate
 from src.utils.file_helper import ensure_dir
 from src.utils.helper import performance_log
-from src.utils.s3 import S3
+from src.utils.s3_client import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
 from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_unix_time
-import src.utils.redis as redis_module
+import src.utils.redis_client as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
 

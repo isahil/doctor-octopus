@@ -59,4 +59,6 @@ __all__ = [
     "test_protocols",
     "workers_limit",
     "server_url",
+    "rate_limit_file_batch_size",
+    "notification_frequency_time"
 ]  # export the variables
