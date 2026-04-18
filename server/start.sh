@@ -24,11 +24,11 @@ if [ "$SERVER_MODE" = "main" ]; then
     poetry run python3 server.py 2>&1 & MAIN_PID=$!
     echo $MAIN_PID > "${pid_dir}server.pid"
     echo "[$(date)] Main server parent process started with PID: $MAIN_PID"
-elif [ "$SERVER_MODE" = "fixme" ]; then
-    echo "[$(date)] Running fixme server"
-    poetry run python3 server_fixme.py 2>&1 & FIXME_PID=$!
-    echo $FIXME_PID > "${pid_dir}fixme.pid"
-    echo "[$(date)] Fixme server parent process started with PID: $FIXME_PID"
+# elif [ "$SERVER_MODE" = "fixme" ]; then
+#     echo "[$(date)] Running fixme server"
+#     poetry run python3 server_fixme.py 2>&1 & FIXME_PID=$!
+#     echo $FIXME_PID > "${pid_dir}fixme.pid"
+#     echo "[$(date)] Fixme server parent process started with PID: $FIXME_PID"
 elif [ "$SERVER_MODE" = "notification" ]; then
     echo "[$(date)] Running notification service"
     poetry run python3 src/component/notification.py 2>&1 & NOTIFICATION_PID=$!

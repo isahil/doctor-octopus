@@ -13,6 +13,17 @@
   --octopus-golden: #eddb4c;
 }
 
+/** Dark/Light mode ***/
+/* :root {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: light) {
+  * {
+    --background-color: #207382;
+  }
+} */
+
 .app {
   display: flex;
   flex-direction: column;

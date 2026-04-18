@@ -39,7 +39,7 @@ async def cache_and_download(day_filter):
     try:
             # app setup step on server start
         logger.info("In progress cache reload and download queue...")
-        await call_doctor_endpoint("download-missing-cards", day_filter)
+        await call_doctor_endpoint("/download-missing-cards", day_filter)
         logger.info("Cache and download queue completed successfully.")
     except aiohttp.ClientError as e:
         logger.error(f"HTTP API error during initial cache reload or download queue: {str(e)} | will retry...")

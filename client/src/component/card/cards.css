@@ -25,54 +25,117 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  font-size: 25px;
   color: var(--octopus-gray);
+  gap: 16px;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(44, 90, 79, 0.4), transparent 35%),
+    radial-gradient(circle at 80% 80%, rgba(10, 38, 46, 0.45), transparent 42%),
+    #05080c;
 }
 
-.batman {
-  width: 56px;
-  height: 24.6px;
+.stethoscope-loader {
+  width: 220px;
+  height: 180px;
   position: relative;
-  margin-top: 20px;
+  filter: drop-shadow(0 6px 18px rgba(17, 255, 221, 0.12));
 }
 
-.batman:before,
-.batman:after {
-  content: "";
+.stethoscope-tube {
   position: absolute;
-  inset: 0;
-  background: var(--octopus-green);
-  box-shadow: 0 0 0 28px var(--octopus-green);
-  clip-path: polygon(-28px -11.2px,
-      10% -6.7px,
-      20% 0,
-      calc(50% - 9px) 0,
-      calc(50% - 5.6px) -11.2px,
-      calc(50% - 4.5px) -9px,
-      calc(50% + 4.5px) -9px,
-      calc(50% + 5.6px) -11.2px,
-      calc(50% + 9px) 0,
-      80% 0,
-      90% -6.7px,
-      calc(100% + 28px) -11.2px,
-      100% 80%,
-      calc(100% + 5.6px) calc(100% + 5.6px),
-      60% 100%,
-      50% calc(100% + 9px),
-      40% 100%,
-      -5.6px calc(100% + 5.6px),
-      0 80%);
+  left: 48px;
+  top: 24px;
+  width: 124px;
+  height: 112px;
+  border: 6px solid var(--octopus-green);
+  border-top: 0;
+  border-radius: 0 0 66px 66px;
+  opacity: 0.95;
 }
 
-.batman:after {
-  animation: batman-ciavg0md 1s infinite;
-  transform: perspective(168px) translateZ(0px);
+.stethoscope-stem {
+  position: absolute;
+  left: 107px;
+  top: 128px;
+  width: 6px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #c4fff5 0%, var(--octopus-green) 100%);
 }
 
-@keyframes batman-ciavg0md {
-  to {
-    transform: perspective(168px) translateZ(56px);
+.stethoscope-chest {
+  position: absolute;
+  left: 86px;
+  top: 150px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 4px solid #a0f5e7;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(223, 255, 250, 0.85), rgba(66, 196, 176, 0.35) 45%, rgba(1, 25, 28, 0.9) 100%);
+  box-shadow:
+    0 0 0 6px rgba(113, 239, 219, 0.1),
+    0 0 22px rgba(80, 232, 209, 0.25);
+  animation: chest-breathe 1.6s ease-in-out infinite;
+}
+
+.stethoscope-pulse {
+  position: absolute;
+  left: 86px;
+  top: 150px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(116, 255, 231, 0.6);
+  animation: chest-ping 1.6s ease-out infinite;
+}
+
+.loading-caption {
+  margin: 50px;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d2f9f1;
+  animation: caption-fade 1.8s ease-in-out infinite;
+}
+
+@keyframes chest-breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes chest-ping {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+
+  75% {
+    transform: scale(1.55);
     opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+@keyframes caption-fade {
+
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
   }
 }
 
@@ -342,6 +405,18 @@
 }
 
 @media (max-width: 768px) {
+  .stethoscope-loader {
+    width: 176px;
+    height: 144px;
+    transform: scale(0.92);
+  }
+
+  .loading-caption {
+    font-size: 12px;
+    text-align: center;
+    padding: 0 18px;
+  }
+
   .cards-header {
     top: 46px;
     padding: 10px 5px;

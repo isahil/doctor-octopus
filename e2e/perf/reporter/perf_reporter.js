@@ -26,8 +26,8 @@ function generate_HTML(data, outputPath, outputDir) {
 
 	// Determine status
 	const failed_vusers = aggregate.counters["vusers.failed"] || 0;
-	const status = failed_vusers > 0 ? "UNSTABLE" : "STABLE";
-	const status_icon = status === "STABLE" ? "✅" : "⚠️";
+	const status = failed_vusers > 0 ? "unstable" : "stable";
+	const status_icon = status === "stable" ? "✅" : "⚠️";
 
 	// HTTP metrics
 	const httpResponses = aggregate.counters["http.responses"] || 0;

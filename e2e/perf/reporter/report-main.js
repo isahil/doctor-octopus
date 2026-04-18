@@ -60,7 +60,7 @@ export function generate_header(stats, status, statusIcon) {
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex items-center justify-between mb-4">
           <h1 class="text-2xl font-bold text-gray-100">Doctor Octopus Perf Report</h1>
-          <div class="status-badge ${status === "SUCCEEDED" ? "status-success" : "status-failed"}">
+          <div class="status-badge ${status}">
             ${statusIcon} ${status}
           </div>
         </div>

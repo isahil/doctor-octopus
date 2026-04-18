@@ -40,7 +40,9 @@ class Application:
                 loop.run_until_complete(async_emit(message))
 
     def submitOrder(self, order, validation, trade_validation):
-        logger.info(f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}")
+        logger.info(
+            f"fix app received order: {order} | validation: {validation}, tradeValidation: {trade_validation}"
+        )
         self.broadcast(order)
         return order
 
@@ -52,8 +54,8 @@ class FixClient:
     sio = None
 
     def __init__(self, settings):
-        self.env = settings.get("env", "prod")
-        self.app = settings.get("app", "fix")
+        self.env = settings.get("environment", "qa")
+        self.app = settings.get("app", "loan")
         self.fix_side = settings.get("fix_side", "buy")
         self.sio = settings.get("sio", None)
 

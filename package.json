@@ -7,9 +7,9 @@
 	"scripts": {
 		"client": "cd client && npm run dev",
 		"client:prod": "cd client && npm run build && npm run serve -- --host 0.0.0.0 --port 3000",
-		"fixme": "cd server && bash start.sh fixme false",
+		"fixme": "cd fixme && bash start.sh fixme",
 		"format": "prettier --write .",
-		"healthcheck": "curl --fail http://localhost:8000/health || exit 1",
+		"healthcheck": "curl --fail http://localhost:8000/health-check || exit 1",
 		"lint": "npx eslint .",
 		"log": "bash utils/log.sh",
 		"notification": "cd server && bash start.sh notification false",
@@ -17,17 +17,15 @@
 		"pull": "git stash && git checkout main && git pull",
 		"restart": "npm run stop && npm run start",
 		"restart:prod": "npm run stop && npm run start:prod",
-		"restart:server:prod": "npm run stop && npm run start:server:prod",
-		"restart:notification": "npm run stop:notification && npm run notification",
-		"restart:notification:prod": "bash utils/restart-service.sh notification",
+		"restart:client": "bash utils/restart-service.sh client",
+		"restart:fixme": "bash utils/restart-service.sh fixme",
+		"restart:server": "bash utils/restart-service.sh server",
+		"restart:notification": "bash utils/restart-service.sh notification",
 		"server": "cd server && bash start.sh main true",
-		"server:noinit": "cd server && bash start.sh main false",
-		"start": "concurrently \"cd client && npm run dev\" \"cd server && bash start.sh main true\"",
-		"start:prod": "bash utils/start.sh false prod",
-		"start:fixme": "bash utils/start.sh fixme",
-		"start:fixme:prod": "bash utils/restart-service.sh fixme",
-		"start:server": "bash utils/start.sh server",
-		"start:server:prod": "bash utils/restart-service.sh server",
+		"start": "bash utils/start.sh",
+		"start:docker": "docker compose --env-file ./.env up --build -d",
+		"start:local": "bash utils/start-local.sh",
+		"start:prod": "npm run start all false",
 		"setup": "bash utils/setup-app.sh",
 		"setup:all": "bash utils/setup-app.sh all",
 		"setup:client": "bash utils/setup-app.sh client",
@@ -49,10 +47,8 @@
 		"url": "https://github.com/isahil/doctor-octopus/issues"
 	},
 	"homepage": "https://github.com/isahil/doctor-octopus#readme",
-	"dependencies": {
-		"concurrently": "^8.2.2"
-	},
 	"devDependencies": {
+		"concurrently": "^8.2.2",
 		"eslint": "^9.30.0",
 		"prettier": "^3.6.2"
 	}

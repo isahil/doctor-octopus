@@ -1,12 +1,17 @@
-# This is the entry point of the util server process
+# This is the entry point of the fixme server process
 import os
-from fastapi import FastAPI
-from socketio import ASGIApp, AsyncRedisManager, AsyncServer
 import uvicorn
+from fastapi import FastAPI
+from socketio import ASGIApp, AsyncServer
 from fastapi.middleware.cors import CORSMiddleware
 
 os.environ["SERVER_MODE"] = "fixme"
-from src.utils.env_loader import get_debug_mode, get_fixme_server_port, get_node_env, get_redis_url
+from src.utils.env_loader import (
+    get_debug_mode,
+    get_fixme_server_port,
+    get_node_env,
+    get_redis_url,
+)
 from src.fastapi import router as fastapi_router
 from src.utils.lifespan import lifespan_fixme
 
@@ -17,11 +22,13 @@ sio: AsyncServer = AsyncServer(
     async_mode="asgi",
     cors_allowed_origins="*",
     logger=True if debug == "true" else False,
-    client_manager=AsyncRedisManager(redis_url),
+    # client_manager=AsyncRedisManager(redis_url),
 )
 socketio_app: ASGIApp = ASGIApp(sio, socketio_path="/ws/socket.io")
 
-fastapi_app: FastAPI = FastAPI(lifespan=lifespan_fixme, debug=True if debug == "true" else False)
+fastapi_app: FastAPI = FastAPI(
+    lifespan=lifespan_fixme, debug=True if debug == "true" else False
+)
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -37,7 +44,7 @@ if __name__ == "__main__":
     fixme_server_port = get_fixme_server_port()
     node_env = get_node_env()
     uvicorn.run(
-        "server_fixme:fastapi_app",
+        "server:fastapi_app",
         host="0.0.0.0",
         port=fixme_server_port,
         lifespan="on",

@@ -22,5 +22,14 @@
       "label": "suites",
       "options": ["all", "ui", "api", "fix", "db", "perf", "unit"]
     }
+  },
+  "defaults":{
+    "xterm_command": "fixme",
+    "fixme": {
+      "description": "Default sessions to run when the user types 'fixme' in the terminal.",
+      "environment": "qa",
+      "product": "loan",
+      "suites": "client"
+    }
   }
 }

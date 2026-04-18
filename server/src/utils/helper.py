@@ -39,7 +39,7 @@ async def call_doctor_endpoint(endpoint: str, params: dict, method: str = "get")
     Supports `get` and `post` methods via the `method` argument.
     """
     try:
-        url = f"{server_url}/{endpoint}"
+        url = f"{server_url}{endpoint}"
         async with aiohttp.ClientSession() as session:
             request = getattr(session, method.lower(), None)
             if not request:
@@ -67,7 +67,7 @@ async def call_doctor_endpoint(endpoint: str, params: dict, method: str = "get")
 
 
 async def queue_cards_download(filter: dict) -> None:
-    """Queue downloads for multiple cards via the /download API endpoint"""
+    """Queue downloads for multiple cards via the /download-a-card API endpoint"""
     from src.component.cards import Cards
 
     caching = is_cache_reloading(instances.redis.redis_client)
@@ -84,7 +84,7 @@ async def queue_cards_download(filter: dict) -> None:
     tasks = []
     for card_date in missing_cards:
         try:
-            tasks.append(call_doctor_endpoint("download", {"card_date": card_date}, method="post"))
+            tasks.append(call_doctor_endpoint("/download-a-card", {"card_date": card_date}, method="post"))
         except Exception as e:
             logger.error(f"Error queuing download for {card_date}: {str(e)}")
 
@@ -105,7 +105,7 @@ async def queue_cards_download(filter: dict) -> None:
 
 async def queue_cache_and_download(filter: dict) -> None:
     """Queue caching and downloading for multiple cards via the /cache_and_download API endpoint"""
-    cached_cards_res = await call_doctor_endpoint("cache-reload", filter)
+    cached_cards_res = await call_doctor_endpoint("/cache-reload", filter)
     res = cached_cards_res.get("message", "No message in response")
     logger.info(f"API cache-reload response: {res}")
     await queue_cards_download(filter)

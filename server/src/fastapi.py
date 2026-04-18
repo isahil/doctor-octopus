@@ -39,6 +39,7 @@ async def get_a_card(
         examples=["2021-09-01T14:00:00"],
     ),
 ) -> PlainTextResponse:
+    """Get the path to a specific report card's index.html file based on the mode and card root_dir provided."""
     test_report_dir = os.path.basename(root_dir)
     local_r_directories = local_report_directories()
     redis = instances.redis
@@ -92,7 +93,7 @@ async def get_all_cards(
         examples=["ui", "api", "perf", "all"],
     ),
 ) -> JSONResponse:
-    """Get available report cards based on the mode requested"""
+    """Get all available report cards in Redis cache based on the filters requested"""
     from server import fastapi_app
 
     expected_filter_dict = {
@@ -134,8 +135,48 @@ async def get_all_cards(
     )
 
 
-@router.post("/download", response_class=JSONResponse, status_code=202)
-async def start_download(
+@router.get("/cards-not-downloaded", response_class=JSONResponse, status_code=200)
+async def download_missed_cards(
+    day: int = Query(
+        ...,
+        title="Filter",
+        description="Filter the reports age based on the given string",
+        examples=[1, 7],
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
+) -> JSONResponse:
+    """Get the list of missing cards that are not available/downloaded in the local server but exist in Redis cache based on the given filters."""
+    from server import fastapi_app
+    from src.component.cards import Cards
+
+    cards: Cards = fastapi_app.state.cards
+    missing_cards = cards.all_missing_cards(
+        {"day": day, "product": product, "environment": environment, "protocol": protocol}
+    )
+    return JSONResponse(
+        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
+    )
+
+
+@router.post("/download-a-card", response_class=JSONResponse, status_code=202)
+async def download_a_card(
     card_date: str = Query(
         ...,
         title="S3 Card Directory",
@@ -145,7 +186,7 @@ async def start_download(
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> JSONResponse:
     """
-    Start a background download of an S3 folder to local storage.
+    Start a background download of an S3 folder/card to local server.
     This endpoint queues a download task and returns immediately with a 202 status.
     It prevents duplicate simultaneous downloads by tracking in-progress downloads in Redis.
 
@@ -243,47 +284,8 @@ async def start_download(
         )
 
 
-@router.get("/missing-cards", response_class=JSONResponse, status_code=200)
-async def get_missing_cards(
-    day: int = Query(
-        ...,
-        title="Filter",
-        description="Filter the reports age based on the given string",
-        examples=[1, 7],
-    ),
-    product: str = Query(
-        "all",
-        title="Product",
-        description="Product to filter the reports: clo/loan/all",
-        examples=["clo", "loan", "all"],
-    ),
-    environment: str = Query(
-        "all",
-        title="Environment",
-        description="Environment to filter the reports: qa/dev/uat/all",
-        examples=["qa", "dev", "uat", "all"],
-    ),
-    protocol: str = Query(
-        "all",
-        title="Protocol",
-        description="Protocol to filter the reports: ui/api/perf/all",
-        examples=["ui", "api", "perf", "all"],
-    ),
-) -> JSONResponse:
-    from server import fastapi_app
-    from src.component.cards import Cards
-
-    cards: Cards = fastapi_app.state.cards
-    missing_cards = cards.all_missing_cards(
-        {"day": day, "product": product, "environment": environment, "protocol": protocol}
-    )
-    return JSONResponse(
-        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
-    )
-
-
 @router.get("/download-missing-cards", response_class=JSONResponse, status_code=200)
-async def download_missing_cards(
+async def download_all_missing_cards(
     day: int = Query(
         ...,
         title="Filter",
@@ -309,6 +311,9 @@ async def download_missing_cards(
         examples=["ui", "api", "perf", "all"],
     ),
 ) -> JSONResponse:
+    """Trigger download for missing cards based on the given filters.
+    This endpoint is intended to be used by the notification system to trigger downloads for cards that are missing from the local server but available in the Redis cache."""
+
     await queue_cache_and_download({"day": day, "product": product, "environment": environment, "protocol": protocol})
     return JSONResponse(
         content={"message": "Triggered download for missing cards"},
@@ -415,6 +420,7 @@ async def invalidate_redis_cache(
         examples=["doctor-octopus:trading-apps-reports:qa*"],
     ),
 ) -> JSONResponse:
+    """Invalidate Redis cache keys matching the given pattern."""
     logger.info(f"Invalidating Redis cache with pattern: {pattern}")
     redis_client = instances.redis.get_client()
 
@@ -473,7 +479,7 @@ async def execute_command(
 
 @router.get("/notifications/{client_id}", response_class=StreamingResponse)
 async def notifications_sse(client_id: str, request: Request) -> StreamingResponse:
-    """Server-Sent Events (SSE) endpoint to stream push notifications"""
+    """Server-Sent Events (SSE) endpoint to stream push notifications clients/browsers"""
     logger.info(f"Client [{client_id}] connected to /notifications S.S.E endpoint")
     return StreamingResponse(
         notification.notification_streamer(request, client_id),
@@ -482,8 +488,9 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
     )
 
 
-@router.get("/health", response_class=JSONResponse, status_code=200)
+@router.get("/health-check", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
+    """Health check endpoint to verify server and its feature instances are healthy and responsive."""
     from server import fastapi_app
 
     start_time = datetime.now()
