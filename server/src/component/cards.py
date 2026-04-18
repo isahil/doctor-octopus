@@ -53,7 +53,7 @@ class Cards:
             logger.error(f"Unknown mode: {mode}. Expected 's3', 'cache', 'download', or 'cleanup'.")
 
     def ping(self) -> bool:
-        logger.info("Cards component is alive")
+        logger.info("Cards component is heartbeating.")
         return True
 
     def missing_cards(self, local_cards: dict, expected_filter_dict: dict) -> list[str]:

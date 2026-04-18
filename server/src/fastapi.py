@@ -499,7 +499,7 @@ async def notifications_sse(client_id: str, request: Request) -> StreamingRespon
     )
 
 
-@router.get("/health-check", response_class=JSONResponse, status_code=200)
+@router.get("/", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
     """Health check endpoint to verify server and its feature instances are healthy and responsive."""
     from server import fastapi_app
