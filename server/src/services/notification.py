@@ -3,7 +3,7 @@ import aiohttp
 from fastapi.requests import Request
 from redis.asyncio.client import PubSub
 import instances
-from src.components import remote
+from src.services import remote
 from src.utils.logger import logger
 from src.utils.helper import call_doctor_endpoint, queue_cards_download
 from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key

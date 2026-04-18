@@ -7,10 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
-os.environ["SERVER_MODE"] = "main"
 from config import workers_limit
 from src.utils.env_loader import get_debug_mode, get_main_server_port, get_node_env
-from src.fast_route import router
+from src.fast_router import router
 
 debug = get_debug_mode()
 

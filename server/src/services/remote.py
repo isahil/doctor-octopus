@@ -11,7 +11,7 @@ from config import (
     test_reports_redis_key,
     rate_limit_file_batch_size,
 )
-from src.components.validation import validate
+from src.services.validation import validate
 from src.utils.file_helper import ensure_dir
 from src.utils.helper import performance_log
 from src.utils.s3_client import S3

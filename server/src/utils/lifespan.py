@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from src.utils.env_loader import get_local_dir, get_node_env, get_test_env, get_server_mode
 from src.utils.cancel import cancel_app_task, cancel_lifespan_tasks
 from src.utils.logger import logger
-from src.components.cards import Cards
+from src.services.cards import Cards
 
 
 @asynccontextmanager

@@ -5,14 +5,13 @@ from fastapi import FastAPI
 from socketio import ASGIApp, AsyncServer
 from fastapi.middleware.cors import CORSMiddleware
 
-os.environ["SERVER_MODE"] = "fixme"
 from src.utils.env_loader import (
     get_debug_mode,
     get_fixme_server_port,
     get_node_env,
     get_redis_url,
 )
-from src.fast_route import router as fastrouter
+from src.fast_router import router
 from src.utils.lifespan import lifespan_fixme
 
 debug = get_debug_mode()
@@ -37,7 +36,7 @@ fastapi_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-fastapi_app.include_router(fastrouter)
+fastapi_app.include_router(router)
 fastapi_app.mount("/ws/socket.io", socketio_app)
 
 if __name__ == "__main__":

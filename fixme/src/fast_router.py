@@ -49,7 +49,7 @@ async def execute_command(
         )
 
 
-@router.get("/health-check", response_class=JSONResponse, status_code=200)
+@router.get("/", response_class=JSONResponse, status_code=200)
 async def health_check() -> JSONResponse:
     from server import fastapi_app
 
