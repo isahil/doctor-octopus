@@ -1,0 +1,185 @@
+name: E2E Tests with Docker Compose
+run-name: E2E ${{ inputs.test_suite || 'e2e Pipeline' }}
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+    workflow_dispatch:
+        inputs:
+            test_suite:
+                description: "Test suite to run"
+                required: false
+                default: "e2e"
+                type: choice
+                options:
+                    - e2e # Run e2e_pipeline.sh
+                    - api-smoke # API smoke tests
+                    - api-sanity # API sanity tests
+                    - api-regression # API regression tests
+                    - ui-smoke # UI smoke tests
+                    - ui-regression # UI regression tests
+                    - unit-client # Client unit tests
+                    - unit-server # Server unit tests
+                    - perf # Performance tests (default in pipeline)
+
+jobs:
+    e2e-tests:
+        name: E2E Test Pipeline
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+
+        services:
+            redis:
+                image: redis:alpine
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+                ports:
+                    - 6379:6379
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20.x"
+                  cache: "npm"
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.9"
+
+            - name: Install Poetry
+              run: |
+                  curl -sSL https://install.python-poetry.org | python3 -
+                  echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+            - name: Create .env file
+              run: |
+                  cat > .env <<EOF
+                  NODE_ENV=production
+                  ENVIRONMENT=qa
+                  MAIN_SERVER_HOST=localhost
+                  MAIN_SERVER_PORT=8000
+                  FIXME_SERVER_HOST=localhost
+                  FIXME_SERVER_PORT=8001
+                  VITE_MAIN_SERVER_URL_DEV=http://localhost:8000
+                  VITE_MAIN_SERVER_URL_PROD=http://localhost:8000
+                  VITE_MAIN_SERVER_HOST=localhost
+                  VITE_MAIN_SERVER_PORT=8000
+                  VITE_FIXME_SERVER_HOST=localhost
+                  VITE_FIXME_SERVER_PORT=8001
+                  SDET_REDIS_HOST=localhost
+                  SDET_REDIS_PORT=6379
+                  LOCAL_DIRECTORY=e2e
+                  TEST_REPORTS_DIR=test_reports
+                  AWS_SDET_BUCKET_NAME=${{ secrets.AWS_SDET_BUCKET_NAME }}
+                  AWS_SDET_BUCKET_REGION=${{ secrets.AWS_SDET_BUCKET_REGION }}
+                  AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  ARTILLERY_CLOUD_API_KEY=${{ secrets.ARTILLERY_CLOUD_API_KEY }}
+                  ARTILLERY_RECORD_MODE=true
+                  EOF
+
+            - name: Build Docker images
+              run: docker compose build
+
+            - name: Start services with Docker Compose
+              run: docker compose up -d
+
+            - name: Wait for Redis health check
+              run: |
+                  timeout 30 bash -c 'until redis-cli -h localhost ping | grep -q PONG; do sleep 1; done'
+
+            - name: Wait for Server to be healthy
+              run: |
+                  timeout 60 bash -c 'until curl -f http://localhost:8000/; do sleep 2; done'
+
+            - name: Wait for FixMe to be ready
+              run: |
+                  timeout 30 bash -c 'until nc -z localhost 8001; do sleep 1; done'
+
+            - name: Install E2E dependencies
+              working-directory: ./e2e
+              run: |
+                  npm ci
+                  npx playwright install
+
+            - name: Setup e2e Python environment
+              working-directory: ./e2e
+              run: |
+                  poetry config virtualenvs.in-project true
+                  poetry install
+
+            - name: Run E2E Tests
+              working-directory: ./e2e
+              env:
+                  AWS_SDET_BUCKET_NAME: ${{ secrets.AWS_SDET_BUCKET_NAME }}
+                  AWS_SDET_BUCKET_REGION: ${{ secrets.AWS_SDET_BUCKET_REGION }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  ARTILLERY_CLOUD_API_KEY: ${{ secrets.ARTILLERY_CLOUD_API_KEY }}
+              run: |
+                  TEST_SUITE="${{ github.event.inputs.test_suite || 'e2e' }}"
+
+                  if [ "$TEST_SUITE" = "e2e" ]; then
+                    sh e2e_pipeline.sh
+                  elif [ "$TEST_SUITE" = "api-smoke" ]; then
+                    ENVIRONMENT=qa npm run api:smoke
+                  elif [ "$TEST_SUITE" = "api-sanity" ]; then
+                    ENVIRONMENT=qa npm run api:sanity
+                  elif [ "$TEST_SUITE" = "api-regression" ]; then
+                    ENVIRONMENT=qa npm run api:regression
+                  elif [ "$TEST_SUITE" = "ui-smoke" ]; then
+                    npm run ui:smoke
+                  elif [ "$TEST_SUITE" = "ui-regression" ]; then
+                    npm run ui:regression
+                  elif [ "$TEST_SUITE" = "unit-client" ]; then
+                    npm run unit:client
+                  elif [ "$TEST_SUITE" = "unit-server" ]; then
+                    npm run unit:server
+                  elif [ "$TEST_SUITE" = "perf" ]; then
+                    npm run perf:cards-api && npm run perf:cards-ui && npm run perf:fixme-ws
+                  fi
+
+            - name: Collect test reports
+              if: always()
+              run: |
+                  mkdir -p artifacts/reports
+                  if [ -d "e2e/test_reports" ]; then
+                    cp -r e2e/test_reports/* artifacts/reports/ 2>/dev/null || true
+                  fi
+                  if [ -d "e2e/test-results" ]; then
+                    cp -r e2e/test-results/* artifacts/reports/ 2>/dev/null || true
+                  fi
+
+            - name: Upload test reports
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-reports-${{ github.event.inputs.test_suite || 'e2e' }}-${{ github.run_id }}
+                  path: artifacts/reports/
+                  retention-days: 30
+
+            - name: Upload logs for debugging
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: debug-logs-${{ github.run_id }}
+                  path: |
+                      logs/
+                      e2e/logs/
+                  retention-days: 7
+
+            - name: Stop and cleanup services
+              if: always()
+              run: |
+                  docker compose down -v
+                  docker system prune -f
