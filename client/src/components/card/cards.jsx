@@ -117,7 +117,7 @@ const Cards = () => {
           <div className="stethoscope-chest"></div>
           <div className="stethoscope-pulse"></div>
         </div>
-        <p className="loading-caption">Auscultating latest reports...</p>
+        <p className="loading-caption">Checking test reports...</p>
       </div>
     )
   }

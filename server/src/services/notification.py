@@ -5,14 +5,17 @@ from redis.asyncio.client import PubSub
 import instances
 from src.services import remote
 from src.utils.logger import logger
-from src.utils.helper import call_doctor_endpoint, queue_cards_download
-from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
+from src.utils.helper import call_doctor_endpoint, queue_cards_download, wait_for_server_ready
+from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key, server_url
 
 
 async def notification_publisher():
     """Update the total number of S3 objects and emit an alert if the count increases"""
     day_filter = {"day": 1, "product": "all", "environment": "all", "protocol": "all"}
     try:
+        # Wait for server to be ready before attempting cache reload
+        await wait_for_server_ready()
+
         # Initial cache reload and download queue on server start
         await cache_and_download(day_filter)
 
@@ -35,9 +38,10 @@ async def notification_publisher():
         logger.error(f"Error in main notification process: {str(e)}")
         raise
 
+
 async def cache_and_download(day_filter):
     try:
-            # app setup step on server start
+        # app setup step on server start
         logger.info("In progress cache reload and download queue...")
         await call_doctor_endpoint("/download-missing-cards", day_filter)
         logger.info("Cache and download queue completed successfully.")

@@ -109,3 +109,19 @@ async def queue_cache_and_download(filter: dict) -> None:
     res = cached_cards_res.get("message", "No message in response")
     logger.info(f"API cache-reload response: {res}")
     await queue_cards_download(filter)
+
+
+async def wait_for_server_ready(max_retries: int = 30, retry_delay: int = 1) -> bool:
+    """Wait for the main server to be ready by polling the health check endpoint."""
+    for attempt in range(max_retries):
+        try:
+            await call_doctor_endpoint("/", {})
+            logger.info("Server is ready, proceeding with notification service.")
+            return True
+        except Exception:
+            if attempt < max_retries - 1:
+                logger.info(f"Waiting for server to be ready... (attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(retry_delay)
+
+    logger.warning("Server did not become ready in time, proceeding anyway.")
+    return False
