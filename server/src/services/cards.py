@@ -11,7 +11,7 @@ from config import (
     rate_limit_wait_time,
 )
 from src.services.validation import validate
-from src.services.local import get_all_local_cards, cleanup_old_test_report_directories
+from src.services.system import get_all_local_cards, cleanup_old_test_report_directories
 from src.services.remote import download_s3_folder, get_cards_from_s3_and_cache, get_cards_from_cache
 from src.utils.helper import performance_log
 from src.utils.logger import logger
@@ -45,11 +45,12 @@ class Cards:
         elif mode == "cache":
             return get_cards_from_cache(expected_filter_dict)
         elif mode == "download":
-            self.download_missing_cards(expected_filter_dict)
+            return self.download_missing_cards(expected_filter_dict)
         elif mode == "cleanup":
-            cleanup_old_test_report_directories(max_local_dirs)
+            return cleanup_old_test_report_directories(max_local_dirs)
         else:
             logger.error(f"Unknown mode: {mode}. Expected 's3', 'cache', 'download', or 'cleanup'.")
+            return None
 
     @staticmethod
     def ping() -> bool:
@@ -122,9 +123,9 @@ class Cards:
         Download the missing cards from S3 and cache them on the server using three levels of parallelism:
         (1) per environment, (2) per protocol, and (3) per batch of cards, all utilizing threads.
         """
-        missing_cache_card_dates = self.all_missing_cards(expected_filter_dict)
-        self.download_cards(missing_cache_card_dates)
-        return missing_cache_card_dates
+        missing_cached_cards = self.all_missing_cards(expected_filter_dict)
+        self.download_cards(missing_cached_cards)
+        return missing_cached_cards
 
     def download_cards(self, missing_cache_card_dates: list[str]) -> None:
         """Download specific cards from S3 given their root directories."""

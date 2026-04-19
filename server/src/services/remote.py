@@ -2,7 +2,6 @@ import asyncio
 import time
 import json
 import os
-from typing import Union
 import redis as _redis
 from config import (
     test_environments,
@@ -44,7 +43,7 @@ def transform_s3_objects_to_filter_dict(s3_objects: list[dict]) -> list[dict]:
     return [card for s3_object in s3_objects if (card := transform_s3_object_to_filter_dict(s3_object)) is not None]
 
 
-def transform_s3_object_to_filter_dict(s3_object: dict) -> Union[dict, None]:
+def transform_s3_object_to_filter_dict(s3_object: dict) -> dict | None:
     object_name = s3_object["Key"]
     path_parts = object_name.split("/")
 
@@ -81,7 +80,7 @@ def validate_transformed_cards_w_filter_dict(transformed_cards: list[dict], expe
     return cards_pool
 
 
-async def process_card(card_tuple: tuple[str, dict]) -> Union[str, None]:
+async def process_card(card_tuple: tuple[str, dict]) -> str | None:
     """
     Check if the card is already cached in Redis. If not, download the JSON report from S3,
     process it, and cache it in Redis. Returns the card date if successfully processed.

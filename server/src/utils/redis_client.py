@@ -1,7 +1,6 @@
 import json
 import redis
 from datetime import datetime, timedelta
-from typing import Union
 from src.utils.env_loader import get_redis_host, get_redis_port
 
 redis_host = get_redis_host()
@@ -18,12 +17,12 @@ class RedisClient:
     def __init__(self, host=redis_host, port=redis_port):
         self.connect(host, port)
 
-    def connect(self, host, port):
+    def connect(self, host, port) -> None:
         self.redis_client = redis.StrictRedis(host, port)
         connected_client = self.redis_client.incr(self.config.redis_instance_key, 1)
         self.logger.info(f"Connected to Redis at {host}:{port}. Clients count: {connected_client}")
 
-    def get_client(self):
+    def get_client(self) -> redis.StrictRedis:
         if not self.redis_client:
             self.logger.error("Redis client not initialized")
             raise ValueError("Redis client is not initialized. Call connect() first.")
@@ -59,7 +58,7 @@ class RedisClient:
         result = self.redis_client.smembers(key)
         return [item.decode("utf-8") if isinstance(item, bytes) else item for item in result]
 
-    def increment_key(self, key, increment: int = 1, expire_day: Union[int, None] = None):
+    def increment_key(self, key, increment: int = 1, expire_day: int | None = None):
         new_value = self.redis_client.incr(key, increment)
         if expire_day:
             self.redis_client.expire(key, self.seconds_until_midnight(expire_day))
@@ -70,18 +69,18 @@ class RedisClient:
         return new_value
 
     @staticmethod
-    def seconds_until_midnight(days: int = 0):
+    def seconds_until_midnight(days: int = 0) -> int:
         now = datetime.now()
         midnight = datetime.combine(now.date() + timedelta(days=days), datetime.min.time())
         seconds_until_midnight = int((midnight - now).total_seconds())
         return seconds_until_midnight
 
-    def has_it_been_cached(self, key, value):
+    def has_it_been_cached(self, key, value) -> bool:
         used = self.redis_client.lpos(key, value) is not None
         self.logger.info(f"Checking if {key} value: {value} has been used: {used}")
         return used
 
-    def it_has_been_cached(self, key, value):
+    def it_has_been_cached(self, key, value) -> None:
         client = self.get_client()
         client.lpush(key, value)
         client.expire(key, self.seconds_until_midnight(self.config.redis_cache_ttl))  # Set expiry in seconds
@@ -92,7 +91,7 @@ class RedisClient:
             self.redis_client.sadd(self.cards_cached_redis_key, card_cache_field)
             self.logger.info(f"Cached: {card_cache_field}")
 
-    def get_a_cached_card(self, cards_cache_key: str, card_cache_field: str) -> Union[dict, None]:
+    def get_a_cached_card(self, cards_cache_key: str, card_cache_field: str) -> dict | None:
         if not self.redis_client.hexists(cards_cache_key, card_cache_field):
             return None
         else:
@@ -103,7 +102,7 @@ class RedisClient:
                 return _json
             return None
 
-    def get_all_cached_cards(self, cards_cache_key: str):
+    def get_all_cached_cards(self, cards_cache_key: str) -> dict:
         result = self.redis_client.hgetall(cards_cache_key)
         # self.logger.info(f"Cache size for key - {cards_cache_key}: {len(result if isinstance(result, dict) else {})}")
         return result

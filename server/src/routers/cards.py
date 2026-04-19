@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 import instances
 import src.services.remote as remote
 from src.services.cards import Cards
-from src.services.local import local_report_directories
+from src.services.system import local_report_directories
 from src.utils.helper import call_doctor_endpoint, queue_cache_reload_and_download
 from src.utils.logger import logger
 from src.utils.queue import (

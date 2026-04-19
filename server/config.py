@@ -44,9 +44,11 @@ server_url: str = (
 )  # URL for the main server, used for API calls
 
 __all__ = [
+    "cache_reload_queue_ttl",
     "do_lifetime_clients_count_key",
     "do_current_clients_count_key",
     "do_max_concurrent_clients_key",
+    "download_queue_ttl",
     "max_local_dirs",
     "test_environments",
     "test_reports_dir",
@@ -62,5 +64,6 @@ __all__ = [
     "rate_limit_file_batch_size",
     "rate_limit_folder_batch_size",
     "rate_limit_wait_time",
+    "root_redis_key",
     "notification_frequency_time"
 ]  # export the variables

@@ -10,9 +10,8 @@ Supports any operation type via a generic key scheme:
 import asyncio
 import hashlib
 import json
-from typing import Optional
-from config import root_redis_key, download_queue_ttl, cache_reload_queue_ttl
 from redis import Redis
+from config import root_redis_key, download_queue_ttl, cache_reload_queue_ttl
 from src.utils.logger import logger
 import instances
 
@@ -42,8 +41,8 @@ def mark_operation(
         redis: Redis,
         operation: str,
         identifier: str,
-        metadata: Optional[dict] = None,
-        ttl: Optional[int] = None,
+        metadata: dict | None = None,
+        ttl: int | None = None,
 ) -> bool:
     """Mark an operation as in-progress in Redis with an auto-expiry TTL.
     Args:
@@ -81,7 +80,7 @@ def unmark_operation(redis: Redis, operation: str, identifier: str) -> bool:
         return False
 
 
-async def get_operation_status(redis: Redis, operation: str, identifier: str) -> Optional[dict]:
+async def get_operation_status(redis: Redis, operation: str, identifier: str) -> dict | None:
     """Retrieve the metadata dict for an in-progress operation (async Redis)."""
     try:
         key = get_operation_key(operation, identifier)
@@ -109,7 +108,7 @@ def is_downloading(redis: Redis, card_date: str) -> bool:
     return is_operation_in_progress(redis, "download", card_date)
 
 
-def mark_downloading(redis: Redis, card_date: str, metadata: Optional[dict] = None) -> bool:
+def mark_downloading(redis: Redis, card_date: str, metadata: dict | None = None) -> bool:
     """Mark a card_date as being downloaded."""
     return mark_operation(redis, "download", card_date, metadata=metadata)
 
@@ -119,7 +118,7 @@ def unmark_downloading(redis: Redis, card_date: str) -> bool:
     return unmark_operation(redis, "download", card_date)
 
 
-async def get_download_status(redis: Redis, card_date: str) -> Optional[dict]:
+async def get_download_status(redis: Redis, card_date: str) -> dict | None:
     """Get the current download metadata for a card_date."""
     return await get_operation_status(redis, "download", card_date)
 
