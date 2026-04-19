@@ -22,7 +22,7 @@ on:
                     - ui-regression # UI regression tests
                     - unit-client # Client unit tests
                     - unit-server # Server unit tests
-                    - perf # Performance tests (default in pipeline)
+                    - perf # Performance tests
 
 jobs:
     e2e-tests:
@@ -78,7 +78,6 @@ jobs:
                   VITE_FIXME_SERVER_PORT=8001
                   SDET_REDIS_HOST=localhost
                   SDET_REDIS_PORT=6379
-                  LOCAL_DIRECTORY=e2e
                   TEST_REPORTS_DIR=test_reports
                   AWS_SDET_BUCKET_NAME=${{ secrets.AWS_SDET_BUCKET_NAME }}
                   AWS_SDET_BUCKET_REGION=${{ secrets.AWS_SDET_BUCKET_REGION }}
@@ -155,9 +154,6 @@ jobs:
                   mkdir -p artifacts/reports
                   if [ -d "e2e/test_reports" ]; then
                     cp -r e2e/test_reports/* artifacts/reports/ 2>/dev/null || true
-                  fi
-                  if [ -d "e2e/test-results" ]; then
-                    cp -r e2e/test-results/* artifacts/reports/ 2>/dev/null || true
                   fi
 
             - name: Upload test reports

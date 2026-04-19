@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from socketio import ASGIApp, AsyncServer
 from fastapi.middleware.cors import CORSMiddleware
 
+os.environ["SERVER_MODE"] = "fixme"
 from src.utils.env_loader import (
     get_debug_mode,
     get_fixme_server_port,
