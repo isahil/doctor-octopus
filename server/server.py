@@ -27,7 +27,7 @@ fastapi_app.add_middleware(GZipMiddleware, minimum_size=1000)
 fastapi_app.include_router(router)
 fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name="Test Reports")
 
-if __name__ == "__main__":
+def main():
     main_server_port = get_main_server_port()
     node_env = get_node_env()
 
@@ -40,6 +40,9 @@ if __name__ == "__main__":
         forwarded_allow_ips="*",
         reload=(node_env != "production"),
     )
+
+if __name__ == "__main__":
+    main()
 
 # "author": "Imran Sahil"
 # "GitHub": "https://github.com/isahil/doctor-octopus.git"

@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Union
 import json
 import time
 from config import (
@@ -26,7 +25,7 @@ class Cards:
     product: str = ""
 
     @performance_log
-    async def actions(self, expected_filter_dict: dict) -> Union[list[dict], list[str], None]:
+    async def actions(self, expected_filter_dict: dict) -> list[dict] | list[str] | None:
         """Action to fetch and cache cards based on the expected filter data
         Args:
             expected_filter_dict (dict): filter data containing mode, environment, day, product, protocol
@@ -52,11 +51,13 @@ class Cards:
         else:
             logger.error(f"Unknown mode: {mode}. Expected 's3', 'cache', 'download', or 'cleanup'.")
 
-    def ping(self) -> bool:
+    @staticmethod
+    def ping() -> bool:
         logger.info("Cards component is heartbeating.")
         return True
 
-    def missing_cards(self, local_cards: dict, expected_filter_dict: dict) -> list[str]:
+    @staticmethod
+    def missing_cards(local_cards: dict, expected_filter_dict: dict) -> list[str]:
         import instances
 
         redis = instances.redis
@@ -153,7 +154,8 @@ class Cards:
             )
             time.sleep(rate_limit_wait_time)
 
-    def calculate_total_batches(self, total_items, batch_size):
+    @staticmethod
+    def calculate_total_batches(total_items, batch_size) -> list[int]:
         return (total_items + batch_size - 1) // batch_size
 
     def download_missing_cached_cards(self, expected_filter_dict: dict) -> list[str]:
@@ -188,7 +190,8 @@ class Cards:
 
         return missing_cache_card_dates
 
-    def transform_cached_cards_to_filter_dict(self, cards_dates: list[str]) -> dict[str, dict]:
+    @staticmethod
+    def transform_cached_cards_to_filter_dict(cards_dates: list[str]) -> dict[str, dict]:
         """Transform a list of card S3 root directories to their corresponding filter dicts.
         returns {'12-31-2025_08-30-00_AM': {'day': '12-31-2025_08-30-00_AM'}, ...}
         """
@@ -199,7 +202,7 @@ class Cards:
                 cards_pool[card_date] = filter_dict
         return cards_pool
 
-    def set_cards(self, expected_filter_dict: dict):
+    def set_cards(self, expected_filter_dict: dict) -> list[dict]:
         """Force update the cards in Cards app memory state. Warning: memory intensive. Not being used currently."""
         self.stored_cards_collection = get_cards_from_cache(expected_filter_dict)
         self.set_filter_data(expected_filter_dict)

@@ -60,5 +60,7 @@ __all__ = [
     "workers_limit",
     "server_url",
     "rate_limit_file_batch_size",
+    "rate_limit_folder_batch_size",
+    "rate_limit_wait_time",
     "notification_frequency_time"
 ]  # export the variables

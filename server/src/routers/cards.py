@@ -1,6 +1,5 @@
 import os
 from datetime import datetime as dt
-
 from fastapi import APIRouter, BackgroundTasks, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 
@@ -8,7 +7,7 @@ import instances
 import src.services.remote as remote
 from src.services.cards import Cards
 from src.services.local import local_report_directories
-from src.utils.helper import call_doctor_endpoint, queue_cache_and_download
+from src.utils.helper import call_doctor_endpoint, queue_cache_reload_and_download
 from src.utils.logger import logger
 from src.utils.queue import (
     cards_download_queue,
@@ -123,13 +122,14 @@ async def get_all_cards(
     return JSONResponse(content={"message": "Cards retrieved successfully", "cards": all_cards}, status_code=200)
 
 
-@router.get("/cards-undownloaded", response_class=JSONResponse, status_code=200)
-async def download_missed_cards(
+@router.get("/cards-not-downloaded", response_class=JSONResponse, status_code=200)
+async def cards_not_downloaded(
     day: int = Query(..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]),
     product: str = Query("all", title="Product", description="Product to filter the reports: clo/loan/all", examples=["clo", "loan", "all"]),
     environment: str = Query("all", title="Environment", description="Environment to filter the reports: qa/dev/uat/all", examples=["qa", "dev", "uat", "all"]),
     protocol: str = Query("all", title="Protocol", description="Protocol to filter the reports: ui/api/perf/all", examples=["ui", "api", "perf", "all"]),
 ) -> JSONResponse:
+    """ Get the list of cards not downloaded to the server by comparing the data with Redis' cards cache based on the filters."""
     from server import fastapi_app
 
     cards: Cards = fastapi_app.state.cards
@@ -139,6 +139,7 @@ async def download_missed_cards(
 
 @router.get("/cards-download-queue", response_class=JSONResponse, status_code=200)
 async def cards_being_downloaded() -> JSONResponse:
+    """Get the list of cards that are in the download queue. Results are pulled from Redis download operation queue cache"""
     downloading_cards = await cards_download_queue()
     return JSONResponse(content={"message": "cards download queue...", "queued": downloading_cards}, status_code=200)
 
@@ -153,62 +154,64 @@ async def download_a_card(
     ),
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> JSONResponse:
+    """Download a specific card directory from the S3 bucket."""
     from server import fastapi_app
 
     redis = instances.redis
-    cards = fastapi_app.state.cards
-    test_report_dir = os.path.basename(card_date)
-    local_r_directories = local_report_directories()
+    cards: Cards = fastapi_app.state.cards
+    card_dir = os.path.basename(card_date)
+    cards_dirs = local_report_directories()
 
     try:
-        if test_report_dir in local_r_directories:
-            logger.info(f"Download request for {test_report_dir}: already cached locally, skipping")
-            return JSONResponse(content={"status": "success", "message": f"Folder {test_report_dir} is already cached locally", "cached": True}, status_code=200)
+        if card_dir in cards_dirs:
+            logger.info(f"Download request for {card_dir}: already cached locally, skipping")
+            return JSONResponse(content={"status": "success", "message": f"Folder {card_dir} is already cached locally", "cached": True}, status_code=200)
 
-        if is_downloading(redis.redis_client, test_report_dir):
-            download_status = await get_download_status(redis.redis_client, test_report_dir)
-            logger.info(f"Download request for {test_report_dir}: already in progress")
-            return JSONResponse(content={"status": "downloading", "message": f"Folder {test_report_dir} is already being downloaded", "details": download_status}, status_code=200)
+        if is_downloading(redis.redis_client, card_dir):
+            download_status = await get_download_status(redis.redis_client, card_dir)
+            logger.info(f"Download request for {card_dir}: already in progress")
+            return JSONResponse(content={"status": "downloading", "message": f"Folder {card_dir} is already being downloaded", "details": download_status}, status_code=200)
 
-        acquired = mark_downloading(redis.redis_client, test_report_dir, metadata={"started_at": dt.now().isoformat()})
+        acquired = mark_downloading(redis.redis_client, card_dir, metadata={"started_at": dt.now().isoformat()})
         if not acquired:
-            logger.info(f"Download request for {test_report_dir}: lost race, already in progress")
-            return JSONResponse(content={"status": "downloading", "message": f"Folder {test_report_dir} is already being downloaded"}, status_code=200)
+            logger.info(f"Download request for {card_dir}: lost race, already in progress")
+            return JSONResponse(content={"status": "downloading", "message": f"Folder {card_dir} is already being downloaded"}, status_code=200)
 
         async def _download_task():
             try:
-                logger.info(f"Starting background download for {test_report_dir}")
+                logger.info(f"Starting background download for {card_dir}")
                 remote.download_s3_folder(card_date)
 
                 try:
-                    download_notification = {"type": "download", "card_date": test_report_dir, "timestamp": dt.now().timestamp()}
+                    download_notification = {"type": "download", "card_date": card_dir, "timestamp": dt.now().timestamp()}
                     await instances.aioredis.publish("notifications", download_notification)
-                    logger.info(f"Published download completion notification for {test_report_dir}")
+                    logger.info(f"Published download completion notification for {card_dir}")
                 except Exception as err:
                     logger.error(f"Failed to publish download completion notification: {str(err)}")
             except Exception as error:
-                logger.error(f"Download failed for {test_report_dir}: {str(error)}")
+                logger.error(f"Download failed for {card_dir}: {str(error)}")
             finally:
-                unmark_downloading(redis.redis_client, test_report_dir)
+                unmark_downloading(redis.redis_client, card_dir)
                 await cards.actions({"mode": "cleanup"})
 
         background_tasks.add_task(_download_task)
 
-        return JSONResponse(content={"status": "queued", "message": f"Download for folder {test_report_dir} has been queued", "root_dir": test_report_dir}, status_code=202)
+        return JSONResponse(content={"status": "queued", "message": f"Download for folder {card_dir} has been queued", "root_dir": card_dir}, status_code=202)
 
     except Exception as e:
-        logger.error(f"Error starting download for {test_report_dir}: {str(e)}")
+        logger.error(f"Error starting download for {card_dir}: {str(e)}")
         return JSONResponse(content={"error": str(e)}, status_code=400)
 
 
-@router.get("/download-missing-cards", response_class=JSONResponse, status_code=200)
+@router.get("/cache-reload-and-download", response_class=JSONResponse, status_code=200)
 async def download_all_missing_cards(
     day: int = Query(..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]),
     product: str = Query("all", title="Product", description="Product to filter the reports: clo/loan/all", examples=["clo", "loan", "all"]),
     environment: str = Query("all", title="Environment", description="Environment to filter the reports: qa/dev/uat/all", examples=["qa", "dev", "uat", "all"]),
     protocol: str = Query("all", title="Protocol", description="Protocol to filter the reports: ui/api/perf/all", examples=["ui", "api", "perf", "all"]),
 ) -> JSONResponse:
-    await queue_cache_and_download({"day": day, "product": product, "environment": environment, "protocol": protocol})
+    """Reload Redis cache and download all missing cached cards to the server based on the filters."""
+    await queue_cache_reload_and_download({"day": day, "product": product, "environment": environment, "protocol": protocol})
     return JSONResponse(content={"message": "Triggered download for missing cards"}, status_code=200)
 
 
@@ -219,6 +222,7 @@ async def reload_cards_cache(
     environment: str = Query("all", title="Environment", description="Environment to filter the reports: qa/dev/uat/all", examples=["qa", "dev", "uat", "all"]),
     protocol: str = Query("all", title="Protocol", description="Protocol to filter the reports: ui/api/perf/all", examples=["ui", "api", "perf", "all"]),
 ) -> JSONResponse:
+    """Pull all objects from the S3 bucket and reload Redis cache with the missing cache cards data based on the filters"""
     from server import fastapi_app
 
     expected_filter_dict = {"environment": environment, "day": day, "mode": "s3", "protocol": protocol, "product": product}

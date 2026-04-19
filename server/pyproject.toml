@@ -46,7 +46,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 initialize = "initialize:main"
-server = "server:fastapi_app"
+server = "server:main"
 
 [tool.ruff]
 line-length = 120

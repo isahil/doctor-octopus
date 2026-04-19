@@ -16,12 +16,12 @@ if [ "$SERVER_MODE" = "main" ]; then
 
     if [ "$INITIALIZE" = "true" ]; then
         # echo "[$(date)] Initializing the app environment"
-        poetry run python3 initialize.py
+        poetry run initialize
         echo "[$(date)] Initialized the app environment"
     fi
 
     echo "[$(date)] Running main server"
-    poetry run python3 server.py 2>&1 & MAIN_PID=$!
+    poetry run server 2>&1 & MAIN_PID=$!
     echo $MAIN_PID > "${pid_dir}server.pid"
     echo "[$(date)] Main server parent process started with PID: $MAIN_PID"
 # elif [ "$SERVER_MODE" = "fixme" ]; then
