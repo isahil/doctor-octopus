@@ -151,7 +151,7 @@
   position: fixed;
   border: 1px solid var(--octopus-gray);
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto;
   column-gap: 12px;
   align-items: center;
 }
@@ -165,6 +165,9 @@
 
 .cards-header-center {
   grid-column: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: cyan;
   font-size: 14px;
   font-weight: bold;
@@ -298,6 +301,8 @@
   background: cyan;
   box-shadow: 0 0 0 0 rgba(71, 255, 239, 0.5);
   animation: pulse-kefe91mn 1.5s infinite linear;
+  position: relative;
+  flex-shrink: 0;
 }
 
 .new-pulse:before,
@@ -427,7 +432,7 @@
     top: 46px;
     padding: 10px 8px;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto 1fr auto;
     column-gap: 8px;
     align-items: center;
   }
