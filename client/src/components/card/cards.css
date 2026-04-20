@@ -29,8 +29,7 @@
   gap: 16px;
   background:
     radial-gradient(circle at 25% 20%, rgba(44, 90, 79, 0.4), transparent 35%),
-    radial-gradient(circle at 80% 80%, rgba(10, 38, 46, 0.45), transparent 42%),
-    #05080c;
+    radial-gradient(circle at 80% 80%, rgba(10, 38, 46, 0.45), transparent 42%), #05080c;
 }
 
 .stethoscope-loader {
@@ -70,8 +69,12 @@
   height: 48px;
   border-radius: 50%;
   border: 4px solid #a0f5e7;
-  background:
-    radial-gradient(circle at 35% 30%, rgba(223, 255, 250, 0.85), rgba(66, 196, 176, 0.35) 45%, rgba(1, 25, 28, 0.9) 100%);
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(223, 255, 250, 0.85),
+    rgba(66, 196, 176, 0.35) 45%,
+    rgba(1, 25, 28, 0.9) 100%
+  );
   box-shadow:
     0 0 0 6px rgba(113, 239, 219, 0.1),
     0 0 22px rgba(80, 232, 209, 0.25);
@@ -99,7 +102,6 @@
 }
 
 @keyframes chest-breathe {
-
   0%,
   100% {
     transform: scale(1);
@@ -128,7 +130,6 @@
 }
 
 @keyframes caption-fade {
-
   0%,
   100% {
     opacity: 0.45;
@@ -142,27 +143,49 @@
 .cards-header {
   width: 100%;
   top: 60px;
-  padding: 15px 0px 8px 0px;
+  height: 60px;
+  box-sizing: border-box;
+  padding: 12px 16px;
   background-color: rgb(0, 0, 0);
   z-index: 100;
   position: fixed;
   border: 1px solid var(--octopus-gray);
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 12px;
+  align-items: center;
 }
 
-.cards-header .total {
+.cards-header-left {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cards-header-center {
+  grid-column: 2;
   color: cyan;
   font-size: 14px;
   font-weight: bold;
+  white-space: nowrap;
+  position: static;
+  transform: none;
+}
+
+.cards-header-right {
+  grid-column: 3;
+  min-width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .refresh-button {
   width: 22px;
   cursor: pointer;
-  top: 8px;
-  left: 50px;
-  position: absolute;
+  display: block;
 }
 
 .refresh-button:hover {
@@ -172,7 +195,8 @@
 .filters-wrapper {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .environment-filters-wrapper,
@@ -183,32 +207,16 @@
   flex-direction: row;
   align-items: center;
   gap: 5px;
-  position: absolute;
-  top: 7px;
 }
 
 .filter-label {
+  display: inline-block;
+  white-space: nowrap;
   color: var(--octopus-green);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   order: 2;
-}
-
-.environment-filters-wrapper {
-  left: 150px;
-}
-
-.day-filters-wrapper {
-  left: 250px;
-}
-
-.product-filters-wrapper {
-  left: 350px;
-}
-
-.protocol-filters-wrapper {
-  left: 460px;
 }
 
 .source {
@@ -254,7 +262,9 @@
   padding-right: 25px;
   margin: 0px 0px 0px 10px;
   width: 60px;
+  appearance: none;
   -webkit-appearance: none;
+  transition: 0.25s;
   -webkit-transition: 0.25s;
 }
 
@@ -288,8 +298,6 @@
   background: cyan;
   box-shadow: 0 0 0 0 rgba(71, 255, 239, 0.5);
   animation: pulse-kefe91mn 1.5s infinite linear;
-  position: absolute;
-  right: 275px;
 }
 
 .new-pulse:before,
@@ -316,8 +324,6 @@
 .opening-bars {
   width: 21.6px;
   height: 15px;
-  position: absolute;
-  right: 325px;
   --c: linear-gradient(cyan 0 0);
   background:
     var(--c) 0% 100%,
@@ -363,7 +369,7 @@
   bottom: 20px;
   right: 20px;
   font-size: 4rem;
-  font-family: 'Times New Roman', serif;
+  font-family: "Times New Roman", serif;
   color: rgba(255, 255, 255, 0.15);
   z-index: 10;
   user-select: none;
@@ -419,10 +425,42 @@
 
   .cards-header {
     top: 46px;
-    padding: 10px 5px;
+    padding: 10px 8px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    column-gap: 8px;
+    align-items: center;
+  }
+
+  .cards-header-left {
+    grid-column: 1;
+    gap: 8px;
+    overflow: visible;
+  }
+
+  .cards-header-center {
+    grid-column: 2;
+    font-size: 13px;
+    position: static;
+    transform: none;
+  }
+
+  .cards-header-right {
+    grid-column: 3;
+    min-width: 32px;
+    gap: 6px;
+  }
+
+  .filters-wrapper {
+    gap: 4px;
   }
 
   .filter-label {
+    display: none;
+  }
+
+  .source-header,
+  .source-label {
     display: none;
   }
 
@@ -430,24 +468,8 @@
     gap: 2px;
   }
 
-  .environment-filters-wrapper {
-    left: 60px;
-  }
-
-  .day-filters-wrapper {
-    left: 100px;
-  }
-
-  .app-filters-wrapper {
-    left: 140px;
-  }
-
-  .protocol-filters-wrapper {
-    left: 180px;
-  }
-
-  .new-pulse {
-    right: 30px;
+  .total-label-text {
+    display: none;
   }
 
   .source {

@@ -1,57 +1,57 @@
 .options-wrapper {
+  position: relative;
+  height: 34px;
+  margin: 0 0.5rem;
+}
+
+.options-dropdown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
   display: flex;
   flex-direction: column;
   gap: 0.3em;
-  margin: 0 0.5rem;
+  z-index: 100;
+}
+
+.options-wrapper:hover .options-dropdown {
+  opacity: 0.95;
+  transition: opacity 0.05s ease;
 }
 
 .options-wrapper:hover .option-wrapper {
   display: block;
-  opacity: 0.7;
-  transition: opacity 0.05s ease;
-  z-index: 100;
-}
-
-.options-wrapper:hover .option-wrapper:has(input[type="radio"]:checked) {
-  opacity: 1;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 0.7;
-  }
-}
-
-.options-wrapper:hover .option-wrapper:not(:has(input[type="radio"]:checked)) {
-  animation: slideDown 0.25s ease forwards;
-}
-
-.options-wrapper:hover {
-  z-index: 10;
-  background-color: rgba(26, 26, 46, 0.9);
-}
-
-.options-wrapper input[type="radio"]:focus {
-  outline: 0;
-  box-shadow: 0 0 0 4px rgba(77, 157, 224, 0.5);
 }
 
 .option-wrapper {
   display: none;
 }
 
-.option-wrapper input[type="radio"]:checked~.option {
-  display: flex;
-}
-
+/* Show the active item by default */
 .option-wrapper:has(input[type="radio"]:checked) {
   display: block;
+}
+
+/* Animations for nice drop down */
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 0.95;
+  }
+}
+
+.options-wrapper:hover .options-dropdown {
+  animation: slideDown 0.2s ease forwards;
+}
+
+.options-wrapper input[type="radio"]:focus {
+  outline: 0;
+  box-shadow: 0 0 0 4px rgba(77, 157, 224, 0.5);
 }
 
 .options-wrapper input[type="radio"] {
@@ -63,23 +63,23 @@
   white-space: nowrap;
 }
 
-.options-wrapper input[type="radio"]:hover+span {
+.options-wrapper input[type="radio"]:hover + span {
   transform: scale(0.95);
   box-shadow: 0 0 0 0.08em rgba(255, 255, 255, 0.5);
 }
 
-.options-wrapper input[type="radio"]+span {
+.options-wrapper input[type="radio"] + span {
   width: 47px;
 }
 
-.options-wrapper input[type="radio"]:checked+.option span {
+.options-wrapper input[type="radio"]:checked + .option span {
   box-shadow: none;
   z-index: 1;
   color: white;
   background: linear-gradient(90deg, var(--octopus-green) 0%, #1f787b 100%);
 }
 
-.options-wrapper input[type="radio"]:checked+.option .filter {
+.options-wrapper input[type="radio"]:checked + .option .filter {
   color: white;
   border: none;
   border-radius: 4px;
@@ -105,14 +105,6 @@
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.7);
-}
-
-.options-wrapper label:first-child span {
-  border-radius: 4px;
-}
-
-.options-wrapper label:last-child span {
-  border-radius: 4px;
 }
 
 .option-wrapper .text {

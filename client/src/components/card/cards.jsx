@@ -81,7 +81,10 @@ const Cards = () => {
     const cards_queue_url = `${main_api_base_url}/cards-download-queue`
     const cards_request = fetch(cards_url)
     const cards_queue_request = fetch(cards_queue_url)
-    const [cards_response, cards_queue_response] = await Promise.all([cards_request, cards_queue_request])
+    const [cards_response, cards_queue_response] = await Promise.all([
+      cards_request,
+      cards_queue_request,
+    ])
 
     const cards_res_json = await cards_response.json()
     const cards_queue_res_json = await cards_queue_response.json()
@@ -139,36 +142,49 @@ const Cards = () => {
   return (
     <div className="cards-component">
       <div className="cards-header">
-        <div>
+        <div className="cards-header-left">
           <img
             src="/img/refresh.png"
             alt="refresh"
             className="refresh-button"
             onClick={get_cards_from_api}
           />
-        </div>
-        <div className="filters-wrapper">
-          {filters_list.map((filter_config, index) => {
-            return (
-              <div key={index} className={`${filter_config.name}-filters-wrapper`}>
-                <Filters filter_config={filter_config} filters={filters} setFilter={setFilters} />
-                <span className="filter-label">{filter_config.label}</span>
-              </div>
-            )
-          })}
+          <div className="filters-wrapper">
+            {filters_list.map((filter_config, index) => {
+              return (
+                <div key={index} className={`${filter_config.name}-filters-wrapper`}>
+                  <Filters filter_config={filter_config} filters={filters} setFilter={setFilters} />
+                  <span className="filter-label">{filter_config.label}</span>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
-        <div className="total">{totalCards} cards</div>
-        {alert["new"] && <div className="new-pulse"></div>}
-        {alert["opening"] && <div className="opening-bars"></div>}
+        <div className="cards-header-center">
+          <span className="total-count">{totalCards}</span>
+          <span className="total-label-text"> cards</span>
+        </div>
+        <div className="cards-header-right">
+          {alert["new"] && <div className="new-pulse"></div>}
+          {alert["opening"] && <div className="opening-bars"></div>}
+        </div>
       </div>
       <div className="cards-body">
         {cards.length > 0 ? (
           cards.map((card, index) => {
             const { day } = card.filter_data
-            return <Card key={index} card={card} index={index} filter={filters} setAlert={setAlert} queued={cardsQueued.includes(day)} />
-          }
-          )
+            return (
+              <Card
+                key={index}
+                card={card}
+                index={index}
+                filter={filters}
+                setAlert={setAlert}
+                queued={cardsQueued.includes(day)}
+              />
+            )
+          })
         ) : (
           <p style={{ color: "white", marginTop: "30px" }}>No cards yet</p>
         )}
