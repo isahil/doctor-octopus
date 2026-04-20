@@ -6,7 +6,7 @@ const {
   VITE_MAIN_SERVER_PORT,
   VITE_FIXME_SERVER_HOST,
   VITE_FIXME_SERVER_PORT,
-  VITE_ALLOWED_HOSTS
+  VITE_ALLOWED_HOSTS,
 } = import.meta.env
 
 const normalize_base_url = (url) => String(url || "").replace(/\/+$/, "")
@@ -38,5 +38,5 @@ export const runtime_config = {
   main_api_base_url: get_main_api_base_url(),
   fixme_server_host,
   fixme_server_port,
-  allowed_hosts
+  allowed_hosts,
 }

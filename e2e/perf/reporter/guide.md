@@ -176,7 +176,7 @@ node perf/reporter/reporter.js <input.json> <output-directory>
 
 ```javascript
 export function generate_my_section(data) {
-	return `
+  return `
       <section class="mb-8">
         <div class="section-title-container">
           <h2 class="text-xl font-semibold text-gray-100 mb-4">My Section</h2>
@@ -191,9 +191,9 @@ export function generate_my_section(data) {
 
 ```json
 {
-	"my_section": {
-		"description": "What this section displays"
-	}
+  "my_section": {
+    "description": "What this section displays"
+  }
 }
 ```
 

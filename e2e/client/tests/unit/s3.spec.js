@@ -14,13 +14,15 @@ test.describe("S3 Utility Functions", () => {
       expect(response["MaxKeys"]).toBeDefined();
       console.log(`MaxKeys in S3 bucket: ${response["MaxKeys"]}`);
       expect(parseInt(response["MaxKeys"])).toBeGreaterThan(1);
-      
+
       expect(response).toHaveProperty("$metadata");
       expect(response["$metadata"]).toHaveProperty("httpStatusCode");
       expect(response["$metadata"]["httpStatusCode"]).toBe(200);
-            
+
       // Response should contain Contents array with objects
-      expect(Array.isArray(response.Contents) || response.Contents === undefined).toBeTruthy();
+      expect(
+        Array.isArray(response.Contents) || response.Contents === undefined,
+      ).toBeTruthy();
       console.log(`Objects found: ${response.Contents?.length || 0}`);
       console.log("S3 List test complete.");
     });
@@ -31,7 +33,7 @@ test.describe("S3 Utility Functions", () => {
       // If Contents exist, all keys should start with test_reports/
       if (response.Contents && response.Contents.length > 0) {
         const allMatch = response.Contents.every((obj) =>
-          obj.Key.startsWith("test_reports/")
+          obj.Key.startsWith("test_reports/"),
         );
         expect(allMatch).toBeTruthy();
       }
@@ -64,7 +66,9 @@ test.describe("S3 Utility Functions", () => {
         await get_object(nonExistentKey);
       } catch (error) {
         expect(error.name).toBe("NoSuchKey");
-        console.log(`Correctly caught error for non-existent object: ${error.name}`);
+        console.log(
+          `Correctly caught error for non-existent object: ${error.name}`,
+        );
       }
     });
 
@@ -113,17 +117,27 @@ test.describe("S3 Utility Functions", () => {
   test.describe("S3 upload_file function test", () => {
     test("should upload file with correct content type for json", async () => {
       const key = `tests/unit-test-${Date.now()}.json`;
-      const fileContent = JSON.stringify({ test: "data", timestamp: new Date().toISOString() });
+      const fileContent = JSON.stringify({
+        test: "data",
+        timestamp: new Date().toISOString(),
+      });
       const contentType = "application/json";
 
       try {
-        const response = await upload_file(bucketName, key, fileContent, contentType);
+        const response = await upload_file(
+          bucketName,
+          key,
+          fileContent,
+          contentType,
+        );
 
         expect(response).toBeDefined();
         expect(response["$metadata"]["httpStatusCode"]).toBe(200);
         console.log(`Successfully uploaded JSON file: ${key}`);
       } catch (error) {
-        console.log(`Upload error (may be due to permissions): ${error.message}`);
+        console.log(
+          `Upload error (may be due to permissions): ${error.message}`,
+        );
       }
     });
 
@@ -133,13 +147,20 @@ test.describe("S3 Utility Functions", () => {
       const contentType = "application/zip";
 
       try {
-        const response = await upload_file(bucketName, key, fileContent, contentType);
+        const response = await upload_file(
+          bucketName,
+          key,
+          fileContent,
+          contentType,
+        );
 
         expect(response).toBeDefined();
         expect(response["$metadata"]["httpStatusCode"]).toBe(200);
         console.log(`Successfully uploaded ZIP file: ${key}`);
       } catch (error) {
-        console.log(`Upload error (may be due to permissions): ${error.message}`);
+        console.log(
+          `Upload error (may be due to permissions): ${error.message}`,
+        );
       }
     });
 
@@ -149,13 +170,20 @@ test.describe("S3 Utility Functions", () => {
       const contentType = "text/plain";
 
       try {
-        const response = await upload_file(bucketName, key, fileContent, contentType);
+        const response = await upload_file(
+          bucketName,
+          key,
+          fileContent,
+          contentType,
+        );
 
         expect(response).toBeDefined();
         expect(response["$metadata"]["httpStatusCode"]).toBe(200);
         console.log(`Successfully uploaded text file: ${key}`);
       } catch (error) {
-        console.log(`Upload error (may be due to permissions): ${error.message}`);
+        console.log(
+          `Upload error (may be due to permissions): ${error.message}`,
+        );
       }
     });
 
@@ -165,12 +193,19 @@ test.describe("S3 Utility Functions", () => {
       const contentType = "text/plain";
 
       try {
-        const response = await upload_file(bucketName, key, fileContent, contentType);
+        const response = await upload_file(
+          bucketName,
+          key,
+          fileContent,
+          contentType,
+        );
 
         expect(response).toBeDefined();
         console.log(`Successfully uploaded empty file: ${key}`);
       } catch (error) {
-        console.log(`Upload error (may be due to permissions): ${error.message}`);
+        console.log(
+          `Upload error (may be due to permissions): ${error.message}`,
+        );
       }
     });
 
@@ -181,13 +216,22 @@ test.describe("S3 Utility Functions", () => {
       const contentType = "text/html";
 
       try {
-        const response = await upload_file(bucketName, key, fileContent, contentType);
+        const response = await upload_file(
+          bucketName,
+          key,
+          fileContent,
+          contentType,
+        );
 
         expect(response).toBeDefined();
         expect(response["$metadata"]["httpStatusCode"]).toBe(200);
-        console.log(`Successfully uploaded HTML file with custom content type: ${key}`);
+        console.log(
+          `Successfully uploaded HTML file with custom content type: ${key}`,
+        );
       } catch (error) {
-        console.log(`Upload error (may be due to permissions): ${error.message}`);
+        console.log(
+          `Upload error (may be due to permissions): ${error.message}`,
+        );
       }
     });
   });

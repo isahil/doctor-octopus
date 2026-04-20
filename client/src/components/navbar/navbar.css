@@ -67,7 +67,7 @@
 }
 
 .nav-link.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -0.5rem;
   left: 0;
@@ -109,7 +109,7 @@
 
 .hamburger::before,
 .hamburger::after {
-  content: '';
+  content: "";
   width: 24px;
   height: 2px;
   background-color: white;
@@ -218,7 +218,7 @@
     border-left: none;
     padding-left: 0;
   }
-  
+
   .external-link {
     padding: 10px;
   }

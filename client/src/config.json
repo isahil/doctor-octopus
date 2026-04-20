@@ -23,7 +23,7 @@
       "options": ["all", "ui", "api", "fix", "db", "perf", "unit"]
     }
   },
-  "defaults":{
+  "defaults": {
     "xterm_command": "fixme",
     "fixme": {
       "description": "Default sessions to run when the user types 'fixme' in the terminal.",

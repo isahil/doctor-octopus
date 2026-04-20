@@ -9,39 +9,39 @@ Doctor Octopus is an automated test runner and HTML report viewer application. I
 The application consists of three main services:
 
 1. **Server** (`server/`) - FastAPI backend (Python)
-    - Main REST API multi-threaded server on port 8000
-    - Manages test execution, report handling, and S3 uploads
-    - Components in `src/components/`: cards, local, remote, validation, notification
-    - WebSocket server (`src/wsocket.py`) for real-time log streaming via SocketIO
-    - Redis integration for caching test report cards
+   - Main REST API multi-threaded server on port 8000
+   - Manages test execution, report handling, and S3 uploads
+   - Components in `src/components/`: cards, local, remote, validation, notification
+   - WebSocket server (`src/wsocket.py`) for real-time log streaming via SocketIO
+   - Redis integration for caching test report cards
 
 2. **Client** (`client/`) - React frontend (JavaScript)
-    - Vite-based React app on port 3000
-    - Three main views: Cards (reports), Lab (test runner), Terminal (logs)
-    - Context providers in `src/contexts/`: LabContext, SocketIOContext, TerminalContext
-    - XTerm.js for terminal emulation
+   - Vite-based React app on port 3000
+   - Three main views: Cards (reports), Lab (test runner), Terminal (logs)
+   - Context providers in `src/contexts/`: LabContext, SocketIOContext, TerminalContext
+   - XTerm.js for terminal emulation
 
 3. **FixMe** (`fixme/`) - Dedicated WebSocket server to communicate with FIX client application and stream logs (Python)
-    - FastAPI app on port 8001
-    - Handles WebSocket connections for real-time log streaming during order execution
-    - Separate single threaded service to avoid blocking the main server
+   - FastAPI app on port 8001
+   - Handles WebSocket connections for real-time log streaming during order execution
+   - Separate single threaded service to avoid blocking the main server
 
 ### Test Suite Structure
 
 The `e2e/` directory contains all tests:
 
 - **Playwright tests** (`e2e/client/tests/`): UI and unit tests for the client
-    - Test categories: `ui/`, `unit/`, `db/`
-    - Run via `npm run test` with project names (e.g., `ui:smoke`, `ui:regression`)
+  - Test categories: `ui/`, `unit/`, `db/`
+  - Run via `npm run test` with project names (e.g., `ui:smoke`, `ui:regression`)
 - **Pytest tests** (`e2e/server/tests/`): API and unit tests for the server
-    - Test markers: `api_smoke`, `api_sanity`, `api_regression`, `unit_regression`
-    - Run via pytest with markers (e.g., `npm run api:regression`)
+  - Test markers: `api_smoke`, `api_sanity`, `api_regression`, `unit_regression`
+  - Run via pytest with markers (e.g., `npm run api:regression`)
 
 - **Performance tests** (`e2e/perf/`): Artillery-based load tests for the application UI, REST API & WebSocket
-    - YAML configurations for different test scenarios and the procesor file path
-    - Processor file for core performance metrics capturing scenario steps and logic
-    - The runner file is responsible for executing the YAML scenario config file. The runner file orchestrates the tests.
-    - Run via `npm run perf:cards-api`, `perf:cards-ui`, `perf:fixme-ws`
+  - YAML configurations for different test scenarios and the procesor file path
+  - Processor file for core performance metrics capturing scenario steps and logic
+  - The runner file is responsible for executing the YAML scenario config file. The runner file orchestrates the tests.
+  - Run via `npm run perf:cards-api`, `perf:cards-ui`, `perf:fixme-ws`
 
 ### Data Flow
 
@@ -166,10 +166,10 @@ npm run stop:notification  # Stop notification service only
 - **Dependency Management**: Use Poetry (`pyproject.toml`)
 - **Linting**: Ruff configured with 120-character line length
 - **Environment Config**: `config.py` centralizes all configuration constants
-    - env_loader centralizes the server environment variables
-    - Redis keys use namespaced pattern: `doctor-octopus:*`
-    - Test protocols: `api`, `ui`, `unit`, `perf`, `s3`, `db`, `fix`
-    - Test environments: `qa`, `dev`, `uat`, `sit`
+  - env_loader centralizes the server environment variables
+  - Redis keys use namespaced pattern: `doctor-octopus:*`
+  - Test protocols: `api`, `ui`, `unit`, `perf`, `s3`, `db`, `fix`
+  - Test environments: `qa`, `dev`, `uat`, `sit`
 - **Process Management**: Use PID files in `logs/` directory (e.g., `server.pid`, `fixme.pid`)
 - **Startup Scripts**: `start.sh` scripts handle service initialization and backgrounding
 - **Module Structure**: Components in `src/components/`, utilities in `src/utils/`
@@ -178,9 +178,9 @@ npm run stop:notification  # Stop notification service only
 
 - **Build Tool**: Vite for development and production builds
 - **Context Pattern**: React Context providers wrap route components for state management
-    - LabContext: Test execution option values state
-    - SocketIOContext: WebSocket connection management
-    - TerminalContext: Terminal state and log buffer
+  - LabContext: Test execution option values state
+  - SocketIOContext: WebSocket connection management
+  - TerminalContext: Terminal state and log buffer
 - **Configuration**: Runtime config loaded from `config.json` via `utils/env_loader.js`
 - **Component Organization**: Features grouped by function (navbar, card, lab, xterm, fixme, footer)
 - **Routing**: React Router v7 with conditional provider wrapping based on active route
@@ -189,9 +189,9 @@ npm run stop:notification  # Stop notification service only
 
 - **Test Organization**: Group by protocol (`ui/`, `unit/`, `db/`) and marker (`smoke`, `sanity`, `regression`)
 - **Playwright Projects**: Named by test level (e.g., `ui:smoke`, `ui:regression`)
-    - Config in `playwright.config.js` with shared settings
-    - Test reports output to `TEST_REPORTS_DIR` env variable location
-    - Trace on first retry for debugging
+  - Config in `playwright.config.js` with shared settings
+  - Test reports output to `TEST_REPORTS_DIR` env variable location
+  - Trace on first retry for debugging
 - **Pytest Markers**: Use decorators for test categorization (`@pytest.mark.api_smoke`)
 - **Test Runner**: Custom `runner.js` script orchestrates test execution
 - **Performance Tests**: Artillery YAML configs in `perf/`, Artillery Playwright integration enabled via env variable

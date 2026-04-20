@@ -4,11 +4,20 @@ import { fs_parse_csv } from "../../../utils/fs_helper";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = "" // fileURLToPath(import.meta.url); update import to commonjs if needed;
+const __filename = ""; // fileURLToPath(import.meta.url); update import to commonjs if needed;
 const __dirname = path.dirname(__filename);
-const csv_data_path = path.join(__dirname, "../../../data/Electric_Vehicle_Population_Data.csv");
+const csv_data_path = path.join(
+  __dirname,
+  "../../../data/Electric_Vehicle_Population_Data.csv",
+);
 
-const integer_fields = ["model_year", "electric_range", "base_msrp", "legislative_district", "dol_vehicle_id"];
+const integer_fields = [
+  "model_year",
+  "electric_range",
+  "base_msrp",
+  "legislative_district",
+  "dol_vehicle_id",
+];
 const float_fields = ["census_tract_2020"];
 
 const sanitizeRecord = (record) => {
@@ -36,7 +45,10 @@ const sanitizeRecord = (record) => {
 test.describe("Create An Electric Vehicle PostgresDB Table and Insert Data", () => {
   test("Connect to PostgreSQL and run a simple query", async () => {
     const result = await sql`SELECT * FROM electric_vehicle LIMIT 5;`;
-    console.log("DB Query Result before INSERT sample:", JSON.stringify(result));
+    console.log(
+      "DB Query Result before INSERT sample:",
+      JSON.stringify(result),
+    );
     expect(Array.isArray(result)).toBeTruthy();
     expect(result.length).toBeLessThanOrEqual(5);
   });
@@ -51,21 +63,28 @@ test.describe("Create An Electric Vehicle PostgresDB Table and Insert Data", () 
 
   test("Insert CSV data into PostgreSQL and verify", async () => {
     const cleanedRecords = fs_parse_csv(csv_data_path).map(sanitizeRecord);
-    console.log(`Inserting ${cleanedRecords.length} sanitized records into the database...`);
+    console.log(
+      `Inserting ${cleanedRecords.length} sanitized records into the database...`,
+    );
 
     const batchSize = 300;
     await sql.begin(async (tx) => {
       for (let i = 0; i < cleanedRecords.length; i += batchSize) {
         const batch = cleanedRecords.slice(i, i + batchSize);
         await tx`INSERT INTO electric_vehicle ${sql(batch)}`;
-        console.log(`Inserted batch: ${i + batch.length}/${cleanedRecords.length}`);
+        console.log(
+          `Inserted batch: ${i + batch.length}/${cleanedRecords.length}`,
+        );
       }
     });
 
     console.log("Data insertion completed.");
 
-    const [{ count }] = await sql`SELECT COUNT(*)::int AS count FROM electric_vehicle;`;
-    console.log(`Total records in electric_vehicle table after insertion: ${count}`);
+    const [{ count }] =
+      await sql`SELECT COUNT(*)::int AS count FROM electric_vehicle;`;
+    console.log(
+      `Total records in electric_vehicle table after insertion: ${count}`,
+    );
     expect(count).toBeGreaterThanOrEqual(cleanedRecords.length);
   });
 });
