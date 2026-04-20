@@ -14,8 +14,37 @@
   text-align: center;
 }
 
-.card.golden {
-  border: 0.1px solid var(--octopus-golden);
+.card.green {
+  border: 2px solid var(--octopus-green);
+}
+
+.card.queued {
+  border: 2px solid cyan;
+  animation: pulse-cyan-border 2s infinite;
+  box-shadow: 0 0 10px 2px cyan;
+}
+
+@keyframes pulse-cyan-border {
+  0% {
+    border-color: cyan;
+    box-shadow: 0 0 6px 2px cyan;
+  }
+
+  50% {
+    border-color: cyan;
+    box-shadow: 0 0 10px 6px cyan;
+  }
+
+  100% {
+    border-color: cyan;
+    box-shadow: 0 0 6px 2px cyan;
+  }
+}
+
+@keyframes queued-border-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .card:hover,

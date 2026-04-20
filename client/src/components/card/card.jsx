@@ -2,7 +2,7 @@ import "./card.css"
 import { github_icon, grafana_icon } from "../../utils/icons"
 import { runtime_config } from "../../utils/env_loader"
 
-function Card({ card, index, filter, setAlert }) {
+function Card({ card, index, filter, setAlert, queued }) {
   const { mode } = filter
   const { json_report, root_dir } = card
   const { stats, ci } = json_report
@@ -70,7 +70,7 @@ function Card({ card, index, filter, setAlert }) {
   }
 
   return (
-    <div className={`card ${index} ${unexpected === 0 ? "golden" : ""}`}>
+    <div className={`card ${index} ${unexpected === 0 ? "green" : ""} ${queued ? "queued" : ""}`}>
       <div className="card-content">
         <div className="card-header">
           <span className="sdet-name">{sdet}</span>

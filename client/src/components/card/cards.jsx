@@ -10,6 +10,7 @@ const { filters: filters_config } = config
 const Cards = () => {
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
+  const [cardsQueued, setCardsQueued] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [filters, setFilters] = useState({
     mode: "cache",
@@ -40,11 +41,12 @@ const Cards = () => {
       const data = JSON.parse(event.data)
       if (data.type === "download") {
         setAlert((prev) => ({ ...prev, new: true }))
+        const card_date = data?.card_date
+        setCardsQueued((prev) => prev.filter((date) => date !== card_date)) // remove from queued state to trigger UI update if the card is already rendered
       } else if (data.type === "client") {
         const active = data?.active ?? 0
         const max = data?.max ?? null
         const lifetime = data?.lifetime ?? null
-        // const timestamp = data?.timestamp ?? null
         console.log(
           `Active clients: ${active} | max : ${max} | lifetime: ${lifetime} | timestamp: ${new Date().toLocaleString()}`
         )
@@ -75,16 +77,28 @@ const Cards = () => {
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
     const { mode, environment, day, product, protocol } = filters
-    const url = `${main_api_base_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
-    const request = await fetch(url)
-    const response = await request.json()
-    if (!request.ok) {
-      console.error("Error fetching cards data:", response.error)
+    const cards_url = `${main_api_base_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
+    const cards_queue_url = `${main_api_base_url}/cards-download-queue`
+    const cards_request = fetch(cards_url)
+    const cards_queue_request = fetch(cards_queue_url)
+    const [cards_response, cards_queue_response] = await Promise.all([cards_request, cards_queue_request])
+
+    const cards_res_json = await cards_response.json()
+    const cards_queue_res_json = await cards_queue_response.json()
+    if (!cards_response.ok) {
+      console.error("Error fetching cards data:", cards_res_json.error)
       return
     }
+    const cards_map = cards_res_json.cards.map((card) => {
+      const { filter_data } = card
+      return filter_data.day
+    })
+    console.log(`Cards in response: ${cards_map}`)
+    console.log(`Cards queued for download: ${JSON.stringify(cards_queue_res_json)}`)
+    setCardsQueued(cards_queue_res_json.queued || [])
     setIsLoading(false)
-    setCards(response.cards)
-    setTotalCards(response.cards.length)
+    setCards(cards_res_json.cards)
+    setTotalCards(cards_res_json.cards.length)
   }
 
   useEffect(() => {
@@ -150,9 +164,11 @@ const Cards = () => {
       </div>
       <div className="cards-body">
         {cards.length > 0 ? (
-          cards.map((card, index) => (
-            <Card key={index} card={card} index={index} filter={filters} setAlert={setAlert} />
-          ))
+          cards.map((card, index) => {
+            const { day } = card.filter_data
+            return <Card key={index} card={card} index={index} filter={filters} setAlert={setAlert} queued={cardsQueued.includes(day)} />
+          }
+          )
         ) : (
           <p style={{ color: "white", marginTop: "30px" }}>No cards yet</p>
         )}
