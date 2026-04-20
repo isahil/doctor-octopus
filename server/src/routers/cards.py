@@ -104,7 +104,7 @@ async def get_all_cards(
     }
     logger.info(f"Getting all cards with filter data: {expected_filter_dict}")
 
-    cards = fastapi_app.state.cards
+    cards: Cards = fastapi_app.state.cards
     all_cards = await cards.actions(expected_filter_dict)
     length = len(all_cards) if all_cards else 0
 
@@ -240,7 +240,7 @@ async def reload_cards_cache(
         return JSONResponse(content={"status": "in-progress", "message": "A cache reload with these filters is already in progress", "details": "Please wait for the current reload to complete before making another request with the same filters."}, status_code=202)
 
     try:
-        cards = fastapi_app.state.cards
+        cards: Cards = fastapi_app.state.cards
         card_dates = await cards.actions(expected_filter_dict)
         return JSONResponse(content={"message": f"Cached {len(card_dates)} cards based on the given filters", "cards": card_dates}, status_code=200)
     finally:
@@ -265,7 +265,7 @@ async def invalidate_redis_cache(
             break
     if keys_to_delete:
         logger.info(f"Found {len(keys_to_delete)} keys to delete. {keys_to_delete}")
-        redis_client.delete(*keys_to_delete)
+        await redis_client.delete(*keys_to_delete)
         message = f"Deleted {len(keys_to_delete)} keys from Redis cache."
     else:
         message = "No keys found matching the pattern."

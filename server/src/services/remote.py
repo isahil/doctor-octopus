@@ -16,7 +16,7 @@ from src.utils.helper import performance_log
 from src.utils.s3_client import S3
 from src.utils.logger import logger
 from src.utils.env_loader import get_aws_sdet_bucket_name
-from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_unix_time
+from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_unix_time, parse_card_day_to_unix
 import src.utils.redis_client as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
@@ -217,7 +217,7 @@ def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_
     """
     s3_card_objects = find_s3_report_dir_objects(card_date_folder, bucket_name)
     _card_date_folder = card_date_folder.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
-    
+
     def create_local_report_dir(relative_path: str) -> str:
         download_dir_root_path: str = "./"
         reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
@@ -226,7 +226,7 @@ def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_
         )  # "./test_reports/4-28-2025_10-01-41_AM"
         local_report_dir_rel_path = os.path.join(local_reports_dir_path, relative_path)
         local_report_sub_dir_path = os.path.dirname(local_report_dir_rel_path)
-        ensure_dir(local_report_sub_dir_path)
+        ensure_dir(local_report_sub_dir_path, False)
         return local_report_dir_rel_path
 
     for i in range(0, len(s3_card_objects), rate_limit_file_batch_size):
@@ -235,10 +235,10 @@ def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_
             # Transform the S3 object key into a local relative path by removing the s3_root_dir prefix and any leading slash.
             # For example, 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM/some_folder/some_file.ext'
             # becomes 'some_folder/some_file.ext' for local storage.
-            date_index = object_key.find(_card_date_folder) # Find the index of the date folder in the object key
+            date_index = object_key.find(_card_date_folder)  # Find the index of the date folder in the object key
             if date_index != -1:
                 # Extract everything after the date folder (e.g., 'index.html', 'subfolder/file.json')
-                relative_path_parts = object_key[date_index + len(_card_date_folder):].lstrip("/")
+                relative_path_parts = object_key[date_index + len(_card_date_folder) :].lstrip("/")
                 local_report_card_dir_rel_path = create_local_report_dir(relative_path_parts)
                 S3.download_file(object_key, local_report_card_dir_rel_path, bucket_name)
 
@@ -275,7 +275,6 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
     for env in envs_to_check:
         for proto in protocols_to_check:
             reports_cache_key = f"{test_reports_redis_key}:{env}:{proto}"  # e.g. trading-apps-reports:qa:ui
-            
 
             cached_cards = redis.get_all_cached_cards(reports_cache_key)
             if cached_cards and isinstance(cached_cards, dict):
@@ -286,6 +285,13 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
                     if error:
                         continue
                     filtered_cards.append(received_card_data)
-    logger.info(f"Fetched total {len(filtered_cards)} cards from cache. env: {environment} | day: {day} | protocols: {protocols_to_check}")
-    sorted_cards = sorted(filtered_cards, key=lambda x: x["json_report"]["stats"]["startTime"], reverse=True)
+    logger.info(
+        f"Fetched total {len(filtered_cards)} cards from cache. env: {environment} | day: {day} | protocols: {protocols_to_check}"
+    )
+
+    def card_sort_key(card: dict) -> float:
+        filter_data = card.get("filter_data", {})
+        return parse_card_day_to_unix(filter_data.get("day"))
+
+    sorted_cards = sorted(filtered_cards, key=card_sort_key, reverse=True)
     return sorted_cards

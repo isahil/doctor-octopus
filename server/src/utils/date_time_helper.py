@@ -1,3 +1,4 @@
+from datetime import datetime
 
 def get_est_date_time():
     """Get the current date and time in Eastern Standard Time (EST)
@@ -35,3 +36,15 @@ def convert_iso8601_to_unix_time(iso_timestamp: str) -> float:
     unix_timestamp = dt.timestamp()
     return unix_timestamp
 
+def parse_card_day_to_unix(day_value: str) -> float | None:
+    """Parse a card day string in the format MM-DD-YYYY_HH-MM-SS_AM/PM to a Unix timestamp.
+    Example: '12-30-2025_8-32-33_PM' -> 1767227553.0
+    """
+    if not isinstance(day_value, str):
+        return None
+    for fmt in ("%m-%d-%Y_%I-%M-%S-%f_%p", "%m-%d-%Y_%I-%M-%S_%p"):
+        try:
+            return datetime.strptime(day_value, fmt).timestamp()
+        except ValueError:
+            continue
+    return None

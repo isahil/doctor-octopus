@@ -73,7 +73,8 @@ class S3Client:
         """
         self.S3.download_file(bucket_name, object_key, local_path)
 
-    def upload_to_s3(self, path: str, content, bucket_name=aws_bucket_name):
+    @staticmethod
+    def upload_to_s3(path: str, content, bucket_name=aws_bucket_name):
         try:
             S3.upload_to_s3(path, content, bucket_name)
             logger.info(f"Successfully uploaded content to: {path}")
