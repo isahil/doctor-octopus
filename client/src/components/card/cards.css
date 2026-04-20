@@ -303,6 +303,7 @@
   animation: pulse-kefe91mn 1.5s infinite linear;
   position: relative;
   flex-shrink: 0;
+  margin-right: 10px;
 }
 
 .new-pulse:before,
