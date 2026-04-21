@@ -3,7 +3,7 @@ import { createContext, useEffect, useState } from "react"
 
 export const SocketIOContext = createContext()
 
-const SocketIOProvider = ({ children, host, port, enabled = true }) => {
+const SocketIOProvider = ({ children, url, enabled = true }) => {
   const [sio, setSio] = useState(null)
 
   useEffect(() => {
@@ -12,7 +12,7 @@ const SocketIOProvider = ({ children, host, port, enabled = true }) => {
       return
     }
     // Establish a WebSocket connection to the server w. the specified host and port on component mount
-    const socket = io(`http://${host}:${port}`, {
+    const socket = io(url, {
       path: "/ws/socket.io",
       transports: ["websocket", "polling", "flashsocket"],
       reconnection: false,
@@ -38,7 +38,7 @@ const SocketIOProvider = ({ children, host, port, enabled = true }) => {
         setSio(null)
       }
     }
-  }, [host, port, enabled])
+  }, [url, enabled])
   return <SocketIOContext value={{ sio }}>{children}</SocketIOContext>
 }
 

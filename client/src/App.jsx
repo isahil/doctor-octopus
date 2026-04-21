@@ -11,7 +11,7 @@ import Lab from "./components/lab/lab.jsx"
 import XTerm from "./components/xterm/xterm.jsx"
 import { runtime_config } from "./utils/env_loader.js"
 
-export const { fixme_server_host, fixme_server_port } = runtime_config
+export const { fixme_api_base_url } = runtime_config
 
 function App() {
   const location = useLocation()
@@ -31,8 +31,7 @@ function App() {
             path="/the-lab"
             element={
               <SocketIOProvider
-                host={fixme_server_host}
-                port={fixme_server_port}
+                url={fixme_api_base_url}
                 enabled={isLabRoute} // Only enable when on Lab route
               >
                 <TerminalProvider>
