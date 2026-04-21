@@ -163,7 +163,7 @@ const Cards = () => {
 
         <div className="cards-header-center">
           <span className="total-count">{totalCards}</span>
-          <span className="total-label-text"> cards</span>
+          <span className="total-label-text">cards</span>
         </div>
         <div className="cards-header-right">
           {alert["new"] && <div className="new-pulse"></div>}
