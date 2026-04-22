@@ -2,6 +2,7 @@ import asyncio
 import time
 import json
 import os
+from pathlib import Path
 import redis as _redis
 from config import (
     test_environments,
@@ -20,6 +21,7 @@ from src.utils.date_time_helper import convert_unix_to_iso8601_time, get_unix_ti
 import src.utils.redis_client as redis_module
 
 aws_bucket_name = get_aws_sdet_bucket_name()
+server_root_dir = Path(__file__).resolve().parents[2]
 
 
 def total_s3_objects() -> int:
@@ -219,14 +221,13 @@ def download_s3_folder(card_date_folder: str, bucket_name=aws_bucket_name, rate_
     _card_date_folder = card_date_folder.split("/")[-1]  # noqa: E201 Get the test report main dir portion from the path parts. e.g. 'trading-apps/test_reports/api/12-31-2025_08-30-00_AM' -> '12-31-2025_08-30-00_AM'
 
     def create_local_report_dir(relative_path: str) -> str:
-        download_dir_root_path: str = "./"
-        reports_dir_path = os.path.join(download_dir_root_path, test_reports_dir)  # "./test_reports"
+        reports_dir_path = os.path.join(server_root_dir, test_reports_dir)  # "./test_reports"
         local_reports_dir_path = os.path.join(
             reports_dir_path, _card_date_folder
         )  # "./test_reports/4-28-2025_10-01-41_AM"
         local_report_dir_rel_path = os.path.join(local_reports_dir_path, relative_path)
         local_report_sub_dir_path = os.path.dirname(local_report_dir_rel_path)
-        ensure_dir(local_report_sub_dir_path, False)
+        ensure_dir(local_report_sub_dir_path, True)
         return local_report_dir_rel_path
 
     for i in range(0, len(s3_card_objects), rate_limit_file_batch_size):
