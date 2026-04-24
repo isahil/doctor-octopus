@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import "./lab.css"
-import lab_cards from "./lab.json"
+import config from "../../config.json"
 import { useLabOptions, useOptionsUpdate, useSocketIO, useTerminal } from "../../hooks"
 
 const Lab = () => {
@@ -9,12 +9,13 @@ const Lab = () => {
   const { selectedOptions } = useLabOptions() // LabOptionsContext that store the selected options state
   const { update_options_handler, handle_run_click } = useOptionsUpdate() // HandleOptionClickContext that store the function to handle the dd option click
 
-  const last_cards_index = lab_cards.length - 1 // index of the last card is used to enable the "Run" button
+  const lab_filters = config["lab_filters"]
+  const last_cards_index = lab_filters.length - 1 // index of the last card is used to enable the "Run" button
   const run_button_enabled = selectedOptions[2] !== "fix" && selectedOptions[last_cards_index] // enable the run button if the last card has been selected
-  const proto = selectedOptions[2]
+  const side = selectedOptions[2]
   const suite = selectedOptions[3]
 
-  if (proto === "fix" && suite) {
+  if (side === "client" && suite) {
     terminal.write(`\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m FIXME client Heart Beats interval 30s \r\n`)
 
     // if the selected option is "fix" and the last card has been selected, then enable the websocket listener for the respective fixme session.
@@ -42,19 +43,18 @@ const Lab = () => {
       </div>
 
       <div className="lab-cards">
-        {lab_cards.map((card, i) => {
+        {lab_filters.map((filter, i) => {
           // iterate through the lab cards and render them with dropdown options
-          const card_name = card.key
-          let card_options
+          const { name, dependant } = filter
+          const prev_option = selectedOptions[i - 1]
+          let new_options = []
 
-          if (card_name === "suite") {
-            // if the card is "suite", then the options are based on the previous selected option. "api", "ui", "fix" have different suite options
-            card_options = selectedOptions[i - 1]
-              ? card["options"][selectedOptions[i - 1]]
-              : card.options
-          } else card_options = card.options
+          if (dependant) {
+            // if the new option is "dependant", then the options returned for it are based on the previous selected option.
+            new_options = filter.options[prev_option]
+          } else new_options = filter.options
 
-          const enabled = i === 0 || selectedOptions[i - 1] // enable the card if the previous card has been selected
+          const enabled = i === 0 || prev_option // enable the card if it's the 1st on or if the previous card has been selected
           const selected = selectedOptions[i] // check if the card has been selected
 
           return (
@@ -64,10 +64,10 @@ const Lab = () => {
                 enabled ? "enabled" : "disabled" // enable the card if the previous card has been selected
               } ${selected ? "selected" : "not-selected"}`} // check if the card has been selected
             >
-              <h2>{card_name}</h2>
+              <h2>{name}</h2>
               {enabled && (
                 <div className="option-content">
-                  {card_options.map((option, j) => {
+                  {new_options.map((option, j) => {
                     return (
                       <div
                         key={j}

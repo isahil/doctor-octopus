@@ -1,48 +1,31 @@
 [
   {
     "key": "env",
+    "dependant": false,
     "description": "test Environment to run the test suite in",
     "options": ["qa", "dev", "uat"]
   },
   {
     "key": "app",
+    "dependant": false,
     "description": "application to run the test suite for",
     "options": ["loan", "clo"]
   },
   {
     "key": "proto",
+    "dependant": false,
     "description": "protocol to run the test suite with",
-    "options": ["ui", "api", "fix", "perf"]
+    "options": ["client", "dealer"]
   },
   {
     "key": "suite",
     "description": "test suite to run for the given protocol",
+    "dependant": true,
     "options": {
-      "api": ["sanity", "smoke", "regression"],
-      "ui": [
-        "sanity",
-        "smoke",
-        "regression",
-        "admin",
-        "bilat",
-        "history",
-        "list",
-        "liquidity",
-        "rfq",
-        "runs"
-      ],
-      "fix": ["client", "dealer"],
-      "perf": [
-        "base",
-        "api:clo:bilat",
-        "api:clo:list",
-        "api:clo:rfq",
-        "api:clo:runs",
-        "ui:clo:bilat:clients-counter",
-        "ui:clo:bilat:dealers-execute",
-        "ui:clo:list",
-        "ui:clo:rfq",
-        "ui:clo:runs"
+      "client": ["oblotter"],
+      "dealer": [
+        "stp",
+        "axe"
       ]
     }
   }

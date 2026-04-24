@@ -55,7 +55,7 @@ export const command_handler = ({
       const { environment, product, suites } = config.defaults.fixme
       update_options_handler(0, environment)
       update_options_handler(1, product)
-      update_options_handler(2, "fix")
+      update_options_handler(2, "client")
       update_options_handler(3, suites)
       terminal.write("\r\x1B[1;3;32m Doc:\x1B[1;3;37m Starting FixMe session...\x1B[0m\r")
       break

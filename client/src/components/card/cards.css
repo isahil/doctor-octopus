@@ -1,11 +1,13 @@
 .cards-component {
   scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
   justify-content: center;
   position: relative;
 }
 
 .cards-body {
-  margin-top: 40px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-evenly;
@@ -100,6 +102,7 @@
 }
 
 @keyframes chest-breathe {
+
   0%,
   100% {
     transform: scale(1);
@@ -181,12 +184,21 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 25px;
+  padding-right: 25px;
 }
 
 .refresh-button {
   width: 25px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refresh-button img {
+  width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -226,78 +238,6 @@
   text-transform: uppercase;
 }
 
-.source {
-  display: flex;
-  align-items: center;
-  position: absolute;
-  right: 135px;
-  top: 50%;
-  transform: translateY(-50%);
-  gap: 5px;
-}
-
-.source-header {
-  color: cyan;
-  font-size: 10px;
-  margin: 0px 0px 0px 85px;
-}
-
-.source-label {
-  color: cyan;
-  font-size: 10px;
-}
-
-.source input[type="checkbox"] {
-  background-image:
-    -webkit-linear-gradient(hsla(0, 0%, 0%, 0.1), hsla(0, 0%, 100%, 0.1)),
-    -webkit-linear-gradient(left, #6cf 50%, #f66 50%);
-  background-size:
-    100% 100%,
-    200% 100%;
-  background-position:
-    0 0,
-    15px 0;
-  border-radius: 25px;
-  box-shadow:
-    inset 0 1px 4px hsla(0, 0%, 0%, 0.5),
-    inset 0 0 10px hsla(0, 0%, 0%, 0.5),
-    0 0 0 1px hsla(0, 0%, 0%, 0.1),
-    0 -1px 2px 2px hsla(0, 0%, 0%, 0.25),
-    0 2px 2px 2px hsla(0, 0%, 100%, 0.75);
-  cursor: pointer;
-  height: 20px;
-  padding-right: 25px;
-  margin: 0px 0px 0px 10px;
-  width: 60px;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: 0.25s;
-  -webkit-transition: 0.25s;
-}
-
-.source input[type="checkbox"]:after {
-  background-color: #eee;
-  background-image: -webkit-linear-gradient(hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 0%, 0.1));
-  border-radius: 25px;
-  box-shadow:
-    inset 0 1px 1px 1px hsla(0, 0%, 100%, 1),
-    inset 0 -1px 1px 1px hsla(0, 0%, 0%, 0.25),
-    0 1px 3px 1px hsla(0, 0%, 0%, 0.5),
-    0 0 2px hsla(0, 0%, 0%, 0.25);
-  content: "";
-  display: block;
-  height: 20px;
-  width: 35px;
-}
-
-.source input[type="checkbox"]:checked {
-  background-position:
-    0 0,
-    35px 0;
-  padding-left: 25px;
-  padding-right: 0;
-}
-
 .new-pulse {
   width: 9.6px;
   height: 9.6px;
@@ -307,7 +247,6 @@
   animation: pulse-kefe91mn 1.5s infinite linear;
   position: relative;
   flex-shrink: 0;
-  margin-right: 25px;
 }
 
 .new-pulse:before,
@@ -332,7 +271,6 @@
 }
 
 .opening-bars {
-  margin-right: 25px;
   width: 21.6px;
   height: 15px;
   --c: linear-gradient(cyan 0 0);
@@ -459,7 +397,7 @@
   .cards-header-right {
     grid-column: 3;
     min-width: 32px;
-    gap: 6px;
+    gap: 15px;
   }
 
   .filters-wrapper {
@@ -470,29 +408,12 @@
     display: none;
   }
 
-  .source-header,
-  .source-label {
-    display: none;
-  }
-
   .filter-wrapper {
     gap: 2px;
   }
 
   .total-label-text {
     display: none;
-    margin-right: 10px;
-  }
-
-  .source {
-    right: 60px;
-  }
-
-  .new-pulse {
-    margin-right: 10px;
-  }
-
-  .opening-bars {
     margin-right: 10px;
   }
 }

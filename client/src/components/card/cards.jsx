@@ -5,14 +5,13 @@ import Filters from "./filter"
 import config from "../../config.json"
 import { to_roman_numeral } from "../../utils/helper"
 import { runtime_config } from "../../utils/env_loader"
-const { filters: filters_config } = config
 
 const Cards = () => {
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
   const [cardsQueued, setCardsQueued] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [filters, setFilters] = useState({
+  const [cardFilters, setCardFilters] = useState({
     mode: "cache",
     day: 1,
     environment: "all",
@@ -23,9 +22,8 @@ const Cards = () => {
   const [eventSource, setEventSource] = useState(null)
   const clientCountRef = useRef(null)
 
-  const filters_list = Object.values(filters_config)
-
   const { main_api_base_url } = runtime_config
+  const { card_filters } = config
 
   const start_notification_stream = () => {
     if (eventSource) {
@@ -76,7 +74,7 @@ const Cards = () => {
     setTotalCards(0)
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
-    const { mode, environment, day, product, protocol } = filters
+    const { mode, environment, day, product, protocol } = cardFilters
     const cards_url = `${main_api_base_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
     const cards_queue_url = `${main_api_base_url}/cards-download-queue`
     const cards_request = fetch(cards_url)
@@ -111,7 +109,7 @@ const Cards = () => {
     return () => {
       new_event_source.close()
     }
-  }, [filters])
+  }, [cardFilters])
 
   useEffect(() => {
     // Only run this effect when client_count changes, not on first render
@@ -143,18 +141,16 @@ const Cards = () => {
     <div className="cards-component">
       <div className="cards-header">
         <div className="cards-header-left">
-          <img
-            src="/img/refresh.png"
-            alt="refresh"
-            className="refresh-button"
-            onClick={get_cards_from_api}
-          />
           <div className="filters-wrapper">
-            {filters_list.map((filter_config, index) => {
+            {card_filters.map((filter, index) => {
               return (
-                <div key={index} className={`${filter_config.name}-filters-wrapper`}>
-                  <Filters filter_config={filter_config} filters={filters} setFilter={setFilters} />
-                  <span className="filter-label">{filter_config.label}</span>
+                <div key={index} className={`${filter.name}-filters-wrapper`}>
+                  <Filters
+                    filter={filter}
+                    cardFilters={cardFilters}
+                    setCardFilters={setCardFilters}
+                  />
+                  <span className="filter-label">{filter.label}</span>
                 </div>
               )
             })}
@@ -166,6 +162,9 @@ const Cards = () => {
           <span className="total-label-text">cards</span>
         </div>
         <div className="cards-header-right">
+          <div className="refresh-button">
+            <img src="/img/refresh.png" alt="refresh" onClick={get_cards_from_api} />
+          </div>
           {alert["new"] && <div className="new-pulse"></div>}
           {alert["opening"] && <div className="opening-bars"></div>}
         </div>
@@ -179,7 +178,7 @@ const Cards = () => {
                 key={index}
                 card={card}
                 index={index}
-                filter={filters}
+                filter={cardFilters}
                 setAlert={setAlert}
                 queued={cardsQueued.includes(day)}
               />
