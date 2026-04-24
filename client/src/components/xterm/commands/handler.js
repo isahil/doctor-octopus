@@ -1,7 +1,7 @@
-import LabSettings from "../../lab/lab.json"
 import { interactive_mode } from "./interactive.js"
 import config from "../../../config.json"
 
+const lab_filters = config["lab_filters"]
 let interactive_mode_status = false
 
 export const command_handler = ({
@@ -19,18 +19,18 @@ export const command_handler = ({
         "\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m Enter value for each command 'key' below in sequence.\x1B[0m\r"
       )
 
-      LabSettings.forEach((setting) => {
-        terminal.write(`\r\n\x1B[1;3;36m key = ${setting.key}\x1B[0m\r`)
-        terminal.write(`\r\n\x1B[1;3;32m - ${setting.description}\x1B[0m\r`)
-        terminal.write(`\r\n\x1B[1;3;37m options = ${JSON.stringify(setting.options)}\x1B[0m\r`)
+      lab_filters.forEach((filter) => {
+        terminal.write(`\r\n\x1B[1;3;36m ${filter.name}\x1B[0m\r`)
+        terminal.write(`\r\n\x1B[1;3;32m ${filter.description}\x1B[0m\r`)
+        terminal.write(`\r\n\x1B[1;3;37m ${JSON.stringify(filter.options)}\x1B[0m\r`)
       })
       terminal.write(
         "\r\n\x1B[1;3;36m ----------------- [ Interactive Mode: ON ] ------------------- \x1B[0m\r\n"
       )
 
       // start with the first setting in the LabSettings array in interactive mode. the output will be passed to the interactive_mode function next time the user enters
-      const current_setting = LabSettings[0]
-      const current_key = current_setting.key
+      const current_setting = lab_filters[0]
+      const current_key = current_setting.name
       const current_options = current_setting.options
       terminal.write(
         `\r\n\x1B[1;3;32m Doc:\x1B[1;3;37m enter a value for [${current_key}]\x1B[0m\r`

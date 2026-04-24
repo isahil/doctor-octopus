@@ -1,11 +1,13 @@
-import LabSettings from "../../lab/lab.json"
+import config from "../../../config.json"
+
+const lab_filters = config["lab_filters"]
 
 let current_option_index = 0,
   interactive_selectedOptions = {}, // store the selected options so far. equivalent of selectedOptions in lab-context.js
   selected_option = "" // store the currently selected option to verify if the "run" option should be prompted
 
 export const interactive_mode = ({ terminal, input, update_options_handler, handle_run_click }) => {
-  const last_cards_index = LabSettings.length // index of the last card is used to enable the "Run" button
+  const last_cards_index = lab_filters.length // index of the last card is used to enable the "Run" button
   console.log(`xterm - current_option_index: ${current_option_index} - input: ${input}`)
 
   // TODO: Add the logic to disable the handle_run_click function if the selected_options is ["client", "dealer"]
@@ -37,7 +39,7 @@ export const interactive_mode = ({ terminal, input, update_options_handler, hand
     terminal.write(message)
   } else {
     // display the next card options for the user to select
-    const current_setting = LabSettings[current_option_index]
+    const current_setting = lab_filters[current_option_index]
     const current_key = current_setting.key
     const current_options = current_setting.options
 
