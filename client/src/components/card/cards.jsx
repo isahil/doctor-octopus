@@ -7,23 +7,30 @@ import { to_roman_numeral } from "../../utils/helper"
 import { runtime_config } from "../../utils/env_loader"
 
 const Cards = () => {
+  const { main_api_base_url } = runtime_config
+  const { card_filters } = config
+
+  const initial_filter_state = (() => {
+    const default_filter_state = card_filters.reduce((def_state, filter) => {
+      const name = filter.name
+      const default_val = filter["default"]
+      console.log(`default value for ${name} -> ${default_val}`)
+      def_state[name] = default_val
+      return def_state
+    }, {})
+    console.log(`def_obj: ${JSON.stringify(default_filter_state)}`)
+    return default_filter_state
+  })()
+
   const [cards, setCards] = useState([])
   const [totalCards, setTotalCards] = useState(0)
   const [cardsQueued, setCardsQueued] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [cardFilters, setCardFilters] = useState({
-    mode: "cache",
-    day: 1,
-    environment: "all",
-    product: "all",
-    protocol: "all",
-  })
+  const [cardFilters, setCardFilters] = useState(initial_filter_state)
+  const [filterConfigs, setFilterConfigs] = useState(card_filters)
   const [alert, setAlert] = useState({ new: false, opening: false, active_clients: 0 })
   const [eventSource, setEventSource] = useState(null)
   const clientCountRef = useRef(null)
-
-  const { main_api_base_url } = runtime_config
-  const { card_filters } = config
 
   const start_notification_stream = () => {
     if (eventSource) {
@@ -74,8 +81,8 @@ const Cards = () => {
     setTotalCards(0)
     setAlert((prev) => ({ ...prev, new: false, opening: false })) // clear new cards alert
 
-    const { mode, environment, day, product, protocol } = cardFilters
-    const cards_url = `${main_api_base_url}/cards/?mode=${mode}&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
+    const { environment, day, product, protocol } = cardFilters
+    const cards_url = `${main_api_base_url}/cards/?mode=cache&day=${day}&environment=${environment}&product=${product}&protocol=${protocol}`
     const cards_queue_url = `${main_api_base_url}/cards-download-queue`
     const cards_request = fetch(cards_url)
     const cards_queue_request = fetch(cards_queue_url)
@@ -90,11 +97,19 @@ const Cards = () => {
       console.error("Error fetching cards data:", cards_res_json.error)
       return
     }
-    const cards_map = cards_res_json.cards.map((card) => {
-      const { filter_data } = card
-      return filter_data.day
+
+    const sdets_set = new Set(["all"])
+    cards_res_json.cards.forEach((card) => {
+      const { json_report } = card
+      const uname = json_report?.stats?.username || "unknown"
+      sdets_set.add(uname)
     })
-    console.log(`Cards in response: ${cards_map}`)
+    console.log(`SDETS in response: ${JSON.stringify(Array.from(sdets_set))}`)
+
+    setFilterConfigs((prevConfigs) =>
+      prevConfigs.map((_filter) => (_filter.name === "sdet" ? { ..._filter, options: Array.from(sdets_set) } : _filter))
+    )
+
     console.log(`Cards queued for download: ${JSON.stringify(cards_queue_res_json)}`)
     setCardsQueued(cards_queue_res_json.queued || [])
     setIsLoading(false)
@@ -142,15 +157,15 @@ const Cards = () => {
       <div className="cards-header">
         <div className="cards-header-left">
           <div className="filters-wrapper">
-            {card_filters.map((filter, index) => {
+            {filterConfigs.map((filterConfig, index) => {
               return (
-                <div key={index} className={`${filter.name}-filters-wrapper`}>
+                <div key={index} className={`${filterConfig.name}-filters-wrapper`}>
                   <Filters
-                    filter={filter}
+                    filter={filterConfig}
                     cardFilters={cardFilters}
                     setCardFilters={setCardFilters}
                   />
-                  <span className="filter-label">{filter.label}</span>
+                  <span className="filter-label">{filterConfig.label}</span>
                 </div>
               )
             })}

@@ -71,10 +71,12 @@
   height: 48px;
   border-radius: 50%;
   border: 4px solid #a0f5e7;
-  background: radial-gradient(circle at 35% 30%,
-      rgba(223, 255, 250, 0.85),
-      rgba(66, 196, 176, 0.35) 45%,
-      rgba(1, 25, 28, 0.9) 100%);
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(223, 255, 250, 0.85),
+    rgba(66, 196, 176, 0.35) 45%,
+    rgba(1, 25, 28, 0.9) 100%
+  );
   box-shadow:
     0 0 0 6px rgba(113, 239, 219, 0.1),
     0 0 22px rgba(80, 232, 209, 0.25);
@@ -102,7 +104,6 @@
 }
 
 @keyframes chest-breathe {
-
   0%,
   100% {
     transform: scale(1);
@@ -131,7 +132,6 @@
 }
 
 @keyframes caption-fade {
-
   0%,
   100% {
     opacity: 0.45;

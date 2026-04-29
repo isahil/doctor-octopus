@@ -20,7 +20,9 @@ const Filters = ({ filter, cardFilters, setCardFilters }) => {
       </div>
       <div className="options-dropdown">
         {options
-          .sort((a, b) => (a[name] === cardFilters[name] ? -1 : b[name] === cardFilters[name] ? 1 : 0))
+          .sort((a, b) =>
+            a[name] === cardFilters[name] ? -1 : b[name] === cardFilters[name] ? 1 : 0
+          )
           .map((option, i) => {
             return (
               <label key={i} className="option-wrapper">

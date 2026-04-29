@@ -5,22 +5,32 @@
     {
       "name": "day",
       "label": "day",
+      "default": "1",
       "options": ["1", "2", "3", "5", "10", "15", "30", "60", "120"]
     },
     {
       "name": "environment",
       "label": "env",
+      "default": "all",
       "options": ["all", "dev", "qa", "uat", "sit", "prod"]
     },
     {
       "name": "product",
       "label": "app",
+      "default": "all",
       "options": ["all", "loan", "clo"]
     },
     {
       "name": "protocol",
       "label": "suites",
+      "default": "all",
       "options": ["all", "ui", "api", "fix", "db", "perf", "unit"]
+    },
+    {
+      "name": "sdet",
+      "default": "all",
+      "label": "sdet",
+      "options": []
     }
   ],
   "lab_filters": [
