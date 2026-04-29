@@ -12,8 +12,7 @@ const Cards = () => {
 
   const initial_filter_state = (() => {
     const default_filter_state = card_filters.reduce((def_state, filter) => {
-      const name = filter.name
-      const default_val = filter["default"]
+      const { name, default: default_val } = filter
       console.log(`default value for ${name} -> ${default_val}`)
       def_state[name] = default_val
       return def_state
@@ -107,7 +106,9 @@ const Cards = () => {
     console.log(`SDETS in response: ${JSON.stringify(Array.from(sdets_set))}`)
 
     setFilterConfigs((prevConfigs) =>
-      prevConfigs.map((_filter) => (_filter.name === "sdet" ? { ..._filter, options: Array.from(sdets_set) } : _filter))
+      prevConfigs.map((_filter) =>
+        _filter.name === "sdet" ? { ..._filter, options: Array.from(sdets_set) } : _filter
+      )
     )
 
     console.log(`Cards queued for download: ${JSON.stringify(cards_queue_res_json)}`)

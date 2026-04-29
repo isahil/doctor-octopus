@@ -104,6 +104,7 @@
 }
 
 @keyframes chest-breathe {
+
   0%,
   100% {
     transform: scale(1);
@@ -211,15 +212,15 @@
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
+  width: 100%;
 }
 
-.environment-filters-wrapper,
-.day-filters-wrapper,
-.product-filters-wrapper,
-.protocol-filters-wrapper {
+.filters-wrapper>div {
   display: flex;
   flex-direction: row;
   align-items: center;
+  flex: 1;
+  justify-content: space-evenly;
   gap: 5px;
 }
 
@@ -402,14 +403,16 @@
 
   .filters-wrapper {
     gap: 4px;
+    width: 100%;
   }
 
   .filter-label {
     display: none;
   }
 
-  .filter-wrapper {
+  .filters-wrapper>div {
     gap: 2px;
+    justify-content: center;
   }
 
   .total-label-text {
