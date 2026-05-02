@@ -97,20 +97,6 @@ const Cards = () => {
       return
     }
 
-    const sdets_set = new Set(["all"])
-    cards_res_json.cards.forEach((card) => {
-      const { json_report } = card
-      const uname = json_report?.stats?.username || "unknown"
-      sdets_set.add(uname)
-    })
-    console.log(`SDETS in response: ${JSON.stringify(Array.from(sdets_set))}`)
-
-    setFilterConfigs((prevConfigs) =>
-      prevConfigs.map((_filter) =>
-        _filter.name === "sdet" ? { ..._filter, options: Array.from(sdets_set) } : _filter
-      )
-    )
-
     console.log(`Cards queued for download: ${JSON.stringify(cards_queue_res_json)}`)
     setCardsQueued(cards_queue_res_json.queued || [])
     setIsLoading(false)

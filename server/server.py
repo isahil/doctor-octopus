@@ -13,8 +13,9 @@ from src.utils.env_loader import get_debug_mode, get_main_server_port, get_node_
 from src.fast_router import router
 
 debug = get_debug_mode()
+node_env = get_node_env()
 
-fastapi_app: FastAPI = FastAPI(lifespan=lifespan_main, debug=True if debug == "true" else False)
+fastapi_app: FastAPI = FastAPI(lifespan=lifespan_main, debug=True if node_env == "development" else False)
 
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -30,7 +31,6 @@ fastapi_app.mount("/test_reports", StaticFiles(directory="./test_reports"), name
 
 def main():
     main_server_port = get_main_server_port()
-    node_env = get_node_env()
 
     uvicorn.run(
         "server:fastapi_app",

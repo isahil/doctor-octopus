@@ -296,7 +296,11 @@ def get_cards_from_cache(expected_filter_data: dict) -> list[dict]:
         if not day:
             logger.info(f"Card with missing day field in filter_data: {filter_data}. Assigning sort key as 0.")
             raise ValueError(f"Card with missing day field in filter_data: {filter_data}")
-        return parse_card_day_to_unix(day)
+        ts = parse_card_day_to_unix(day)
+        if ts is None:
+            logger.info(f"parse_card_day_to_unix returned None for day: {day}.")
+            raise ValueError(f"Unable to parse day field to timestamp: {day}")
+        return ts
 
     sorted_cards = sorted(filtered_cards, key=card_sort_key, reverse=True)
     return sorted_cards
