@@ -5,7 +5,7 @@ from src.utils.env_loader import (
     get_aws_sdet_bucket_region,
     get_aws_sdet_bucket_access_key_id,
     get_aws_sdet_bucket_secret_access_key,
-    get_aws_session_token
+    get_aws_session_token,
 )
 
 aws_bucket_name = get_aws_sdet_bucket_name()

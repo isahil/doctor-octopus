@@ -104,7 +104,6 @@
 }
 
 @keyframes chest-breathe {
-
   0%,
   100% {
     transform: scale(1);
@@ -215,7 +214,7 @@
   width: 100%;
 }
 
-.filters-wrapper>div {
+.filters-wrapper > div {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -410,7 +409,7 @@
     display: none;
   }
 
-  .filters-wrapper>div {
+  .filters-wrapper > div {
     gap: 2px;
     justify-content: center;
   }

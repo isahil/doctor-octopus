@@ -50,7 +50,12 @@ async def health_check() -> JSONResponse:
     from server import fastapi_app
 
     start_time = datetime.now()
-    health_data = {"status": "healthy", "timestamp": start_time.isoformat(), "version": os.environ.get("VERSION", "unknown"), "services": {}}
+    health_data = {
+        "status": "healthy",
+        "timestamp": start_time.isoformat(),
+        "version": os.environ.get("VERSION", "unknown"),
+        "services": {},
+    }
 
     try:
         states = ["redis", "aioredis", "cards"]

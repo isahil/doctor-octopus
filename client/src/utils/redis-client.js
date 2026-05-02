@@ -9,7 +9,7 @@ export class Redis {
 
   connect() {
     const client = createClient({
-      url: `redis://localhost:6379`, // Update this URL to your Redis server URL if different
+      url: "redis://localhost:6379", // Update this URL to your Redis server URL if different
     })
     client.connect()
     return client

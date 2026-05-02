@@ -6,6 +6,7 @@ from src.utils.logger import logger
 from src.utils.streamer import start_streaming_log_file, stop_streaming_log_file
 from src.utils.executor import create_command, run_a_command_on_local
 
+
 class WebSocketServer:
     sio: AsyncServer
     fastapi_app: FastAPI

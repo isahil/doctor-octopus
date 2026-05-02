@@ -85,7 +85,7 @@ function Card({ card, index, filter, setAlert, queued }) {
             Passed
             <span className="score"> {expected} </span>
           </div>
-          <div className={`score-board fail`} style={{ color: unexpected > 0 ? "red" : "inherit" }}>
+          <div className={"score-board fail"} style={{ color: unexpected > 0 ? "red" : "inherit" }}>
             Failed
             <span className="score"> {unexpected} </span>
           </div>

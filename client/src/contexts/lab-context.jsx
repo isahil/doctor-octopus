@@ -65,7 +65,7 @@ const LabProvider = ({ children }) => {
     // terminal.write(`▁▁▂▃▄▅▆▇█ \n`)
     clear_selected_options()
     sio.emit(subscription, command)
-    _terminal.write(`\r\n\x1B[1;3;31m You\x1B[0m $ `)
+    _terminal.write("\r\n\x1B[1;3;31m You\x1B[0m $ ")
   }
 
   return (

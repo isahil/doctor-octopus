@@ -124,17 +124,38 @@ async def get_all_cards(
 
 @router.get("/cards-not-downloaded", response_class=JSONResponse, status_code=200)
 async def cards_not_downloaded(
-    day: int = Query(..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]),
-    product: str = Query("all", title="Product", description="Product to filter the reports: clo/loan/all", examples=["clo", "loan", "all"]),
-    environment: str = Query("all", title="Environment", description="Environment to filter the reports: qa/dev/uat/all", examples=["qa", "dev", "uat", "all"]),
-    protocol: str = Query("all", title="Protocol", description="Protocol to filter the reports: ui/api/perf/all", examples=["ui", "api", "perf", "all"]),
+    day: int = Query(
+        ..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
 ) -> JSONResponse:
-    """ Get the list of cards not downloaded to the server by comparing the data with Redis' cards cache based on the filters."""
+    """Get the list of cards not downloaded to the server by comparing the data with Redis' cards cache based on the filters."""
     from server import fastapi_app
 
     cards: Cards = fastapi_app.state.cards
-    missing_cards = cards.all_missing_cards({"day": day, "product": product, "environment": environment, "protocol": protocol})
-    return JSONResponse(content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200)
+    missing_cards = cards.all_missing_cards(
+        {"day": day, "product": product, "environment": environment, "protocol": protocol}
+    )
+    return JSONResponse(
+        content={"message": "missing cards that needs to be downloaded", "cards": missing_cards}, status_code=200
+    )
 
 
 @router.get("/cards-download-queue", response_class=JSONResponse, status_code=200)
@@ -165,17 +186,34 @@ async def download_a_card(
     try:
         if card_dir in cards_dirs:
             logger.info(f"Download request for {card_dir}: already cached locally, skipping")
-            return JSONResponse(content={"status": "success", "message": f"Folder {card_dir} is already cached locally", "cached": True}, status_code=200)
+            return JSONResponse(
+                content={
+                    "status": "success",
+                    "message": f"Folder {card_dir} is already cached locally",
+                    "cached": True,
+                },
+                status_code=200,
+            )
 
         if is_downloading(redis.redis_client, card_dir):
             download_status = await get_download_status(redis.redis_client, card_dir)
             logger.info(f"Download request for {card_dir}: already in progress")
-            return JSONResponse(content={"status": "downloading", "message": f"Folder {card_dir} is already being downloaded", "details": download_status}, status_code=200)
+            return JSONResponse(
+                content={
+                    "status": "downloading",
+                    "message": f"Folder {card_dir} is already being downloaded",
+                    "details": download_status,
+                },
+                status_code=200,
+            )
 
         acquired = mark_downloading(redis.redis_client, card_dir, metadata={"started_at": dt.now().isoformat()})
         if not acquired:
             logger.info(f"Download request for {card_dir}: lost race, already in progress")
-            return JSONResponse(content={"status": "downloading", "message": f"Folder {card_dir} is already being downloaded"}, status_code=200)
+            return JSONResponse(
+                content={"status": "downloading", "message": f"Folder {card_dir} is already being downloaded"},
+                status_code=200,
+            )
 
         async def _download_task():
             try:
@@ -183,7 +221,11 @@ async def download_a_card(
                 remote.download_s3_folder(card_date)
 
                 try:
-                    download_notification = {"type": "download", "card_date": card_dir, "timestamp": dt.now().timestamp()}
+                    download_notification = {
+                        "type": "download",
+                        "card_date": card_dir,
+                        "timestamp": dt.now().timestamp(),
+                    }
                     await instances.aioredis.publish("notifications", download_notification)
                     logger.info(f"Published download completion notification for {card_dir}")
                 except Exception as err:
@@ -196,7 +238,14 @@ async def download_a_card(
 
         background_tasks.add_task(_download_task)
 
-        return JSONResponse(content={"status": "queued", "message": f"Download for folder {card_dir} has been queued", "root_dir": card_dir}, status_code=202)
+        return JSONResponse(
+            content={
+                "status": "queued",
+                "message": f"Download for folder {card_dir} has been queued",
+                "root_dir": card_dir,
+            },
+            status_code=202,
+        )
 
     except Exception as e:
         logger.error(f"Error starting download for {card_dir}: {str(e)}")
@@ -205,51 +254,120 @@ async def download_a_card(
 
 @router.get("/cache-reload-and-download", response_class=JSONResponse, status_code=200)
 async def download_all_missing_cards(
-    day: int = Query(..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]),
-    product: str = Query("all", title="Product", description="Product to filter the reports: clo/loan/all", examples=["clo", "loan", "all"]),
-    environment: str = Query("all", title="Environment", description="Environment to filter the reports: qa/dev/uat/all", examples=["qa", "dev", "uat", "all"]),
-    protocol: str = Query("all", title="Protocol", description="Protocol to filter the reports: ui/api/perf/all", examples=["ui", "api", "perf", "all"]),
+    day: int = Query(
+        ..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
 ) -> JSONResponse:
     """Reload Redis cache and download all missing cached cards to the server based on the filters."""
-    await queue_cache_reload_and_download({"day": day, "product": product, "environment": environment, "protocol": protocol})
+    await queue_cache_reload_and_download(
+        {"day": day, "product": product, "environment": environment, "protocol": protocol}
+    )
     return JSONResponse(content={"message": "Triggered download for missing cards"}, status_code=200)
 
 
 @router.get("/cache-reload", response_class=JSONResponse, status_code=200)
 async def reload_cards_cache(
-    day: int = Query(..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]),
-    product: str = Query("all", title="Product", description="Product to filter the reports: clo/loan/all", examples=["clo", "loan", "all"]),
-    environment: str = Query("all", title="Environment", description="Environment to filter the reports: qa/dev/uat/all", examples=["qa", "dev", "uat", "all"]),
-    protocol: str = Query("all", title="Protocol", description="Protocol to filter the reports: ui/api/perf/all", examples=["ui", "api", "perf", "all"]),
+    day: int = Query(
+        ..., title="Filter", description="Filter the reports age based on the given string", examples=[1, 7]
+    ),
+    product: str = Query(
+        "all",
+        title="Product",
+        description="Product to filter the reports: clo/loan/all",
+        examples=["clo", "loan", "all"],
+    ),
+    environment: str = Query(
+        "all",
+        title="Environment",
+        description="Environment to filter the reports: qa/dev/uat/all",
+        examples=["qa", "dev", "uat", "all"],
+    ),
+    protocol: str = Query(
+        "all",
+        title="Protocol",
+        description="Protocol to filter the reports: ui/api/perf/all",
+        examples=["ui", "api", "perf", "all"],
+    ),
 ) -> JSONResponse:
     """Pull all objects from the S3 bucket and reload Redis cache with the missing cache cards data based on the filters"""
     from server import fastapi_app
 
-    expected_filter_dict = {"environment": environment, "day": day, "mode": "s3", "protocol": protocol, "product": product}
+    expected_filter_dict = {
+        "environment": environment,
+        "day": day,
+        "mode": "s3",
+        "protocol": protocol,
+        "product": product,
+    }
     redis = instances.redis
     operation = "cache-reload"
     identifier = "reload"
 
     if is_cache_reloading(redis.redis_client):
         logger.info("Cache reload already queued.")
-        return JSONResponse(content={"status": "in-progress", "message": "A cache reload with these filters is already in progress", "details": "Please wait for the current reload to complete before making another request with the same filters."}, status_code=202)
+        return JSONResponse(
+            content={
+                "status": "in-progress",
+                "message": "A cache reload with these filters is already in progress",
+                "details": "Please wait for the current reload to complete before making another request with the same filters.",
+            },
+            status_code=202,
+        )
 
-    marked = mark_operation(redis.redis_client, operation, identifier, metadata={"started_at": dt.now().isoformat(), "filters": expected_filter_dict})
+    marked = mark_operation(
+        redis.redis_client,
+        operation,
+        identifier,
+        metadata={"started_at": dt.now().isoformat(), "filters": expected_filter_dict},
+    )
     if not marked:
         logger.info(f"Cache reload lost race for filters {expected_filter_dict}")
-        return JSONResponse(content={"status": "in-progress", "message": "A cache reload with these filters is already in progress", "details": "Please wait for the current reload to complete before making another request with the same filters."}, status_code=202)
+        return JSONResponse(
+            content={
+                "status": "in-progress",
+                "message": "A cache reload with these filters is already in progress",
+                "details": "Please wait for the current reload to complete before making another request with the same filters.",
+            },
+            status_code=202,
+        )
 
     try:
         cards: Cards = fastapi_app.state.cards
         card_dates = await cards.actions(expected_filter_dict)
-        return JSONResponse(content={"message": f"Cached {len(card_dates)} cards based on the given filters", "cards": card_dates}, status_code=200)
+        cached_cards_count = len(card_dates) if card_dates is not None else 0
+        return JSONResponse(
+            content={"message": f"Cached {cached_cards_count} cards based on the given filters", "cards": card_dates},
+            status_code=200,
+        )
     finally:
         unmark_operation(redis.redis_client, operation, identifier)
 
 
 @router.get("/cache-invalidate", response_class=JSONResponse, status_code=200)
 async def invalidate_redis_cache(
-    pattern: str = Query(title="Pattern", description="Regex pattern to match the Redis keys for invalidation", examples=["doctor-octopus:trading-apps-reports:qa*"]),
+    pattern: str = Query(
+        title="Pattern",
+        description="Regex pattern to match the Redis keys for invalidation",
+        examples=["doctor-octopus:trading-apps-reports:qa*"],
+    ),
 ) -> JSONResponse:
     logger.info(f"Invalidating Redis cache with pattern: {pattern}")
     redis_client = instances.redis.get_client()

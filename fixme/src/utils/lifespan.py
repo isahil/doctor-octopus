@@ -16,6 +16,7 @@ async def lifespan_fixme(app: FastAPI):
     Lifespan event handler for the FIXME FastAPI server.
     """
     import aiofiles
+
     # import asyncio
     from server import sio
     from src.wsocket import WebSocketServer
