@@ -133,7 +133,7 @@ async def view_a_report_on_local(root_dir):
         raise e
 
 
-def cleanup_old_test_report_directories(max_dirs=10):
+def cleanup_old_test_report_directories(max_dirs=10) -> list[str] | None:
     """
     Remove older test report directories, keeping only the most recent ones.
     Args:
@@ -142,7 +142,7 @@ def cleanup_old_test_report_directories(max_dirs=10):
     try:
         if not os.path.exists(report_cards_path):
             logger.warning(f"Test reports directory {report_cards_path} not found")
-            return False
+            return None
 
         dirs = []
         for item in os.listdir(report_cards_path):
@@ -172,4 +172,4 @@ def cleanup_old_test_report_directories(max_dirs=10):
             return []
     except Exception as e:
         logger.error(f"Error during cleanup of test report directories: {str(e)}")
-        return False
+        return None

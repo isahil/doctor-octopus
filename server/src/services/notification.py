@@ -6,7 +6,7 @@ import instances
 from src.services import remote
 from src.utils.logger import logger
 from src.utils.helper import call_doctor_endpoint, queue_cards_download, wait_for_server_ready
-from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key, server_url
+from config import notification_frequency_time, pubsub_frequency_time, do_current_clients_count_key
 
 
 async def notification_publisher():

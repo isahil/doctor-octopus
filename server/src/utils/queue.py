@@ -38,11 +38,11 @@ def is_operation_in_progress(redis: Redis, operation: str, identifier: str) -> b
 
 
 def mark_operation(
-        redis: Redis,
-        operation: str,
-        identifier: str,
-        metadata: dict | None = None,
-        ttl: int | None = None,
+    redis: Redis,
+    operation: str,
+    identifier: str,
+    metadata: dict | None = None,
+    ttl: int | None = None,
 ) -> bool:
     """Mark an operation as in-progress in Redis with an auto-expiry TTL.
     Args:

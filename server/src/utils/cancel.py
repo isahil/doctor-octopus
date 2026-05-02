@@ -28,8 +28,10 @@ async def cancel_app_task(task_name: str, app) -> bool:
         logger.info(f"{task_name} not found in app state.")
     return False
 
+
 async def cancel_lifespan_tasks(app: FastAPI):
     import instances
+
     if hasattr(app.state, "sio"):
         logger.info("Closing Socket.IO connections...")
         try:
