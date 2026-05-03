@@ -1,16 +1,18 @@
 import { test, expect } from "playwright/test";
 
 test.describe("Doctor Octopus Header UI Test", () => {
-	test("Header UI Snapshot Validation", async ({ page }) => {
-		const { step } = test;
+  test("Header UI Snapshot Validation", async ({ page }) => {
+    const { step } = test;
 
-		await step("Navigate to Doctor Octopus", async () => {
-			await page.goto("/");
-		});
+    await step("Navigate to Doctor Octopus", async () => {
+      await page.goto("/");
+    });
 
-		await step("Header snapshot verification", async () => {
-			await expect.soft(page.getByRole("banner"), "Header banner should match ARIA snapshot")
-				.toMatchAriaSnapshot(`
+    await step("Header snapshot verification", async () => {
+      await expect.soft(
+        page.getByRole("banner"),
+        "Header banner should match ARIA snapshot",
+      ).toMatchAriaSnapshot(`
                     - heading "Doctor Octopus" [level=1]
                     - navigation:
                         - link "👩🏻‍🔬 Reports":
@@ -24,6 +26,6 @@ test.describe("Doctor Octopus Header UI Test", () => {
                             - /url: test
                             - img "Grafana Icon"
                 `);
-		});
-	});
+    });
+  });
 });

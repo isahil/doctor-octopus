@@ -1,14 +1,13 @@
 {
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
-	"editor.formatOnSave": true,
-	"[python]": {
-		"editor.defaultFormatter": "charliermarsh.ruff"
-	},
-	"github-actions.workflows.pinned.workflows": [".github/workflows/dr-ci.yml"],
-	"python-envs.pythonProjects": [],
-	"yaml.schemas": {
-		"https://www.artillery.io/schema.json": [
-			"file:///Users/sahil/Dev/Projects/doctor-octopus/e2e/perf/cards.yml"
-		]
-	}
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "github-actions.workflows.pinned.workflows": [".github/workflows/dr-ci.yml"],
+  "yaml.schemas": {
+    "https://www.artillery.io/schema.json": []
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:poetry",
+  "python-envs.defaultPackageManager": "ms-python.python:poetry"
 }

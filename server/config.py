@@ -27,7 +27,7 @@ test_protocols: list = ["api", "ui", "unit", "perf", "s3", "db", "fix"]  # list 
 the_lab_log_file_name: str = "lab.log"  # default log file name for the lab component
 the_doc_log_file_name: str = "doc.log"  # default log file name for the executor component
 
-max_local_dirs = 1000  # max number of downloaded test report directories to keep
+max_local_dirs: int = 1000  # max number of downloaded test report directories to keep
 notification_frequency_time: int = 10  # frequency of S3 notifications update in seconds
 pubsub_frequency_time: int = 1  # frequency of redis pubsub update in seconds
 
@@ -44,9 +44,11 @@ server_url: str = (
 )  # URL for the main server, used for API calls
 
 __all__ = [
+    "cache_reload_queue_ttl",
     "do_lifetime_clients_count_key",
     "do_current_clients_count_key",
     "do_max_concurrent_clients_key",
+    "download_queue_ttl",
     "max_local_dirs",
     "test_environments",
     "test_reports_dir",
@@ -59,4 +61,9 @@ __all__ = [
     "test_protocols",
     "workers_limit",
     "server_url",
+    "rate_limit_file_batch_size",
+    "rate_limit_folder_batch_size",
+    "rate_limit_wait_time",
+    "root_redis_key",
+    "notification_frequency_time",
 ]  # export the variables

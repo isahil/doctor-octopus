@@ -28,5 +28,9 @@ async def server_initialization():
         logger.info("Server will continue startup despite initialization warnings")
 
 
-if __name__ == "__main__":
+def main():
     asyncio.run(server_initialization())
+
+
+if __name__ == "__main__":
+    main()

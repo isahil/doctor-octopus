@@ -66,9 +66,9 @@ async def call_doctor_endpoint(endpoint: str, params: dict, method: str = "get")
         raise aiohttp.ClientError(f"API error calling {endpoint} API: {str(e)}")
 
 
-async def queue_cards_download(filter: dict) -> None:
+async def queue_cards_download(cards_filter: dict) -> None:
     """Queue downloads for multiple cards via the /download-a-card API endpoint"""
-    from src.component.cards import Cards
+    from src.services.cards import Cards
 
     caching = is_cache_reloading(instances.redis.redis_client)
     if caching:
@@ -78,8 +78,8 @@ async def queue_cards_download(filter: dict) -> None:
         logger.info("No download in progress. Proceeding to mark and download missing cards.")
 
     cards: Cards = Cards()
-    missing_cards = cards.all_missing_cards(filter)
-    logger.info(f"Found {len(missing_cards)} missing cards for filter {filter} - {missing_cards}")
+    missing_cards = cards.all_missing_cards(cards_filter)
+    logger.info(f"Found {len(missing_cards)} missing cards for filter {cards_filter} - {missing_cards}")
 
     tasks = []
     for card_date in missing_cards:
@@ -103,9 +103,25 @@ async def queue_cards_download(filter: dict) -> None:
             logger.error(f"Error processing download responses: {str(e)}")
 
 
-async def queue_cache_and_download(filter: dict) -> None:
+async def queue_cache_reload_and_download(cards_filter: dict) -> None:
     """Queue caching and downloading for multiple cards via the /cache_and_download API endpoint"""
-    cached_cards_res = await call_doctor_endpoint("/cache-reload", filter)
+    cached_cards_res = await call_doctor_endpoint("/cache-reload", cards_filter)
     res = cached_cards_res.get("message", "No message in response")
     logger.info(f"API cache-reload response: {res}")
-    await queue_cards_download(filter)
+    await queue_cards_download(cards_filter)
+
+
+async def wait_for_server_ready(max_retries: int = 30, retry_delay: int = 1) -> bool:
+    """Wait for the main server to be ready by polling the health check endpoint. Useful for app initialization."""
+    for attempt in range(max_retries):
+        try:
+            await call_doctor_endpoint("/", {})
+            logger.info("Server is ready, proceeding with notification service.")
+            return True
+        except Exception:
+            if attempt < max_retries - 1:
+                logger.info(f"Waiting for server to be ready... (attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(retry_delay)
+
+    logger.warning("Server did not become ready in time, proceeding anyway.")
+    return False

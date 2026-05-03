@@ -129,16 +129,16 @@ sequenceDiagram
     L->>API: POST /execute-test
     API->>TE: Start Test Execution
     API->>WS: Initialize Log Stream
-    
+
     activate TE
     TE-->>WS: Stream Logs
     WS-->>T: Real-time Logs via SocketIO
     T-->>U: Display Live Logs
-    
+
     TE->>FS: Generate Test Report
     TE->>API: Execution Complete
     deactivate TE
-    
+
     API->>S3: Upload Report
     S3-->>API: Upload Success
     API->>R: Cache Report Metadata
@@ -160,7 +160,7 @@ sequenceDiagram
 
     U->>C: Open Cards Page
     C->>API: GET /cards
-    
+
     API->>R: Check Cache
     alt Cache Hit
         R-->>API: Return Cached Cards
@@ -169,13 +169,13 @@ sequenceDiagram
         S3-->>API: Return Reports
         API->>R: Cache Results (60 days TTL)
     end
-    
+
     API-->>C: Display Report Cards
     C-->>U: Show Reports
-    
+
     U->>C: Click "View Report"
     C->>API: GET /view-report
-    
+
     API->>FS: Check Local Storage
     alt Report Exists Locally
         FS-->>API: Report Found
@@ -184,7 +184,7 @@ sequenceDiagram
         S3-->>API: Report Data
         API->>FS: Save to Local (Max 1000 dirs)
     end
-    
+
     API->>PS: Start Playwright Report Server
     PS-->>API: Server URL
     API-->>C: Return Report URL
@@ -197,27 +197,27 @@ sequenceDiagram
 graph LR
     subgraph "Redis Key Structure"
         Root[doctor-octopus:*]
-        
+
         Reports[trading-apps-reports]
         ReportsCached[trading-apps-reports:cached]
-        
+
         Stats[stats:*]
         CurrentClients[stats:current_clients_count]
         LifetimeClients[stats:lifetime_clients_count]
         MaxConcurrent[stats:max_concurrent_clients_count]
-        
+
         Downloads[downloads:in-progress:*]
-        
+
         Root --> Reports
         Root --> ReportsCached
         Root --> Stats
         Root --> Downloads
-        
+
         Stats --> CurrentClients
         Stats --> LifetimeClients
         Stats --> MaxConcurrent
     end
-    
+
     style Root fill:#ff6b6b,color:#fff
     style Reports fill:#ffd93d,color:#000
     style ReportsCached fill:#ffd93d,color:#000
@@ -229,15 +229,15 @@ graph LR
 
 ### Service Communication Matrix
 
-| Source | Target | Protocol | Port | Purpose |
-|--------|--------|----------|------|---------|
-| Client | Main Server | HTTP/REST | 8000 | API requests, test execution, report management |
-| Client | FixMe Server | WebSocket | 8001 | Real-time log streaming |
-| Main Server | Redis | Redis Protocol | 6379 | Caching, stats, queues, pub/sub |
-| Main Server | AWS S3 | HTTPS | 443 | Upload/download test reports |
-| Main Server | Local FS | File I/O | - | Read/write test reports |
-| FixMe Server | Client | SocketIO | 8001 | Bidirectional log streaming |
-| Test Executors | Local FS | File I/O | - | Generate test reports |
+| Source         | Target       | Protocol       | Port | Purpose                                         |
+| -------------- | ------------ | -------------- | ---- | ----------------------------------------------- |
+| Client         | Main Server  | HTTP/REST      | 8000 | API requests, test execution, report management |
+| Client         | FixMe Server | WebSocket      | 8001 | Real-time log streaming                         |
+| Main Server    | Redis        | Redis Protocol | 6379 | Caching, stats, queues, pub/sub                 |
+| Main Server    | AWS S3       | HTTPS          | 443  | Upload/download test reports                    |
+| Main Server    | Local FS     | File I/O       | -    | Read/write test reports                         |
+| FixMe Server   | Client       | SocketIO       | 8001 | Bidirectional log streaming                     |
+| Test Executors | Local FS     | File I/O       | -    | Generate test reports                           |
 
 ### Redis Cache Configuration
 
@@ -264,27 +264,27 @@ graph TB
         subgraph "Container: doctor-octopus-client"
             C[Client Service<br/>Port: 3000]
         end
-        
+
         subgraph "Container: doctor-octopus-server"
             S[Main Server<br/>Port: 8000]
             SV[Volume: logs/]
             SV2[Volume: test_reports/]
         end
-        
+
         subgraph "Container: doctor-octopus-fixme"
             F[FixMe Server<br/>Port: 8001]
             FV[Volume: logs/]
         end
-        
+
         subgraph "Container: doctor-octopus-redis"
             R[(Redis<br/>Port: 6379)]
             RV[Volume: redis-data]
         end
     end
-    
+
     External[External Access<br/>Browser]
     S3Cloud[AWS S3 Cloud]
-    
+
     External -->|http://localhost:3000| C
     C -->|API Calls| S
     C -->|WebSocket| F
@@ -294,7 +294,7 @@ graph TB
     S -->|Logs & Reports| SV
     S -->|Reports Storage| SV2
     R -->|Persistence| RV
-    
+
     style C fill:#61dafb,color:#000
     style S fill:#009688,color:#fff
     style F fill:#00acc1,color:#fff

@@ -34,7 +34,7 @@ if [ -f /.dockerenv ]; then
             exit $?
             ;;
         "notification")
-            cd server && poetry run python3 src/component/notification.py
+            cd server && poetry run python3 src/services/notification.py
             # npm run notification
             exit $?
             ;;

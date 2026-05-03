@@ -1,11 +1,9 @@
-import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from config import the_lab_log_file_name
-from src.utils.env_loader import get_local_dir, get_node_env, get_test_env, get_server_mode
-from src.utils.cancel import cancel_app_task, cancel_lifespan_tasks
+from src.utils.env_loader import get_node_env, get_test_env, get_server_mode
+from src.utils.cancel import cancel_lifespan_tasks
 from src.utils.logger import logger
-from src.component.cards import Cards
+from src.services.cards import Cards
 
 
 @asynccontextmanager

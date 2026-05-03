@@ -1,0 +1,87 @@
+import boto3
+from src.utils.logger import logger
+from src.utils.env_loader import (
+    get_aws_sdet_bucket_name,
+    get_aws_sdet_bucket_region,
+    get_aws_sdet_bucket_access_key_id,
+    get_aws_sdet_bucket_secret_access_key,
+    get_aws_session_token,
+)
+
+aws_bucket_name = get_aws_sdet_bucket_name()
+aws_bucket_region = get_aws_sdet_bucket_region()
+aws_access_key_id = get_aws_sdet_bucket_access_key_id()
+aws_secret_access_key = get_aws_sdet_bucket_secret_access_key()
+aws_session_token = get_aws_session_token()
+
+
+class S3Client:
+    def __init__(self):
+        session = boto3.Session(
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=aws_bucket_region,
+            aws_session_token=aws_session_token,
+        )
+        self.S3 = session.client("s3")
+
+    def get_a_s3_object(self, object_name, bucket_name=aws_bucket_name) -> bytes:
+        """
+        # Call S3 client to get a s3 object
+        """
+        response = self.S3.get_object(Bucket=bucket_name, Key=object_name)
+        return response["Body"].read()
+
+    def list_s3_objects(self, bucket_name=aws_bucket_name) -> list:
+        """
+        # Call S3 client to list the first 1000 s3 objects
+        """
+        response = self.S3.list_objects_v2(Bucket=bucket_name)
+        objects = response.get("Contents", [])
+        # for obj in objects:
+        #     logger.info(f"Key: {obj['Key']}, Size: {obj['Size']}")
+        return objects
+
+    def list_all_s3_objects(self, bucket_name=aws_bucket_name) -> list:
+        """
+        List *all* objects from the given S3 bucket, by paging through
+        results if more objects remain. Returns a consolidated list.
+        """
+        all_objects = []
+        continuation = None
+
+        while True:
+            if continuation:
+                response = self.S3.list_objects_v2(Bucket=bucket_name, ContinuationToken=continuation)
+            else:
+                response = self.S3.list_objects_v2(Bucket=bucket_name)
+
+            contents = response.get("Contents", [])
+            all_objects.extend(contents)
+
+            # Check if there are more pages of results
+            if response.get("IsTruncated"):
+                continuation = response.get("NextContinuationToken")
+            else:
+                break
+        all_objects.sort(key=lambda obj: obj["LastModified"], reverse=True)
+        return all_objects
+
+    def download_file(self, object_key: str, local_path: str, bucket_name=aws_bucket_name) -> None:
+        """
+        # Call S3 client to download a file
+        """
+        self.S3.download_file(bucket_name, object_key, local_path)
+
+    @staticmethod
+    def upload_to_s3(path: str, content, bucket_name=aws_bucket_name):
+        try:
+            S3.upload_to_s3(path, content, bucket_name)
+            logger.info(f"Successfully uploaded content to: {path}")
+            return True
+        except Exception as e:
+            logger.info(f"Error uploading to S3 path {path}: {str(e)}")
+            return False
+
+
+S3 = S3Client()

@@ -3,9 +3,11 @@
 A multi-component application with a full battery (a server & a client). The app includes **The Lab**: a test runner, **Cards**: a test report viewer and the **Terminal** features that aim to make testing experience a smoother process for your website. The app is built for Playwright library that makes running Playwright test suites and then viewing the test reports a simpler process. You can run a test suite using The Lab, see the live logs streamed in the Terminal and then view the HTML report it generates in the Cards section. Once a test execution is finished the reports and attachements will be uploaded to the provided AWS S3 bucket so that it can be viewed from the remote source later even if it's deleted from your local. When the 'View' button for a report card is clicked, the app will start a local server to view the Playwright's default HTML report with my favorite Trace viewer feature.
 
 ### Reports Tab
+
 ![doctor-octopus](client/doc/DO-Reports.png)
 
 ### Lab Tab
+
 ![doctor-octopus](client/doc/DO-Lab.png)
 
 ## Setup
@@ -57,8 +59,7 @@ DOCTOR-OCTOPUS
 - **AWS S3**: remote repository where the test reports are stored.
 - **Redis**: cache db for test report cards.
 
-
-## Docker: 
+## Docker:
 
 ### Building & running the Doctor Octopus app in a container
 
@@ -66,13 +67,13 @@ Start the application by running:
 
 1. Using compose
 
-    `docker compose up --build` : run a docker compose container with a fresh build
+   `docker compose up --build` : run a docker compose container with a fresh build
 
-    `docker compose --env-file .env up --build -d` : run a docker compose container with an env file values loaded from root, fresh build and in daemon mode.
+   `docker compose --env-file .env up --build -d` : run a docker compose container with an env file values loaded from root, fresh build and in daemon mode.
 
 2. Using a specific image tag
 
-    `docker run -p 3000:3000 -p 8000:8000 --env-file=./.env app:tag` : run a docker image with ports 3000 & 8000 mapping, load env file values from the root directory.
+   `docker run -p 3000:3000 -p 8000:8000 --env-file=./.env app:tag` : run a docker image with ports 3000 & 8000 mapping, load env file values from the root directory.
 
 The app will be available at http://localhost:3000.
 
@@ -86,12 +87,12 @@ Consult Docker's [getting started](https://docs.docker.com/go/get-started-sharin
 docs for more detail on building and pushing.
 
 ### References
-* [FastAPI Guide](https://fastapi.tiangolo.com/tutorial/first-steps/)
-* [ReactJS Guide](https://react.dev/reference/react)
-* [Playwright Guide](https://playwright.dev/docs/intro)
-* [PyTest Guide](https://docs.pytest.org/en/stable/)
-* [Redis Guide](https://redis.io/docs/latest/develop/clients/redis-py/)
-* [Docker Guide](https://docs.docker.com/go/dockerfile-reference/)
 
+- [FastAPI Guide](https://fastapi.tiangolo.com/tutorial/first-steps/)
+- [ReactJS Guide](https://react.dev/reference/react)
+- [Playwright Guide](https://playwright.dev/docs/intro)
+- [PyTest Guide](https://docs.pytest.org/en/stable/)
+- [Redis Guide](https://redis.io/docs/latest/develop/clients/redis-py/)
+- [Docker Guide](https://docs.docker.com/go/dockerfile-reference/)
 
 Developer: **IMRAN SAHIL**

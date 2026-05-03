@@ -1,6 +1,6 @@
 from src.utils.env_loader import get_server_mode, get_redis_host, get_debug_mode
-from src.utils.aioredis import AioRedis
-from src.utils.redis import RedisClient
+from src.utils.aioredis_client import AioRedis
+from src.utils.redis_client import RedisClient
 
 server_mode = get_server_mode()
 sdet_redis_host = get_redis_host()

@@ -1,35 +1,68 @@
 {
   "name": "App Configurations & Options",
   "version": "1.0.0",
-  "filters": {
-    "day": {
+  "card_filters": [
+    {
       "name": "day",
       "label": "day",
+      "default": "1",
       "options": ["1", "2", "3", "5", "10", "15", "30", "60", "120"]
     },
-    "environment": {
+    {
       "name": "environment",
       "label": "env",
+      "default": "all",
       "options": ["all", "dev", "qa", "uat", "sit", "prod"]
     },
-    "product": {
+    {
       "name": "product",
       "label": "app",
+      "default": "all",
       "options": ["all", "loan", "clo"]
     },
-    "protocol": {
+    {
       "name": "protocol",
       "label": "suites",
+      "default": "all",
       "options": ["all", "ui", "api", "fix", "db", "perf", "unit"]
     }
-  },
-  "defaults":{
+  ],
+  "lab_filters": [
+    {
+      "name": "env",
+      "dependant": false,
+      "description": "test Environment to run the test suite in",
+      "options": ["qa", "dev", "uat"]
+    },
+    {
+      "name": "app",
+      "dependant": false,
+      "description": "application to run the test suite for",
+      "options": ["loan", "clo"]
+    },
+    {
+      "name": "proto",
+      "dependant": false,
+      "description": "protocol to run the test suite with",
+      "options": ["client", "dealer"]
+    },
+    {
+      "name": "suite",
+      "description": "test suite to run for the given protocol",
+      "dependant": true,
+      "options": {
+        "client": ["oblotter"],
+        "dealer": ["stp", "axe"]
+      }
+    }
+  ],
+  "defaults": {
     "xterm_command": "fixme",
     "fixme": {
       "description": "Default sessions to run when the user types 'fixme' in the terminal.",
       "environment": "qa",
       "product": "loan",
-      "suites": "client"
+      "side": "client"
     }
   }
 }

@@ -9,27 +9,32 @@ const __dirname = path.dirname(__filename);
  * Read and embed CSS stylesheet inline in HTML
  */
 export function get_embedded_CSS() {
-	const css_source_path = path.join(__dirname, ".", "styles", "report-styles.css");
+  const css_source_path = path.join(
+    __dirname,
+    ".",
+    "styles",
+    "report-styles.css",
+  );
 
-	try {
-		if (fs.existsSync(css_source_path)) {
-			const cssContent = fs.readFileSync(css_source_path, "utf8");
-			return cssContent;
-		}
-	} catch (error) {
-		console.warn(`⚠️  Could not read CSS file: ${error.message}`);
-	}
-	return "";
+  try {
+    if (fs.existsSync(css_source_path)) {
+      const cssContent = fs.readFileSync(css_source_path, "utf8");
+      return cssContent;
+    }
+  } catch (error) {
+    console.warn(`⚠️  Could not read CSS file: ${error.message}`);
+  }
+  return "";
 }
 
 /**
  * Get HTML head section with embedded CSS
  */
 export function get_HTML_head() {
-	const css_content = get_embedded_CSS();
-	const css_tag = css_content ? `<style>\n${css_content}\n</style>` : "";
+  const css_content = get_embedded_CSS();
+  const css_tag = css_content ? `<style>\n${css_content}\n</style>` : "";
 
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
           <html lang="en">
               <head>
                   <meta charset="UTF-8">
@@ -53,8 +58,8 @@ export function get_HTML_head() {
  * Generate header section with status and metadata
  */
 export function generate_header(stats, status, statusIcon) {
-	const grafana_url = stats.app_grafana_url;
-	return `
+  const grafana_url = stats.app_grafana_url;
+  return `
     <!-- Header -->
     <header class="bg-gray-800 border-b border-gray-700">
       <div class="max-w-7xl mx-auto px-6 py-4">
@@ -92,10 +97,10 @@ export function generate_header(stats, status, statusIcon) {
           <div>
             <span class="text-gray-400">Grafana:</span>
             ${
-				grafana_url
-					? `<a class="grafana-button" href="${grafana_url}" target="_blank" rel="noopener noreferrer">📊 View Dashboard</a>`
-					: `<a class="font-semibold text-gray-100">${grafana_url}</a>`
-			}
+              grafana_url
+                ? `<a class="grafana-button" href="${grafana_url}" target="_blank" rel="noopener noreferrer">📊 View Dashboard</a>`
+                : `<a class="font-semibold text-gray-100">${grafana_url}</a>`
+            }
         </div>
       </div>
     </header>`;
@@ -105,7 +110,7 @@ export function generate_header(stats, status, statusIcon) {
  * Get HTML footer
  */
 export function get_HTML_footer() {
-	return `    <!-- Footer -->
+  return `    <!-- Footer -->
                 <footer class="bg-gray-800 border-t border-gray-700 mt-12 py-6">
                     <div class="max-w-7xl mx-auto px-6 text-center text-sm text-gray-400">
                         <p>Generated on ${new Date().toLocaleString()}</p>
@@ -121,18 +126,18 @@ export function get_HTML_footer() {
  * Format bytes to human-readable format
  */
 export function format_bytes(bytes) {
-	if (bytes === 0) return "0 B";
-	const k = 1024;
-	const sizes = ["B", "KB", "MB", "GB"];
-	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
 }
 
 /**
  * Generate info icon with tooltip
  */
 export function generate_info_icon(explanation) {
-	return `<span class="info-icon" title="${explanation}">
+  return `<span class="info-icon" title="${explanation}">
 		<svg class="info-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 			<circle cx="12" cy="12" r="10"></circle>
 			<line x1="12" y1="16" x2="12" y2="12"></line>
@@ -142,7 +147,7 @@ export function generate_info_icon(explanation) {
 }
 
 export function html_utils() {
-	return `
+  return `
   <script>
       // Initialize lightbox functionality for screenshots
       window.currentSlide = 0;

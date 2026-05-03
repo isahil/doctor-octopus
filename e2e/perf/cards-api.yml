@@ -26,4 +26,3 @@ scenarios:
           match:
             status: 200
       # - log: "Total number of cards: {{ cards_count }}"
-        

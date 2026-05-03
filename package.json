@@ -1,55 +1,78 @@
 {
-	"name": "doctor-octopus",
-	"version": "1.0.0",
-	"description": "doctor-octopus app",
-	"main": "setup.sh",
-	"type": "module",
-	"scripts": {
-		"client": "cd client && npm run dev",
-		"client:prod": "cd client && npm run build && npm run serve -- --host 0.0.0.0 --port 3000",
-		"fixme": "cd fixme && bash start.sh fixme",
-		"format": "prettier --write .",
-		"healthcheck": "curl --fail http://localhost:8000/health-check || exit 1",
-		"lint": "npx eslint .",
-		"log": "bash utils/log.sh",
-		"notification": "cd server && bash start.sh notification false",
-		"prompt": "bash utils/prompt.sh",
-		"pull": "git stash && git checkout main && git pull",
-		"restart": "npm run stop && npm run start",
-		"restart:prod": "npm run stop && npm run start:prod",
-		"restart:client": "bash utils/restart-service.sh client",
-		"restart:fixme": "bash utils/restart-service.sh fixme",
-		"restart:server": "bash utils/restart-service.sh server",
-		"restart:notification": "bash utils/restart-service.sh notification",
-		"server": "cd server && bash start.sh main true",
-		"start": "bash utils/start.sh",
-		"start:docker": "docker compose --env-file ./.env up --build -d",
-		"start:local": "bash utils/start-local.sh",
-		"start:prod": "npm run start all false",
-		"setup": "bash utils/setup-app.sh",
-		"setup:all": "bash utils/setup-app.sh all",
-		"setup:client": "bash utils/setup-app.sh client",
-		"setup:server": "bash utils/setup-app.sh server",
-		"setup:test": "bash utils/setup-app.sh test",
-		"stop": "bash utils/stop.sh",
-		"stop:fixme": "bash utils/stop.sh fixme",
-		"stop:server": "bash utils/stop.sh server",
-		"stop:notification": "bash utils/stop.sh notification",
-		"test": "cd e2e && sh e2e_pipeline.sh"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/isahil/doctor-octopus.git"
-	},
-	"author": "Imran Sahil",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/isahil/doctor-octopus/issues"
-	},
-	"homepage": "https://github.com/isahil/doctor-octopus#readme",
-	"devDependencies": {
-		"concurrently": "^8.2.2",
-		"eslint": "^9.30.0",
-		"prettier": "^3.6.2"
-	}
+  "name": "doctor-octopus",
+  "version": "1.0.0",
+  "description": "doctor-octopus app",
+  "main": "setup.sh",
+  "type": "module",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "client:prod": "cd client && npm run build && npm run serve -- --host 0.0.0.0 --port 3000",
+    "fixme": "cd fixme && bash start.sh fixme",
+    "format": "prettier --write . && poetry -C server run ruff format .",
+    "healthcheck": "curl --fail http://localhost:8000/health-check || exit 1",
+    "lint": "npx eslint --fix . && poetry -C server run ruff check --fix .",
+    "log": "bash utils/log.sh",
+    "notification": "cd server && bash start.sh notification false",
+    "prepare": "husky",
+    "prompt": "bash utils/prompt.sh",
+    "pull": "git stash && git checkout main && git pull",
+    "restart": "npm run stop && npm run start",
+    "restart:prod": "npm run stop && npm run start:prod",
+    "restart:client": "bash utils/restart-service.sh client",
+    "restart:fixme": "bash utils/restart-service.sh fixme",
+    "restart:server": "bash utils/restart-service.sh server",
+    "restart:notification": "bash utils/restart-service.sh notification",
+    "server": "cd server && bash start.sh main true",
+    "start": "bash utils/start.sh",
+    "start:docker": "docker compose --env-file ./.env up --build -d",
+    "start:local": "bash utils/start-local.sh",
+    "start:prod": "npm run start all false",
+    "setup": "bash utils/setup-app.sh",
+    "setup:all": "bash utils/setup-app.sh all",
+    "setup:client": "bash utils/setup-app.sh client",
+    "setup:server": "bash utils/setup-app.sh server",
+    "setup:test": "bash utils/setup-app.sh test",
+    "stop": "bash utils/stop.sh",
+    "stop:fixme": "bash utils/stop.sh fixme",
+    "stop:server": "bash utils/stop.sh server",
+    "stop:notification": "bash utils/stop.sh notification",
+    "test": "cd e2e && sh e2e_pipeline.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isahil/doctor-octopus.git"
+  },
+  "author": "Imran Sahil",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/isahil/doctor-octopus/issues"
+  },
+  "homepage": "https://github.com/isahil/doctor-octopus#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^9.30.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.6.2"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ],
+    "*.py": [
+      "poetry -C server run ruff check --fix",
+      "poetry -C server run ruff format",
+      "poetry -C fixme run ruff check --fix",
+      "poetry -C fixme run ruff format"
+    ]
+  }
 }

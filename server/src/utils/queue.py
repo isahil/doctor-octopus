@@ -10,12 +10,10 @@ Supports any operation type via a generic key scheme:
 import asyncio
 import hashlib
 import json
-from typing import Optional
-from config import root_redis_key, download_queue_ttl, cache_reload_queue_ttl
 from redis import Redis
+from config import root_redis_key, download_queue_ttl, cache_reload_queue_ttl
 from src.utils.logger import logger
 import instances
-
 
 # Default TTLs per operation type (seconds). Callers can override via `ttl` param.
 _DEFAULT_TTLS: dict[str, int] = {
@@ -43,8 +41,8 @@ def mark_operation(
     redis: Redis,
     operation: str,
     identifier: str,
-    metadata: Optional[dict] = None,
-    ttl: Optional[int] = None,
+    metadata: dict | None = None,
+    ttl: int | None = None,
 ) -> bool:
     """Mark an operation as in-progress in Redis with an auto-expiry TTL.
     Args:
@@ -82,7 +80,7 @@ def unmark_operation(redis: Redis, operation: str, identifier: str) -> bool:
         return False
 
 
-async def get_operation_status(redis: Redis, operation: str, identifier: str) -> Optional[dict]:
+async def get_operation_status(redis: Redis, operation: str, identifier: str) -> dict | None:
     """Retrieve the metadata dict for an in-progress operation (async Redis)."""
     try:
         key = get_operation_key(operation, identifier)
@@ -110,7 +108,7 @@ def is_downloading(redis: Redis, card_date: str) -> bool:
     return is_operation_in_progress(redis, "download", card_date)
 
 
-def mark_downloading(redis: Redis, card_date: str, metadata: Optional[dict] = None) -> bool:
+def mark_downloading(redis: Redis, card_date: str, metadata: dict | None = None) -> bool:
     """Mark a card_date as being downloaded."""
     return mark_operation(redis, "download", card_date, metadata=metadata)
 
@@ -120,9 +118,35 @@ def unmark_downloading(redis: Redis, card_date: str) -> bool:
     return unmark_operation(redis, "download", card_date)
 
 
-async def get_download_status(redis: Redis, card_date: str) -> Optional[dict]:
+async def get_download_status(redis: Redis, card_date: str) -> dict | None:
     """Get the current download metadata for a card_date."""
     return await get_operation_status(redis, "download", card_date)
+
+
+async def cards_download_queue():
+    """Return card identifiers currently marked as queued/in-progress downloads."""
+    pattern = get_operation_key("download", "*")
+    queued_cards: list[str] = []
+
+    try:
+        aioredis = instances.aioredis
+        aioredis_client = await aioredis.get_client()
+        cursor = 0
+        while True:
+            cursor, keys = await aioredis_client.scan(cursor=cursor, match=pattern, count=500)
+            for key in keys:
+                key_str = await aioredis.get(key)
+                if key_str:
+                    redis_key = key.decode("utf-8") if isinstance(key, bytes) else str(key)
+                    logger.debug(f"Found queued download key: {key_str} | Redis key: {redis_key}")
+                    queued_cards.append(redis_key.rsplit(":in-progress:", 1)[-1])
+
+            if cursor in (0, "0"):
+                break
+    except Exception as async_error:
+        logger.warning(f"AioRedis scan failed for queued downloads, falling back to sync Redis: {async_error}")
+        return []
+    return sorted(set(queued_cards))
 
 
 def is_cache_reloading(redis: Redis) -> bool:

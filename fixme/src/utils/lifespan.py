@@ -16,13 +16,14 @@ async def lifespan_fixme(app: FastAPI):
     Lifespan event handler for the FIXME FastAPI server.
     """
     import aiofiles
+
     # import asyncio
     from server import sio
-    from src.component.fix import FixClient
-    # path to the working FIX application class directory
-    # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../octopus-tests/fix/')))
-    # from fix_client_async import FixClient # type: ignore
     from src.wsocket import WebSocketServer
+    from src.services.fix import FixClient
+    # path to the working FIX application class directory
+    # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../octopus-tests/fix/')))
+    # from fix_client_async import FixClient # type: ignore
 
     server_mode = get_server_mode()
     node_env = get_node_env()
