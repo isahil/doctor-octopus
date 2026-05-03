@@ -22,6 +22,13 @@
   border: 3px solid cyan;
   animation: pulse-cyan-border 2s infinite;
   box-shadow: 0 0 10px 2px cyan;
+  cursor: not-allowed;
+}
+
+.card.queued [class*="view"],
+.card.queued [class*="view"]:hover {
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 @keyframes pulse-cyan-border {

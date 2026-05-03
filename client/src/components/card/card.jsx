@@ -70,13 +70,13 @@ function Card({ card, index, filter, setAlert, queued }) {
   }
 
   return (
-    <div className={`card ${index} ${unexpected === 0 ? "green" : ""} ${queued ? "queued" : ""}`}>
+    <div className={`card ${index}${unexpected === 0 ? " green" : ""}${queued ? " queued" : ""}`}>
       <div className="card-content">
         <div className="card-header">
           <span className="sdet-name">{sdet}</span>
           <span className="project-name">{project_name}</span>
         </div>
-        <div className="score-board-container ">
+        <div className="score-board-container">
           <div className="score-board all">
             All
             <span className="score"> {total_tests} </span>
@@ -101,7 +101,7 @@ function Card({ card, index, filter, setAlert, queued }) {
             <span className="score"> {skipped} </span>
           </div>
           <button
-            className="score-board"
+            className="score-board view"
             onClick={handle_view_report_click}
             title="View Report"
             aria-label="View Report"
