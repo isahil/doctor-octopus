@@ -15,10 +15,10 @@ export const { fixme_api_base_url } = runtime_config
 
 function App() {
   const location = useLocation()
-  const [isLabRoute, setIsLabRoute] = useState(false)
+  const [isFixmeRoute, setIsFixmeRoute] = useState(false)
 
   useEffect(() => {
-    setIsLabRoute(location.pathname === "/the-lab")
+    setIsFixmeRoute(location.pathname === "/fixme")
   }, [location])
 
   return (
@@ -28,11 +28,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Cards />} />
           <Route
-            path="/the-lab"
+            path="/fixme"
             element={
               <SocketIOProvider
                 url={fixme_api_base_url}
-                enabled={isLabRoute} // Only enable when on Lab route
+                enabled={isFixmeRoute} // Only enable when on FixMe route
               >
                 <TerminalProvider>
                   <LabProvider>

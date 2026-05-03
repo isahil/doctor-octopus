@@ -24,7 +24,7 @@ const NavBar = () => {
 
   const nav_bars = [
     { path: "/", label: "Reports", icon: "👩🏻‍🔬" },
-    { path: "/the-lab", label: "Lab", icon: "🧪" },
+    { path: "/fixme", label: "FixMe", icon: "🧪" },
     // { path: "/settings", label: "Settings", icon: "⚙️" },
   ]
 
