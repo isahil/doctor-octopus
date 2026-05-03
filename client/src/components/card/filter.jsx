@@ -1,7 +1,7 @@
 import "./filter.css"
 
-const Filters = ({ filter, cardFilters, setCardFilters }) => {
-  const { name, options } = filter
+const Filter = ({ filterConfig, cardFilters, setCardFilters }) => {
+  const { name, options } = filterConfig
 
   const handle_filter_change = (e) => {
     const { value } = e.target
@@ -45,4 +45,4 @@ const Filters = ({ filter, cardFilters, setCardFilters }) => {
   )
 }
 
-export default Filters
+export default Filter

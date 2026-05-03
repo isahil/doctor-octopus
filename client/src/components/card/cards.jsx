@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import Card from "./card"
 import "./cards.css"
-import Filters from "./filter"
+import Filter from "./filter"
 import config from "../../config.json"
 import { to_roman_numeral } from "../../utils/helper"
 import { runtime_config } from "../../utils/env_loader"
@@ -147,8 +147,8 @@ const Cards = () => {
             {filterConfigs.map((filterConfig, index) => {
               return (
                 <div key={index} className={`${filterConfig.name}-filters-wrapper`}>
-                  <Filters
-                    filter={filterConfig}
+                  <Filter
+                    filterConfig={filterConfig}
                     cardFilters={cardFilters}
                     setCardFilters={setCardFilters}
                   />
